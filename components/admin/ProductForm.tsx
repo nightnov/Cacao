@@ -142,19 +142,15 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
       }
 
       if (product) {
-        const { error: updateError, status, statusText } = await supabase
+        const { error: updateError } = await supabase
           .from('products')
           .update(payload)
           .eq('id', product.id)
 
-        // eslint-disable-next-line no-console
-        console.log('[ProductForm] update result', { updateError, status, statusText })
         if (updateError) throw updateError
       } else {
-        const { error: createError, status, statusText } = await supabase.from('products').insert([payload])
+        const { error: createError } = await supabase.from('products').insert([payload])
 
-        // eslint-disable-next-line no-console
-        console.log('[ProductForm] insert result', { createError, status, statusText })
         if (createError) throw createError
       }
 

@@ -91,7 +91,7 @@ export default function Home() {
       {/* Catalogue coming soon */}
       <section className="max-w-7xl mx-auto px-10 py-20 text-center">
         <h2 className="font-serif font-semibold text-3xl mb-10">Le catalogue</h2>
-        <p className="text-[#8A8579]">La page catalogue sera construite à l'étape 5. Pour l'instant, le setup est prêt ! 🚀</p>
+        <p className="text-[#8A8579]">La page catalogue sera construite à l&apos;étape 5. Pour l&apos;instant, le setup est prêt ! 🚀</p>
       </section>
 
       {/* Footer */}
@@ -99,7 +99,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto flex justify-between items-center flex-wrap gap-4">
           <div className="font-serif font-bold text-xl">Cacao</div>
           <div className="text-xs text-[#8A8579]">
-            Abidjan, Côte d'Ivoire · Paiement sécurisé MoneyFusion
+            Abidjan, Côte d&apos;Ivoire · Paiement sécurisé MoneyFusion
           </div>
         </div>
       </footer>

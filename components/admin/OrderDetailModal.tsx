@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 
+type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
+
 interface OrderItem {
   id: string
   product_name: string
@@ -14,7 +16,7 @@ interface Order {
   id: string
   order_number: string
   user_id: string
-  status: string
+  status: OrderStatus
   total_fcfa: number
   total_products_fcfa: number
   shipping_cost_fcfa: number
@@ -53,7 +55,7 @@ interface OrderDetailModalProps {
   order: Order
   items: OrderItem[]
   onClose: () => void
-  onStatusChange: (orderId: string, newStatus: string) => Promise<void>
+  onStatusChange: (orderId: string, newStatus: OrderStatus) => Promise<void>
 }
 
 export default function OrderDetailModal({ order, items, onClose, onStatusChange }: OrderDetailModalProps) {

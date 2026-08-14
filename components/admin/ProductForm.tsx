@@ -10,6 +10,16 @@ interface ProductFormProps {
   onClose: () => void
 }
 
+function slugify(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '') // retire les accents
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
 export default function ProductForm({ product, onClose }: ProductFormProps) {
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -129,8 +139,8 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
       }
       const tags = formData.tags.split(',').map(t => t.trim()).filter(Boolean)
       const payload = {
-        name: formData.name,
-        slug: formData.slug,
+        name: formData.name.trim(),
+        slug: slugify(formData.slug),
         description: formData.description,
         category: formData.category,
         price_fcfa: formData.price_fcfa,

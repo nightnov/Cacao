@@ -43,7 +43,7 @@ export default function AdminCustomers() {
           .eq('user_id', profile.id) as any)
 
         if (!ordersError && orders && orders.length > 0) {
-          const total = orders.reduce((sum, order) => sum + order.total_fcfa, 0)
+          const total = orders.reduce((sum: number, order: any) => sum + order.total_fcfa, 0)
           customersData.push({
             id: profile.id,
             email: profile.email,

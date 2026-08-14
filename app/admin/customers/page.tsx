@@ -28,19 +28,19 @@ export default function AdminCustomers() {
       const supabase = getSupabaseClient()
 
       // Récupérer tous les profils avec au moins une commande
-      const { data: profiles, error } = await supabase
+      const { data: profiles, error } = await (supabase
         .from('profiles')
-        .select('id, email, first_name, last_name, phone, created_at') as any
+        .select('id, email, first_name, last_name, phone, created_at') as any)
 
       if (error) throw error
 
       // Pour chaque profil, compter les commandes et le total dépensé
       const customersData: Customer[] = []
       for (const profile of profiles || []) {
-        const { data: orders, error: ordersError } = await supabase
+        const { data: orders, error: ordersError } = await (supabase
           .from('orders')
-          .select('total_fcfa') as any
-          .eq('user_id', profile.id)
+          .select('total_fcfa')
+          .eq('user_id', profile.id) as any)
 
         if (!ordersError && orders && orders.length > 0) {
           const total = orders.reduce((sum, order) => sum + order.total_fcfa, 0)

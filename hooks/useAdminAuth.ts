@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseClient } from '@/lib/supabase'
 
 const ADMIN_UUID = 'f4e9e8fd-8e85-4045-a6e5-c2c62204c5ff'
 
@@ -13,11 +13,7 @@ export function useAdminAuth() {
   useEffect(() => {
     const checkAdmin = async () => {
       try {
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-        )
-
+        const supabase = getSupabaseClient()
         const { data } = await supabase.auth.getSession()
 
         if (data.session?.user?.id === ADMIN_UUID) {
@@ -39,10 +35,7 @@ export function useAdminAuth() {
   }, [router])
 
   const logout = async () => {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-    )
+    const supabase = getSupabaseClient()
     await supabase.auth.signOut()
     localStorage.removeItem('admin_session')
     router.push('/admin/login')

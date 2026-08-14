@@ -281,7 +281,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                   value={formData.specs_screen}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
-                  placeholder="Ex: 14\""
+                  placeholder='Ex: 14"'
                 />
               </div>
             </div>

@@ -91,9 +91,9 @@ CREATE INDEX idx_payment_logs_order_id ON payment_logs(order_id);
 -- Products: public read, admin write
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "products_public_read" ON products FOR SELECT USING (true);
-CREATE POLICY "products_admin_write" ON products FOR INSERT WITH CHECK (auth.uid() = '00000000-0000-0000-0000-000000000000'); -- Admin ID
-CREATE POLICY "products_admin_update" ON products FOR UPDATE USING (auth.uid() = '00000000-0000-0000-0000-000000000000');
-CREATE POLICY "products_admin_delete" ON products FOR DELETE USING (auth.uid() = '00000000-0000-0000-0000-000000000000');
+CREATE POLICY "products_admin_write" ON products FOR INSERT WITH CHECK (auth.uid() = '22d10b78-cfae-4d7d-b9bb-871e1510b856');
+CREATE POLICY "products_admin_update" ON products FOR UPDATE USING (auth.uid() = '22d10b78-cfae-4d7d-b9bb-871e1510b856');
+CREATE POLICY "products_admin_delete" ON products FOR DELETE USING (auth.uid() = '22d10b78-cfae-4d7d-b9bb-871e1510b856');
 
 -- Profiles: users see own, public see public
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
@@ -105,7 +105,7 @@ CREATE POLICY "profiles_user_insert" ON profiles FOR INSERT WITH CHECK (auth.uid
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "orders_user_view_own" ON orders FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "orders_user_insert" ON orders FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "orders_admin_all" ON orders FOR ALL USING (auth.uid() = '00000000-0000-0000-0000-000000000000');
+CREATE POLICY "orders_admin_all" ON orders FOR ALL USING (auth.uid() = '22d10b78-cfae-4d7d-b9bb-871e1510b856');
 
 -- Order items: users see own orders items
 ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
@@ -118,10 +118,10 @@ ALTER TABLE payment_logs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "payment_logs_user_view" ON payment_logs FOR SELECT USING (
   order_id IN (SELECT id FROM orders WHERE user_id = auth.uid())
 );
-CREATE POLICY "payment_logs_admin_all" ON payment_logs FOR ALL USING (auth.uid() = '00000000-0000-0000-0000-000000000000');
+CREATE POLICY "payment_logs_admin_all" ON payment_logs FOR ALL USING (auth.uid() = '22d10b78-cfae-4d7d-b9bb-871e1510b856');
 
 -- Shipping fees: public read, admin write
 ALTER TABLE shipping_fees ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "shipping_fees_public_read" ON shipping_fees FOR SELECT USING (true);
-CREATE POLICY "shipping_fees_admin_write" ON shipping_fees FOR INSERT WITH CHECK (auth.uid() = '00000000-0000-0000-0000-000000000000');
-CREATE POLICY "shipping_fees_admin_update" ON shipping_fees FOR UPDATE USING (auth.uid() = '00000000-0000-0000-0000-000000000000');
+CREATE POLICY "shipping_fees_admin_write" ON shipping_fees FOR INSERT WITH CHECK (auth.uid() = '22d10b78-cfae-4d7d-b9bb-871e1510b856');
+CREATE POLICY "shipping_fees_admin_update" ON shipping_fees FOR UPDATE USING (auth.uid() = '22d10b78-cfae-4d7d-b9bb-871e1510b856');

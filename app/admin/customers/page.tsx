@@ -30,7 +30,7 @@ export default function AdminCustomers() {
       // Récupérer tous les profils avec au moins une commande
       const { data: profiles, error } = await supabase
         .from('profiles')
-        .select('id, email, first_name, last_name, phone, created_at')
+        .select('id, email, first_name, last_name, phone, created_at') as any
 
       if (error) throw error
 
@@ -39,7 +39,7 @@ export default function AdminCustomers() {
       for (const profile of profiles || []) {
         const { data: orders, error: ordersError } = await supabase
           .from('orders')
-          .select('total_fcfa')
+          .select('total_fcfa') as any
           .eq('user_id', profile.id)
 
         if (!ordersError && orders && orders.length > 0) {

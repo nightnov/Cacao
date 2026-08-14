@@ -93,10 +93,11 @@ export default function AdminOrders() {
   const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
       const supabase = getSupabaseClient()
-      const { error } = await (supabase
+      // @ts-ignore - Supabase génère un type 'never' qui refuse les updates
+      const { error } = await supabase
         .from('orders')
-        .update({ status: newStatus } as Record<string, any>)
-        .eq('id', orderId) as any)
+        .update({ status: newStatus })
+        .eq('id', orderId)
 
       if (error) throw error
 

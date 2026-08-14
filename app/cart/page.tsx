@@ -31,7 +31,7 @@ export default function Cart() {
           </div>
           <h2 className="font-serif font-semibold text-2xl text-[#1A1A1A] mb-3">Panier vide</h2>
           <p className="text-[#56534C] mb-8">Explorez notre catalogue et ajoutez vos produits préférés.</p>
-          <Link href="/">
+          <Link href="/products">
             <Button variant="primary">Continuer les achats</Button>
           </Link>
         </div>

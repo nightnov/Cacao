@@ -4,10 +4,16 @@ import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 
 const navLinks = [
-  { label: 'Catalogue', href: '/#catalogue' },
+  { label: 'Catalogue', href: '/products' },
   { label: 'À propos', href: '/about' },
   { label: 'FAQ', href: '/faq' },
   { label: 'Contact', href: '/contact' }
+]
+
+const categoryLinks = [
+  { label: 'Portables', href: '/products?category=portable' },
+  { label: 'Ordinateurs de bureau', href: '/products?category=bureau' },
+  { label: 'Accessoires', href: '/products?category=accessoire' }
 ]
 
 export function Navbar() {
@@ -89,7 +95,8 @@ export function Navbar() {
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="md:hidden border-t border-[#E4DDCF] bg-white">
-          <div className="max-w-7xl mx-auto px-10 py-4 flex flex-col gap-4">
+          <div className="max-w-7xl mx-auto px-10 py-4 flex flex-col gap-2">
+            {/* Main navigation */}
             {navLinks.map(link => (
               <Link
                 key={link.href}
@@ -101,8 +108,24 @@ export function Navbar() {
               </Link>
             ))}
 
+            {/* Divider */}
+            <div className="border-t border-[#E4DDCF] my-2"></div>
+
+            {/* Category filters */}
+            <div className="text-xs font-semibold text-[#8A8579] py-2 uppercase">Catégories</div>
+            {categoryLinks.map(link => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors py-1.5 pl-4"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {link.label}
+              </Link>
+            ))}
+
             {/* Mobile Search */}
-            <div className="flex bg-[#FBF6EE] border-2 border-[#1A1A1A] rounded-lg px-3 py-2 items-center gap-2 mt-2">
+            <div className="flex bg-[#FBF6EE] border-2 border-[#1A1A1A] rounded-lg px-3 py-2 items-center gap-2 mt-4">
               <input
                 type="text"
                 placeholder="Chercher..."

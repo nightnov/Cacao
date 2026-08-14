@@ -21,22 +21,6 @@ export default function Home() {
         </p>
       </section>
 
-      {/* Category strip */}
-      <section className="max-w-7xl mx-auto px-10 pb-10 flex gap-3 flex-wrap">
-        <div className="border-2 border-[#1A1A1A] rounded-full px-5 py-2.5 text-sm font-semibold cursor-pointer bg-[#1A1A1A] text-[#FBF6EE]">
-          Tous
-        </div>
-        <div className="border-2 border-[#1A1A1A] rounded-full px-5 py-2.5 text-sm font-semibold cursor-pointer bg-white hover:bg-[#1A1A1A] hover:text-[#FBF6EE] transition-colors">
-          Portables
-        </div>
-        <div className="border-2 border-[#1A1A1A] rounded-full px-5 py-2.5 text-sm font-semibold cursor-pointer bg-white hover:bg-[#1A1A1A] hover:text-[#FBF6EE] transition-colors">
-          Bureau
-        </div>
-        <div className="border-2 border-[#1A1A1A] rounded-full px-5 py-2.5 text-sm font-semibold cursor-pointer bg-white hover:bg-[#1A1A1A] hover:text-[#FBF6EE] transition-colors">
-          Accessoires
-        </div>
-      </section>
-
       <TrustSection />
 
       {/* Catalogue coming soon */}

@@ -72,6 +72,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         // Update
         const { error: updateError } = await supabase
           .from('products')
+          // @ts-ignore
           .update({
             name: formData.name,
             slug: formData.slug,

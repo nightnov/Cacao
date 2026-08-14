@@ -17,6 +17,7 @@ interface Product {
   availability: 'in_stock' | 'on_order' | 'discontinued'
   specs: Record<string, unknown>
   tags: string[]
+  image_urls: string[]
 }
 
 function ProductsContent() {

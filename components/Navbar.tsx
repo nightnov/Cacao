@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { getCartCount, CART_EVENT } from '@/lib/cart'
 
 const navLinks = [
   { label: 'Catalogue', href: '/products' },
@@ -21,11 +22,13 @@ export function Navbar() {
   const [cartCount, setCartCount] = useState(0)
 
   useEffect(() => {
-    const cart = localStorage.getItem('cart')
-    if (cart) {
-      const items = JSON.parse(cart)
-      const count = items.reduce((sum: number, item: any) => sum + item.quantity, 0)
-      setCartCount(count)
+    const updateCount = () => setCartCount(getCartCount())
+    updateCount()
+    window.addEventListener(CART_EVENT, updateCount)
+    window.addEventListener('storage', updateCount)
+    return () => {
+      window.removeEventListener(CART_EVENT, updateCount)
+      window.removeEventListener('storage', updateCount)
     }
   }, [])
 

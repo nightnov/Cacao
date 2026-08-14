@@ -21,7 +21,7 @@ export default function AdminProducts() {
       const supabase = getSupabaseClient()
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, slug, description, category, price_fcfa, availability, specs, tags')
+        .select('id, name, slug, description, category, price_fcfa, availability, specs, tags, image_urls, video_url')
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -89,6 +89,7 @@ export default function AdminProducts() {
           <table className="w-full">
             <thead className="bg-[#FBF6EE] border-b border-[#E4DDCF]">
               <tr>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]"></th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]">Nom</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]">Catégorie</th>
                 <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]">Prix</th>
@@ -99,6 +100,20 @@ export default function AdminProducts() {
             <tbody>
               {products.map(product => (
                 <tr key={product.id} className="border-t border-[#E4DDCF] hover:bg-[#FBF6EE] transition-colors">
+                  <td className="px-6 py-4">
+                    <div className="w-12 h-12 rounded bg-[#FBF6EE] border border-[#E4DDCF] overflow-hidden flex items-center justify-center">
+                      {product.image_urls?.[0] ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={product.image_urls[0]} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E85D25" strokeWidth="1.5">
+                          <rect x="2" y="3" width="20" height="14" rx="2" />
+                          <line x1="8" y1="21" x2="16" y2="21" />
+                          <line x1="12" y1="17" x2="12" y2="21" />
+                        </svg>
+                      )}
+                    </div>
+                  </td>
                   <td className="px-6 py-4 text-sm text-[#1A1A1A] font-medium">{product.name}</td>
                   <td className="px-6 py-4 text-sm text-[#56534C]">
                     {product.category === 'portable' && 'Portable'}

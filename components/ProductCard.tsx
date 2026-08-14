@@ -7,9 +7,10 @@ interface ProductCardProps {
   price_fcfa: number
   category: string
   availability: 'in_stock' | 'on_order' | 'discontinued'
+  image_urls?: string[]
 }
 
-export function ProductCard({ id, name, slug, price_fcfa, category, availability }: ProductCardProps) {
+export function ProductCard({ id, name, slug, price_fcfa, category, availability, image_urls }: ProductCardProps) {
   const categoryLabel: Record<string, string> = {
     portable: 'Portable',
     bureau: 'Bureau',
@@ -27,13 +28,18 @@ export function ProductCard({ id, name, slug, price_fcfa, category, availability
   return (
     <Link href={`/products/${slug}`}>
       <div className="bg-white rounded-lg border border-[#E4DDCF] overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
-        {/* Image placeholder */}
-        <div className="bg-[#FBF6EE] h-48 flex items-center justify-center">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#E85D25" strokeWidth="1">
-            <rect x="2" y="3" width="20" height="14" rx="2" />
-            <line x1="8" y1="21" x2="16" y2="21" />
-            <line x1="12" y1="17" x2="12" y2="21" />
-          </svg>
+        {/* Image */}
+        <div className="bg-[#FBF6EE] h-48 flex items-center justify-center overflow-hidden">
+          {image_urls && image_urls.length > 0 ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={image_urls[0]} alt={name} className="w-full h-full object-cover" />
+          ) : (
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#E85D25" strokeWidth="1">
+              <rect x="2" y="3" width="20" height="14" rx="2" />
+              <line x1="8" y1="21" x2="16" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+          )}
         </div>
 
         {/* Content */}

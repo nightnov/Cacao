@@ -15,6 +15,7 @@ interface Product {
   price_fcfa: number
   category: string
   availability: 'in_stock' | 'on_order' | 'discontinued'
+  image_urls: string[]
 }
 
 export default function Home() {

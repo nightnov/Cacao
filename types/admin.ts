@@ -8,6 +8,8 @@ export interface Product {
   availability: string
   specs: Record<string, unknown>
   tags: string[]
+  image_urls: string[]
+  video_url: string | null
 }
 
 export interface Order {

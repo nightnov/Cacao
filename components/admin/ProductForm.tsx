@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/Button'
 import { Product } from '@/types/admin'
@@ -12,7 +12,9 @@ interface ProductFormProps {
 
 export default function ProductForm({ product, onClose }: ProductFormProps) {
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -24,7 +26,9 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     specs_ram: '',
     specs_storage: '',
     specs_screen: '',
-    tags: ''
+    tags: '',
+    image_urls: [] as string[],
+    video_url: ''
   })
 
   useEffect(() => {
@@ -40,7 +44,9 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         specs_ram: (product.specs?.ram as string) || '',
         specs_storage: (product.specs?.storage as string) || '',
         specs_screen: (product.specs?.screen as string) || '',
-        tags: Array.isArray(product.tags) ? product.tags.join(', ') : ''
+        tags: Array.isArray(product.tags) ? product.tags.join(', ') : '',
+        image_urls: product.image_urls || [],
+        video_url: product.video_url || ''
       })
     }
   }, [product])
@@ -51,6 +57,60 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
       ...prev,
       [name]: name === 'price_fcfa' ? parseInt(value) || 0 : value
     }))
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    setUploading(true)
+    setError('')
+
+    try {
+      const supabase = getSupabaseClient()
+      const uploadedUrls: string[] = []
+
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith('image/')) continue
+        if (file.size > 5 * 1024 * 1024) {
+          throw new Error(`"${file.name}" dépasse 5 Mo`)
+        }
+
+        const ext = file.name.split('.').pop()
+        const path = `products/${crypto.randomUUID()}.${ext}`
+
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(path, file)
+
+        if (uploadError) throw uploadError
+
+        const { data } = supabase.storage.from('product-images').getPublicUrl(path)
+        uploadedUrls.push(data.publicUrl)
+      }
+
+      setFormData(prev => ({ ...prev, image_urls: [...prev.image_urls, ...uploadedUrls] }))
+    } catch (err: any) {
+      setError(err.message || "Erreur lors de l'upload de l'image")
+    } finally {
+      setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }
+
+  const handleRemoveImage = async (url: string) => {
+    setFormData(prev => ({ ...prev, image_urls: prev.image_urls.filter(u => u !== url) }))
+
+    try {
+      const supabase = getSupabaseClient()
+      const path = url.split('/product-images/')[1]
+      if (path) {
+        await supabase.storage.from('product-images').remove([path])
+      }
+    } catch {
+      // Suppression silencieuse: le retrait de l'affichage prime, un fichier
+      // orphelin dans le stockage n'a pas d'impact utilisateur.
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,39 +127,29 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         screen: formData.specs_screen
       }
       const tags = formData.tags.split(',').map(t => t.trim()).filter(Boolean)
+      const payload = {
+        name: formData.name,
+        slug: formData.slug,
+        description: formData.description,
+        category: formData.category,
+        price_fcfa: formData.price_fcfa,
+        availability: formData.availability,
+        specs,
+        tags,
+        image_urls: formData.image_urls,
+        video_url: formData.video_url || null
+      }
 
       if (product) {
-        // Update
         const { error: updateError } = await supabase
           .from('products')
-          .update({
-            name: formData.name,
-            slug: formData.slug,
-            description: formData.description,
-            category: formData.category,
-            price_fcfa: formData.price_fcfa,
-            availability: formData.availability,
-            specs,
-            tags
-          })
+          .update(payload)
           .eq('id', product.id)
 
         if (updateError) throw updateError
         alert('Produit mis à jour')
       } else {
-        // Create
-        const { error: createError } = await supabase.from('products').insert([
-          {
-            name: formData.name,
-            slug: formData.slug,
-            description: formData.description,
-            category: formData.category,
-            price_fcfa: formData.price_fcfa,
-            availability: formData.availability,
-            specs,
-            tags
-          }
-        ])
+        const { error: createError } = await supabase.from('products').insert([payload])
 
         if (createError) throw createError
         alert('Produit créé')
@@ -137,6 +187,63 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               {error}
             </div>
           )}
+
+          {/* Images */}
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">Photos</label>
+            <div className="grid grid-cols-4 gap-3 mb-3">
+              {formData.image_urls.map(url => (
+                <div key={url} className="relative aspect-square rounded-lg overflow-hidden border border-[#E4DDCF] group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(url)}
+                    className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black bg-opacity-60 text-white text-xs flex items-center justify-center hover:bg-opacity-80"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="aspect-square rounded-lg border-2 border-dashed border-[#E4DDCF] flex flex-col items-center justify-center text-[#8A8579] hover:border-[#E85D25] hover:text-[#E85D25] transition-colors text-xs gap-1 disabled:opacity-50"
+              >
+                {uploading ? (
+                  <span>Envoi...</span>
+                ) : (
+                  <>
+                    <span className="text-xl leading-none">+</span>
+                    <span>Ajouter</span>
+                  </>
+                )}
+              </button>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+            <p className="text-xs text-[#8A8579]">La première photo sera l&apos;image principale. 5 Mo max par photo.</p>
+          </div>
+
+          {/* Video URL */}
+          <div>
+            <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">Vidéo (lien YouTube ou Vimeo)</label>
+            <input
+              type="url"
+              name="video_url"
+              value={formData.video_url}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+              placeholder="https://youtube.com/watch?v=..."
+            />
+          </div>
 
           {/* Name */}
           <div>
@@ -294,7 +401,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
             <Button
               type="submit"
               variant="primary"
-              disabled={loading}
+              disabled={loading || uploading}
               className="flex-1"
             >
               {loading ? 'Enregistrement...' : 'Enregistrer'}

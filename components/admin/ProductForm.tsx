@@ -14,6 +14,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     name: '',
@@ -141,23 +142,29 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
       }
 
       if (product) {
-        const { error: updateError } = await supabase
+        const { error: updateError, status, statusText } = await supabase
           .from('products')
           .update(payload)
           .eq('id', product.id)
 
+        // eslint-disable-next-line no-console
+        console.log('[ProductForm] update result', { updateError, status, statusText })
         if (updateError) throw updateError
-        alert('Produit mis à jour')
       } else {
-        const { error: createError } = await supabase.from('products').insert([payload])
+        const { error: createError, status, statusText } = await supabase.from('products').insert([payload])
 
+        // eslint-disable-next-line no-console
+        console.log('[ProductForm] insert result', { createError, status, statusText })
         if (createError) throw createError
-        alert('Produit créé')
       }
 
-      onClose()
+      setSuccess(true)
+      setTimeout(onClose, 900)
     } catch (err: any) {
-      setError(err.message || 'Erreur lors de l\'enregistrement')
+      // eslint-disable-next-line no-console
+      console.error('[ProductForm] save failed', err)
+      const details = [err.message, err.code, err.details, err.hint].filter(Boolean).join(' — ')
+      setError(details || 'Erreur inconnue lors de l\'enregistrement (voir la console)')
     } finally {
       setLoading(false)
     }
@@ -181,9 +188,16 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {/* Success Message */}
+          {success && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded font-semibold">
+              ✓ Produit enregistré avec succès
+            </div>
+          )}
+
           {/* Error Message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded whitespace-pre-wrap break-words">
               {error}
             </div>
           )}
@@ -401,7 +415,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
             <Button
               type="submit"
               variant="primary"
-              disabled={loading || uploading}
+              disabled={loading || uploading || success}
               className="flex-1"
             >
               {loading ? 'Enregistrement...' : 'Enregistrer'}
@@ -410,7 +424,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               type="button"
               variant="outline"
               onClick={onClose}
-              disabled={loading}
+              disabled={loading || success}
               className="flex-1"
             >
               Annuler

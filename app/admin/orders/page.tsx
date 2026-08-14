@@ -3,31 +3,7 @@
 import { useState, useEffect } from 'react'
 import { getSupabaseClient } from '@/lib/supabase'
 import OrderDetailModal from '@/components/admin/OrderDetailModal'
-
-interface OrderItem {
-  id: string
-  product_name: string
-  quantity: number
-  unit_price_fcfa: number
-  subtotal_fcfa: number
-}
-
-interface Order {
-  id: string
-  order_number: string
-  user_id: string
-  status: string
-  total_fcfa: number
-  total_products_fcfa: number
-  shipping_cost_fcfa: number
-  payment_method: string
-  created_at: string
-  profiles?: {
-    email: string
-    first_name: string
-    last_name: string
-  }
-}
+import { Order, OrderItem } from '@/types/admin'
 
 const statusLabels: Record<string, { label: string; color: string }> = {
   pending: { label: 'En attente', color: 'bg-gray-100 text-gray-700' },

@@ -7,6 +7,7 @@ import { Footer } from '@/components/Footer'
 import { TrustSection } from '@/components/TrustSection'
 import { Badge } from '@/components/Badge'
 import { ProductCard } from '@/components/ProductCard'
+import { Button } from '@/components/Button'
 
 interface Product {
   id: string
@@ -83,10 +84,24 @@ export default function Home() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 bg-white rounded-lg border border-[#E4DDCF]">
-            <p className="text-[#8A8579] mb-4">Aucun produit disponible pour le moment.</p>
-            <Link href="/admin/login" className="text-[#E85D25] font-semibold hover:underline">
-              Ajouter des produits depuis l&apos;administration →
+          <div className="text-center py-20 px-6 bg-white rounded-2xl border-2 border-dashed border-[#E4DDCF]">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[#FBF6EE] flex items-center justify-center">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E85D25" strokeWidth="1.5">
+                <rect x="2" y="3" width="20" height="14" rx="2" />
+                <line x1="8" y1="21" x2="16" y2="21" />
+                <line x1="12" y1="17" x2="12" y2="21" />
+              </svg>
+            </div>
+            <h3 className="font-serif font-semibold text-xl text-[#1A1A1A] mb-2">
+              Le catalogue arrive bientôt
+            </h3>
+            <p className="text-[#8A8579] mb-8 max-w-sm mx-auto">
+              Aucun produit n&apos;est disponible pour le moment. Les premiers PC seront ajoutés très prochainement.
+            </p>
+            <Link href="/admin/login">
+              <Button variant="outline" size="sm">
+                Ajouter des produits →
+              </Button>
             </Link>
           </div>
         )}

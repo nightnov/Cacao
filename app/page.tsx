@@ -1,11 +1,42 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { TrustSection } from '@/components/TrustSection'
 import { Badge } from '@/components/Badge'
+import { ProductCard } from '@/components/ProductCard'
+
+interface Product {
+  id: string
+  name: string
+  slug: string
+  price_fcfa: number
+  category: string
+  availability: 'in_stock' | 'on_order' | 'discontinued'
+}
 
 export default function Home() {
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch('/api/products')
+        const data = await res.json()
+        setProducts((data || []).slice(0, 3))
+      } catch (error) {
+        console.error('Erreur lors du chargement des produits:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProducts()
+  }, [])
+
   return (
     <main className="min-h-screen bg-[#FBF6EE]">
       <Navbar />
@@ -23,10 +54,42 @@ export default function Home() {
 
       <TrustSection />
 
-      {/* Catalogue coming soon */}
-      <section className="max-w-7xl mx-auto px-10 py-20 text-center">
-        <h2 className="font-serif font-semibold text-3xl mb-10">Le catalogue</h2>
-        <p className="text-[#8A8579]">La page catalogue sera construite à l&apos;étape 5. Pour l&apos;instant, le setup est prêt ! 🚀</p>
+      {/* Catalogue preview */}
+      <section className="max-w-7xl mx-auto px-10 py-20">
+        <div className="flex items-center justify-between mb-10">
+          <h2 className="font-serif font-semibold text-3xl">Le catalogue</h2>
+          <Link href="/products" className="text-[#E85D25] font-semibold hover:underline">
+            Voir tout le catalogue →
+          </Link>
+        </div>
+
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="bg-white rounded-lg border border-[#E4DDCF] overflow-hidden animate-pulse">
+                <div className="bg-[#E4DDCF] h-48"></div>
+                <div className="p-4 space-y-3">
+                  <div className="h-3 bg-[#E4DDCF] rounded w-1/3"></div>
+                  <div className="h-4 bg-[#E4DDCF] rounded w-2/3"></div>
+                  <div className="h-3 bg-[#E4DDCF] rounded w-1/2"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : products.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {products.map(product => (
+              <ProductCard key={product.id} {...product} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-white rounded-lg border border-[#E4DDCF]">
+            <p className="text-[#8A8579] mb-4">Aucun produit disponible pour le moment.</p>
+            <Link href="/admin/login" className="text-[#E85D25] font-semibold hover:underline">
+              Ajouter des produits depuis l&apos;administration →
+            </Link>
+          </div>
+        )}
       </section>
 
       <Footer />

@@ -7,7 +7,6 @@ import { Footer } from '@/components/Footer'
 import { TrustSection } from '@/components/TrustSection'
 import { Badge } from '@/components/Badge'
 import { ProductCard } from '@/components/ProductCard'
-import { Button } from '@/components/Button'
 
 interface Product {
   id: string
@@ -95,14 +94,9 @@ export default function Home() {
             <h3 className="font-serif font-semibold text-xl text-[#1A1A1A] mb-2">
               Le catalogue arrive bientôt
             </h3>
-            <p className="text-[#8A8579] mb-8 max-w-sm mx-auto">
+            <p className="text-[#8A8579] max-w-sm mx-auto">
               Aucun produit n&apos;est disponible pour le moment. Les premiers PC seront ajoutés très prochainement.
             </p>
-            <Link href="/admin/login">
-              <Button variant="outline" size="sm">
-                Ajouter des produits →
-              </Button>
-            </Link>
           </div>
         )}
       </section>

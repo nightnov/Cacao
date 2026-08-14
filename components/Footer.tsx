@@ -14,18 +14,6 @@ export function Footer() {
           <p className="text-sm text-[#56534C] mt-4 leading-relaxed">
             Ordinateurs de qualité à prix justes, livrés partout en Côte d&apos;Ivoire.
           </p>
-          <div className="flex gap-4 mt-6">
-            <a href="#" className="text-[#1A1A1A] hover:text-[#E85D25] transition-colors">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-              </svg>
-            </a>
-            <a href="#" className="text-[#1A1A1A] hover:text-[#E85D25] transition-colors">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-              </svg>
-            </a>
-          </div>
         </div>
 
         {/* Produits */}
@@ -33,17 +21,17 @@ export function Footer() {
           <h3 className="font-semibold text-[#1A1A1A] mb-5">Produits</h3>
           <ul className="space-y-3">
             <li>
-              <Link href="/?category=portable" className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors">
+              <Link href="/products?category=portable" className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors">
                 Portables
               </Link>
             </li>
             <li>
-              <Link href="/?category=bureau" className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors">
+              <Link href="/products?category=bureau" className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors">
                 Ordinateurs de bureau
               </Link>
             </li>
             <li>
-              <Link href="/?category=accessoire" className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors">
+              <Link href="/products?category=accessoire" className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors">
                 Accessoires
               </Link>
             </li>

@@ -1,3 +1,15 @@
+export interface Product {
+  id: string
+  name: string
+  slug: string
+  description: string
+  category: string
+  price_fcfa: number
+  availability: string
+  specs: Record<string, unknown>
+  tags: string[]
+}
+
 export interface Order {
   id: string
   order_number: string

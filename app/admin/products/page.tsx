@@ -4,15 +4,7 @@ import { useState, useEffect } from 'react'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/Button'
 import ProductForm from '@/components/admin/ProductForm'
-
-interface Product {
-  id: string
-  name: string
-  slug: string
-  price_fcfa: number
-  category: string
-  availability: string
-}
+import { Product } from '@/types/admin'
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([])

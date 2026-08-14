@@ -3,18 +3,7 @@
 import { useState, useEffect } from 'react'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/Button'
-
-interface Product {
-  id: string
-  name: string
-  slug: string
-  description: string
-  category: string
-  price_fcfa: number
-  availability: string
-  specs: Record<string, unknown>
-  tags: string[]
-}
+import { Product } from '@/types/admin'
 
 interface ProductFormProps {
   product?: Product | null

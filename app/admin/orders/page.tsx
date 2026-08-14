@@ -4,8 +4,6 @@ import { useState, useEffect } from 'react'
 import { getSupabaseClient } from '@/lib/supabase'
 import OrderDetailModal from '@/components/admin/OrderDetailModal'
 
-type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
-
 interface OrderItem {
   id: string
   product_name: string
@@ -18,7 +16,7 @@ interface Order {
   id: string
   order_number: string
   user_id: string
-  status: OrderStatus
+  status: string
   total_fcfa: number
   total_products_fcfa: number
   shipping_cost_fcfa: number
@@ -46,7 +44,7 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [orderItems, setOrderItems] = useState<OrderItem[]>([])
-  const [statusFilter, setStatusFilter] = useState<OrderStatus | ''>('')
+  const [statusFilter, setStatusFilter] = useState<string>('')
 
   useEffect(() => {
     fetchOrders()
@@ -92,12 +90,12 @@ export default function AdminOrders() {
     }
   }
 
-  const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
+  const handleStatusChange = async (orderId: string, newStatus: string) => {
     try {
       const supabase = getSupabaseClient()
       const { error } = await supabase
         .from('orders')
-        .update({ status: newStatus } as any)
+        .update({ status: newStatus })
         .eq('id', orderId)
 
       if (error) throw error

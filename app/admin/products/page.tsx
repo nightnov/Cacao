@@ -21,7 +21,7 @@ export default function AdminProducts() {
       const supabase = getSupabaseClient()
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, slug, price_fcfa, category, availability')
+        .select('id, name, slug, description, category, price_fcfa, availability, specs, tags')
         .order('created_at', { ascending: false })
 
       if (error) throw error

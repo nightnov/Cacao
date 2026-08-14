@@ -42,7 +42,8 @@ export default function AdminOrders() {
       const { data, error } = await query
 
       if (error) throw error
-      setOrders(data || [])
+      // Supabase type la jointure profiles comme un tableau, mais renvoie un objet unique à l'exécution
+      setOrders((data as unknown as Order[]) || [])
     } catch (error) {
       console.error('Erreur:', error)
     } finally {
@@ -71,7 +72,6 @@ export default function AdminOrders() {
       const supabase = getSupabaseClient()
       const { error } = await supabase
         .from('orders')
-        // @ts-ignore
         .update({ status: newStatus })
         .eq('id', orderId)
 

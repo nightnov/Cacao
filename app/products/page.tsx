@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
@@ -19,7 +19,7 @@ interface Product {
   tags: string[]
 }
 
-export default function Products() {
+function ProductsContent() {
   const searchParams = useSearchParams()
   const category = searchParams.get('category')
 
@@ -119,5 +119,13 @@ export default function Products() {
 
       <Footer />
     </main>
+  )
+}
+
+export default function Products() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-[#FBF6EE]" />}>
+      <ProductsContent />
+    </Suspense>
   )
 }

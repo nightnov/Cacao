@@ -53,7 +53,6 @@ export default function ShippingForm({ fee, onClose }: ShippingFormProps) {
         // Update
         const { error: updateError } = await supabase
           .from('shipping_fees')
-          // @ts-ignore
           .update({
             city: formData.city,
             price_fcfa: formData.price_fcfa

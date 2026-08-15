@@ -35,6 +35,7 @@ export function Navbar() {
   const [popularSearches, setPopularSearches] = useState<string[]>([])
   const { user, loading: authLoading, isLoggedIn, logout } = useAuth()
   const accountMenuRef = useRef<HTMLDivElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   const suggestions = popularSearches.length > 0 ? popularSearches : FALLBACK_SEARCH_SUGGESTIONS
 
@@ -99,6 +100,9 @@ export function Navbar() {
       if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
         setIsAccountMenuOpen(false)
       }
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsMenuOpen(false)
+      }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
@@ -113,11 +117,11 @@ export function Navbar() {
   return (
     <nav className="bg-white border-b border-[#E4DDCF]">
       <div className="max-w-7xl mx-auto px-10 py-4 flex items-center justify-between">
-        {/* Logo + Mobile Menu Button */}
-        <div className="flex items-center gap-3 flex-shrink-0">
+        {/* Logo + Menu Button */}
+        <div className="relative flex items-center gap-3 flex-shrink-0" ref={menuRef}>
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden flex flex-col gap-1.5"
+            className="flex flex-col gap-1.5"
             aria-label="Ouvrir le menu"
           >
             <span className={`w-6 h-0.5 bg-[#1A1A1A] transition-all ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
@@ -127,20 +131,45 @@ export function Navbar() {
           <Link href="/" className="font-serif font-bold text-3xl text-[#1A1A1A] hover:opacity-80">
             Cacao
           </Link>
+
+          {/* Desktop dropdown */}
+          {isMenuOpen && (
+            <div className="hidden md:block absolute left-0 top-12 w-64 bg-white rounded-lg border border-[#E4DDCF] shadow-lg overflow-hidden z-50">
+              <Link
+                href="/products"
+                onClick={() => setIsMenuOpen(false)}
+                className="block px-4 py-3 text-sm font-semibold text-[#1A1A1A] hover:bg-[#FBF6EE] transition-colors"
+              >
+                Catalogue
+              </Link>
+              <div className="border-t border-[#E4DDCF]"></div>
+              {categoryLinks.map(link => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block px-4 py-2.5 text-sm text-[#56534C] hover:bg-[#FBF6EE] hover:text-[#FF6600] transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <div className="border-t border-[#E4DDCF]"></div>
+              {navLinks.filter(l => l.href !== '/products').map(link => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block px-4 py-2.5 text-sm text-[#56534C] hover:bg-[#FBF6EE] hover:text-[#FF6600] transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Desktop Menu */}
-        <div className="hidden md:flex items-center gap-8 flex-1 justify-center">
-          {navLinks.map(link => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-sm font-semibold text-[#1A1A1A] hover:text-[#FF6600] transition-colors"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
+        {/* Desktop spacer (keeps search/cart pinned right, dropdown menu replaces the old inline links) */}
+        <div className="hidden md:block flex-1"></div>
 
         {/* Search + Cart */}
         <div className="flex items-center gap-4 flex-shrink-0">

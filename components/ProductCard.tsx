@@ -11,67 +11,43 @@ interface ProductCardProps {
   image_urls?: string[]
 }
 
-export function ProductCard({ id, name, slug, price_fcfa, compare_at_price_fcfa, category, availability, image_urls }: ProductCardProps) {
+export function ProductCard({ id, name, slug, price_fcfa, compare_at_price_fcfa, image_urls }: ProductCardProps) {
   const hasPromo = !!compare_at_price_fcfa && compare_at_price_fcfa > price_fcfa
-  const categoryLabel: Record<string, string> = {
-    portable: 'Portable',
-    bureau: 'Bureau',
-    accessoire: 'Accessoire'
-  }
-
-  const availabilityLabel: Record<string, { text: string; color: string }> = {
-    in_stock: { text: 'En stock', color: 'bg-[#1E7A46] text-white' },
-    on_order: { text: 'En commande', color: 'bg-[#FF6600] text-white' },
-    discontinued: { text: 'Rupture', color: 'bg-[#8A8579] text-white' }
-  }
-
-  const availInfo = availabilityLabel[availability]
 
   return (
-    <Link href={`/products/${slug}`}>
-      <div className="bg-white rounded-lg border border-[#E4DDCF] overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
-        {/* Image */}
-        <div className="bg-[#FBF6EE] aspect-square flex items-center justify-center overflow-hidden">
-          {image_urls && image_urls.length > 0 ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={image_urls[0]} alt={name} className="w-full h-full object-cover" />
-          ) : (
-            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#FF6600" strokeWidth="1">
-              <rect x="2" y="3" width="20" height="14" rx="2" />
-              <line x1="8" y1="21" x2="16" y2="21" />
-              <line x1="12" y1="17" x2="12" y2="21" />
-            </svg>
-          )}
-        </div>
+    <Link href={`/products/${slug}`} className="group block">
+      {/* Image */}
+      <div className="bg-[#FBF6EE] aspect-square rounded-xl overflow-hidden flex items-center justify-center">
+        {image_urls && image_urls.length > 0 ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={image_urls[0]}
+            alt={name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FF6600" strokeWidth="1">
+            <rect x="2" y="3" width="20" height="14" rx="2" />
+            <line x1="8" y1="21" x2="16" y2="21" />
+            <line x1="12" y1="17" x2="12" y2="21" />
+          </svg>
+        )}
+      </div>
 
-        {/* Content */}
-        <div className="p-4">
-          {/* Category */}
-          <div className="text-xs font-semibold text-[#FF6600] uppercase mb-2">
-            {categoryLabel[category] || category}
-          </div>
-
-          {/* Name */}
-          <h3 className="font-semibold text-[#1A1A1A] mb-3 line-clamp-2 text-sm">
-            {name}
-          </h3>
-
-          {/* Price */}
-          <div className="mb-3 pb-3 border-t border-[#E4DDCF] pt-3 flex items-center gap-2 flex-wrap">
-            <span className={`text-xl font-bold ${hasPromo ? 'text-[#1E7A46]' : 'text-[#1A1A1A]'}`}>
-              {price_fcfa.toLocaleString('fr-CI')} FCFA
+      {/* Content */}
+      <div className="pt-2.5">
+        <h3 className="text-sm text-[#1A1A1A] truncate group-hover:text-[#FF6600] transition-colors">
+          {name}
+        </h3>
+        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+          <span className={`text-sm font-bold ${hasPromo ? 'text-[#1E7A46]' : 'text-[#1A1A1A]'}`}>
+            {price_fcfa.toLocaleString('fr-CI')} FCFA
+          </span>
+          {hasPromo && (
+            <span className="text-xs text-[#8A8579] line-through">
+              {compare_at_price_fcfa!.toLocaleString('fr-CI')} FCFA
             </span>
-            {hasPromo && (
-              <span className="text-sm text-[#8A8579] line-through">
-                {compare_at_price_fcfa!.toLocaleString('fr-CI')} FCFA
-              </span>
-            )}
-          </div>
-
-          {/* Availability Badge */}
-          <div className={`text-xs font-semibold px-3 py-1.5 rounded-full text-center ${availInfo.color}`}>
-            {availInfo.text}
-          </div>
+          )}
         </div>
       </div>
     </Link>

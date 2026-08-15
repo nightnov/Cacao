@@ -35,12 +35,6 @@ const categoryLabel: Record<string, string> = {
   accessoire: 'Accessoire'
 }
 
-const availabilityLabel: Record<string, { text: string; color: string }> = {
-  in_stock: { text: 'En stock', color: 'bg-[#1E7A46] text-white' },
-  on_order: { text: 'En commande', color: 'bg-[#FF6600] text-white' },
-  discontinued: { text: 'Rupture', color: 'bg-[#8A8579] text-white' }
-}
-
 const specLabels: Record<string, string> = {
   cpu: 'Processeur',
   ram: 'Mémoire (RAM)',
@@ -61,6 +55,7 @@ export default function ProductDetail() {
   const [added, setAdded] = useState(false)
   const [variants, setVariants] = useState<ProductVariant[]>([])
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
+  const [shared, setShared] = useState(false)
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -133,6 +128,28 @@ export default function ProductDetail() {
     setSelectedOptions(prev => ({ ...prev, [optionName]: value }))
   }
 
+  const handleShare = async () => {
+    if (!product) return
+    const url = `${window.location.origin}/products/${product.slug}`
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: product.name, url })
+        return
+      } catch {
+        // annulé par l'utilisateur ou non supporté, on retombe sur la copie
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(url)
+      setShared(true)
+      setTimeout(() => setShared(false), 2000)
+    } catch {
+      // silencieux: le partage n'est pas critique
+    }
+  }
+
   const handleAddToCart = () => {
     if (!product) return
     if (hasVariants && !matchedVariant) return
@@ -189,7 +206,6 @@ export default function ProductDetail() {
     )
   }
 
-  const avail = availabilityLabel[product.availability]
   const displayPrice = matchedVariant ? matchedVariant.price_fcfa : product.price_fcfa
   const hasPromo = !matchedVariant && !!product.compare_at_price_fcfa && product.compare_at_price_fcfa > product.price_fcfa
   const embedUrl = product.video_url ? getVideoEmbedUrl(product.video_url) : null
@@ -202,9 +218,9 @@ export default function ProductDetail() {
     <main className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
-      <div className="flex-1 max-w-7xl mx-auto w-full px-10 py-12">
+      <div className="flex-1 max-w-5xl mx-auto w-full px-10 py-10">
         {/* Breadcrumb */}
-        <div className="text-sm text-[#8A8579] mb-8">
+        <div className="text-sm text-[#8A8579] mb-6">
           <Link href="/products" className="hover:text-[#FF6600]">Catalogue</Link>
           {' / '}
           <Link href={`/products?category=${product.category}`} className="hover:text-[#FF6600]">
@@ -214,10 +230,39 @@ export default function ProductDetail() {
           <span className="text-[#1A1A1A]">{product.name}</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-16">
           {/* Gallery */}
-          <div>
-            <div className="aspect-square bg-white rounded-lg border border-[#E4DDCF] overflow-hidden mb-4 flex items-center justify-center">
+          <div className="flex gap-3">
+            {(product.image_urls?.length > 0 || embedUrl) && (
+              <div className="hidden sm:flex flex-col gap-2 flex-shrink-0">
+                {embedUrl && (
+                  <button
+                    onClick={() => setSelectedMedia({ type: 'video', value: product.video_url! })}
+                    className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 flex items-center justify-center bg-[#1A1A1A] ${
+                      selectedMedia?.type === 'video' ? 'border-[#FF6600]' : 'border-transparent'
+                    }`}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </button>
+                )}
+                {product.image_urls?.map((url, i) => (
+                  <button
+                    key={url}
+                    onClick={() => setSelectedMedia({ type: 'image', value: url })}
+                    className={`w-14 h-14 rounded-lg overflow-hidden border-2 ${
+                      selectedMedia?.type === 'image' && selectedMedia.value === url ? 'border-[#FF6600]' : 'border-transparent'
+                    }`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt={`${product.name} ${i + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className="aspect-square bg-white rounded-lg border border-[#E4DDCF] overflow-hidden flex items-center justify-center flex-1 min-w-0">
               {selectedMedia?.type === 'video' && embedUrl ? (
                 <iframe
                   src={embedUrl}
@@ -229,53 +274,24 @@ export default function ProductDetail() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={selectedMedia.value} alt={product.name} className="w-full h-full object-cover" />
               ) : (
-                <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#FF6600" strokeWidth="1">
+                <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#FF6600" strokeWidth="1">
                   <rect x="2" y="3" width="20" height="14" rx="2" />
                   <line x1="8" y1="21" x2="16" y2="21" />
                   <line x1="12" y1="17" x2="12" y2="21" />
                 </svg>
               )}
             </div>
-
-            {(product.image_urls?.length > 0 || embedUrl) && (
-              <div className="flex gap-3 flex-wrap">
-                {embedUrl && (
-                  <button
-                    onClick={() => setSelectedMedia({ type: 'video', value: product.video_url! })}
-                    className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 flex items-center justify-center bg-[#1A1A1A] ${
-                      selectedMedia?.type === 'video' ? 'border-[#FF6600]' : 'border-transparent'
-                    }`}
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </button>
-                )}
-                {product.image_urls?.map((url, i) => (
-                  <button
-                    key={url}
-                    onClick={() => setSelectedMedia({ type: 'image', value: url })}
-                    className={`w-16 h-16 rounded-lg overflow-hidden border-2 ${
-                      selectedMedia?.type === 'image' && selectedMedia.value === url ? 'border-[#FF6600]' : 'border-transparent'
-                    }`}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={url} alt={`${product.name} ${i + 1}`} className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Info */}
           <div>
-            <div className="text-xs font-semibold text-[#FF6600] uppercase mb-2">
+            <div className="text-xs font-semibold text-[#FF6600] uppercase mb-1.5">
               {categoryLabel[product.category]}
             </div>
-            <h1 className="font-serif font-semibold text-3xl text-[#1A1A1A] mb-4">{product.name}</h1>
+            <h1 className="font-serif font-semibold text-2xl text-[#1A1A1A] mb-3">{product.name}</h1>
 
-            <div className="flex items-center gap-3 mb-6 flex-wrap">
-              <span className={`text-2xl font-bold ${hasPromo ? 'text-[#1E7A46]' : 'text-[#1A1A1A]'}`}>
+            <div className="flex items-center gap-2.5 mb-4 flex-wrap">
+              <span className={`text-xl font-bold ${hasPromo ? 'text-[#1E7A46]' : 'text-[#1A1A1A]'}`}>
                 {hasVariants && !matchedVariant && 'À partir de '}
                 {displayPrice.toLocaleString('fr-CI')} FCFA
               </span>
@@ -284,25 +300,20 @@ export default function ProductDetail() {
                   {product.compare_at_price_fcfa!.toLocaleString('fr-CI')} FCFA
                 </span>
               )}
-              {!hasVariants && (
-                <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${avail.color}`}>
-                  {avail.text}
-                </span>
-              )}
-              {hasVariants && matchedVariant && (
-                <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${matchedVariant.stock > 0 ? 'bg-[#1E7A46] text-white' : 'bg-[#8A8579] text-white'}`}>
-                  {matchedVariant.stock > 0 ? 'En stock' : 'Rupture pour cette variante'}
+              {hasVariants && matchedVariant && matchedVariant.stock === 0 && (
+                <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-[#8A8579] text-white">
+                  Rupture pour cette variante
                 </span>
               )}
             </div>
 
             {product.description && (
-              <p className="text-[#56534C] leading-relaxed mb-6">{product.description}</p>
+              <p className="text-sm text-[#56534C] leading-relaxed mb-4">{product.description}</p>
             )}
 
             {/* Variant picker */}
             {hasVariants && (
-              <div className="mb-6 space-y-4">
+              <div className="mb-4 space-y-3">
                 {product.variant_options!.map(option => (
                   <div key={option.name}>
                     <p className="text-sm font-semibold text-[#1A1A1A] mb-2">{option.name}</p>
@@ -369,20 +380,30 @@ export default function ProductDetail() {
                 : 'Ajouter au panier'}
             </Button>
 
-            <Link
-              href={`/account/messages?productId=${product.id}&productName=${encodeURIComponent(product.name)}`}
-              className="block text-center text-sm text-[#FF6600] hover:underline mt-4"
-            >
-              Une question sur ce produit ?
-            </Link>
+            <div className="flex items-center justify-center gap-4 mt-3">
+              <Link
+                href={`/account/messages?productId=${product.id}&productName=${encodeURIComponent(product.name)}`}
+                className="text-sm text-[#FF6600] hover:underline"
+              >
+                Une question sur ce produit ?
+              </Link>
+              <span className="text-[#E4DDCF]">·</span>
+              <button
+                type="button"
+                onClick={handleShare}
+                className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors"
+              >
+                {shared ? 'Lien copié ✓' : 'Partager'}
+              </button>
+            </div>
 
             {/* Specs */}
             {specEntries.length > 0 && (
-              <div className="mt-10 pt-8 border-t border-[#E4DDCF]">
-                <h2 className="font-serif font-semibold text-xl text-[#1A1A1A] mb-4">Spécifications</h2>
-                <div className="space-y-2">
+              <div className="mt-6 pt-6 border-t border-[#E4DDCF]">
+                <h2 className="font-serif font-semibold text-lg text-[#1A1A1A] mb-3">Spécifications</h2>
+                <div className="space-y-1.5">
                   {specEntries.map(([key, value]) => (
-                    <div key={key} className="flex justify-between py-2 border-b border-[#E4DDCF] text-sm">
+                    <div key={key} className="flex justify-between py-1.5 border-b border-[#E4DDCF] text-sm">
                       <span className="text-[#8A8579]">{specLabels[key] || key}</span>
                       <span className="text-[#1A1A1A] font-medium">{String(value)}</span>
                     </div>
@@ -393,7 +414,7 @@ export default function ProductDetail() {
 
             {/* Tags */}
             {product.tags?.length > 0 && (
-              <div className="mt-6 flex gap-2 flex-wrap">
+              <div className="mt-4 flex gap-2 flex-wrap">
                 {product.tags.map(tag => (
                   <span key={tag} className="text-xs px-3 py-1.5 bg-white border border-[#E4DDCF] rounded-full text-[#56534C]">
                     {tag}
@@ -407,8 +428,8 @@ export default function ProductDetail() {
         {/* Related products */}
         {related.length > 0 && (
           <div>
-            <h2 className="font-serif font-semibold text-3xl text-[#1A1A1A] mb-10">Vous aimerez aussi</h2>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <h2 className="font-serif font-semibold text-2xl text-[#1A1A1A] mb-6">Vous aimerez aussi</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-5 gap-y-8">
               {related.map(p => (
                 <ProductCard key={p.id} {...p} />
               ))}

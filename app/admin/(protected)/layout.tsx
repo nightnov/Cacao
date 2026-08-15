@@ -10,7 +10,8 @@ const adminLinks = [
   { label: 'Commandes', href: '/admin/orders', icon: '📦' },
   { label: 'Messages', href: '/admin/messages', icon: '💬' },
   { label: 'Frais livraison', href: '/admin/shipping', icon: '🚚' },
-  { label: 'Clients', href: '/admin/customers', icon: '👥' }
+  { label: 'Clients', href: '/admin/customers', icon: '👥' },
+  { label: 'Réglages', href: '/admin/settings', icon: '⚙️' }
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

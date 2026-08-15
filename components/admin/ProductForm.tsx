@@ -249,7 +249,9 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               onChange={handleImageUpload}
               className="hidden"
             />
-            <p className="text-xs text-[#8A8579]">La première photo sera l&apos;image principale. 5 Mo max par photo.</p>
+            <p className="text-xs text-[#8A8579]">
+              La première photo sera l&apos;image principale. Utilisez des images <strong>carrées</strong> (ratio 1:1, ex. 800×800 px) pour un affichage uniforme dans le catalogue. 5 Mo max par photo.
+            </p>
           </div>
 
           {/* Video URL */}

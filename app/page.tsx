@@ -7,6 +7,7 @@ import { Footer } from '@/components/Footer'
 import { TrustSection } from '@/components/TrustSection'
 import { Badge } from '@/components/Badge'
 import { ProductCard } from '@/components/ProductCard'
+import { getSupabaseClient } from '@/lib/supabase'
 
 interface Product {
   id: string
@@ -21,6 +22,7 @@ interface Product {
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [bannerUrl, setBannerUrl] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -35,7 +37,22 @@ export default function Home() {
       }
     }
 
+    const fetchBanner = async () => {
+      try {
+        const supabase = getSupabaseClient()
+        const { data } = await supabase
+          .from('site_settings')
+          .select('value')
+          .eq('key', 'homepage_banner_url')
+          .maybeSingle()
+        setBannerUrl(data?.value || null)
+      } catch (error) {
+        console.error('Erreur lors du chargement de la bannière:', error)
+      }
+    }
+
     fetchProducts()
+    fetchBanner()
   }, [])
 
   return (
@@ -55,6 +72,18 @@ export default function Home() {
 
       <TrustSection />
 
+      {/* Bannière promotionnelle */}
+      {bannerUrl && (
+        <section className="max-w-7xl mx-auto px-10 pt-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={bannerUrl}
+            alt="Offre spéciale Cacao"
+            className="w-full rounded-2xl border border-[#E4DDCF] object-cover aspect-[3/1]"
+          />
+        </section>
+      )}
+
       {/* Catalogue preview */}
       <section className="max-w-7xl mx-auto px-10 py-20">
         <div className="flex items-center justify-between mb-10">
@@ -68,7 +97,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="bg-white rounded-lg border border-[#E4DDCF] overflow-hidden animate-pulse">
-                <div className="bg-[#E4DDCF] h-48"></div>
+                <div className="bg-[#E4DDCF] aspect-square"></div>
                 <div className="p-4 space-y-3">
                   <div className="h-3 bg-[#E4DDCF] rounded w-1/3"></div>
                   <div className="h-4 bg-[#E4DDCF] rounded w-2/3"></div>

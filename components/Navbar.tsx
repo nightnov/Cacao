@@ -81,10 +81,21 @@ export function Navbar() {
   return (
     <nav className="bg-[#FBF6EE] border-b border-[#E4DDCF]">
       <div className="max-w-7xl mx-auto px-10 py-4 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="font-serif font-bold text-3xl text-[#1A1A1A] hover:opacity-80 flex-shrink-0">
-          Cacao
-        </Link>
+        {/* Logo + Mobile Menu Button */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden flex flex-col gap-1.5"
+            aria-label="Ouvrir le menu"
+          >
+            <span className={`w-6 h-0.5 bg-[#1A1A1A] transition-all ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+            <span className={`w-6 h-0.5 bg-[#1A1A1A] transition-all ${isMenuOpen ? 'opacity-0' : ''}`}></span>
+            <span className={`w-6 h-0.5 bg-[#1A1A1A] transition-all ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+          </button>
+          <Link href="/" className="font-serif font-bold text-3xl text-[#1A1A1A] hover:opacity-80">
+            Cacao
+          </Link>
+        </div>
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-8 flex-1 justify-center">
@@ -105,7 +116,7 @@ export function Navbar() {
             <input
               type="text"
               placeholder="Chercher..."
-              className="text-sm bg-transparent outline-none text-[#1A1A1A] placeholder-[#8A8579] w-32"
+              className="text-sm bg-transparent outline-none text-[#1A1A1A] placeholder-[#8A8579] w-40 md:w-64"
             />
             <button className="bg-[#E85D25] w-8 h-8 rounded-full flex items-center justify-center text-white hover:bg-[#d04a1a]">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
@@ -246,16 +257,6 @@ export function Navbar() {
               </span>
             )}
           </Link>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden flex flex-col gap-1.5"
-          >
-            <span className={`w-6 h-0.5 bg-[#1A1A1A] transition-all ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-            <span className={`w-6 h-0.5 bg-[#1A1A1A] transition-all ${isMenuOpen ? 'opacity-0' : ''}`}></span>
-            <span className={`w-6 h-0.5 bg-[#1A1A1A] transition-all ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
-          </button>
         </div>
       </div>
 

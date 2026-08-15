@@ -29,7 +29,7 @@ export function ProductCard({ id, name, slug, price_fcfa, category, availability
     <Link href={`/products/${slug}`}>
       <div className="bg-white rounded-lg border border-[#E4DDCF] overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
         {/* Image */}
-        <div className="bg-[#FBF6EE] h-48 flex items-center justify-center overflow-hidden">
+        <div className="bg-[#FBF6EE] aspect-square flex items-center justify-center overflow-hidden">
           {image_urls && image_urls.length > 0 ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={image_urls[0]} alt={name} className="w-full h-full object-cover" />

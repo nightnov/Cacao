@@ -96,7 +96,7 @@ function ProductsContent() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
               <div key={i} className="bg-white rounded-lg border border-[#E4DDCF] overflow-hidden animate-pulse">
-                <div className="bg-[#E4DDCF] h-48"></div>
+                <div className="bg-[#E4DDCF] aspect-square"></div>
                 <div className="p-4 space-y-3">
                   <div className="h-3 bg-[#E4DDCF] rounded w-1/3"></div>
                   <div className="h-4 bg-[#E4DDCF] rounded w-2/3"></div>

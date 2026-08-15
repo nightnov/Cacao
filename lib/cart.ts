@@ -66,3 +66,7 @@ export function updateCartItemQuantity(id: string, quantity: number) {
 export function removeFromCart(id: string) {
   writeCart(readCart().filter(i => i.id !== id))
 }
+
+export function clearCart() {
+  writeCart([])
+}

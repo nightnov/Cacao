@@ -23,6 +23,8 @@ export interface Order {
   payment_method: string
   created_at: string
   shipping_address?: {
+    full_name: string
+    phone: string
     city: string
     address: string
   }

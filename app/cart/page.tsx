@@ -141,9 +141,11 @@ export default function Cart() {
                 <span>Total</span>
                 <span className="text-[#E85D25]">{total.toLocaleString('fr-CI')} FCFA</span>
               </div>
-              <Button variant="primary" className="w-full" disabled>
-                Passer commande (bientôt)
-              </Button>
+              <Link href="/checkout">
+                <Button variant="primary" className="w-full">
+                  Passer commande
+                </Button>
+              </Link>
               <Link href="/products" className="block text-center text-sm text-[#E85D25] hover:underline mt-4">
                 Continuer les achats
               </Link>

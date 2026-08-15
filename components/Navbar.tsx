@@ -6,6 +6,8 @@ import { getCartCount, CART_EVENT } from '@/lib/cart'
 import { useAuth } from '@/hooks/useAuth'
 import { getSupabaseClient } from '@/lib/supabase'
 
+const ADMIN_UUID = 'f4e9e8fd-8e85-4045-a6e5-c2c62204c5ff'
+
 const navLinks = [
   { label: 'Catalogue', href: '/products' },
   { label: 'À propos', href: '/about' },
@@ -74,6 +76,7 @@ export function Navbar() {
   const lastName = user?.user_metadata?.last_name
   const displayName = firstName || lastName ? `${firstName || ''} ${lastName || ''}`.trim() : user?.email
   const avatarLetter = (firstName || user?.email || '?').charAt(0).toUpperCase()
+  const isAdmin = user?.id === ADMIN_UUID
 
   return (
     <nav className="bg-[#FBF6EE] border-b border-[#E4DDCF]">
@@ -140,6 +143,25 @@ export function Navbar() {
                         </Link>
                       </div>
                     </div>
+
+                    {isAdmin && (
+                      <>
+                        <Link
+                          href="/admin"
+                          className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#E85D25] hover:bg-[#FBF6EE] transition-colors"
+                          onClick={() => setIsAccountMenuOpen(false)}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                            <rect x="3" y="3" width="7" height="9" />
+                            <rect x="14" y="3" width="7" height="5" />
+                            <rect x="14" y="12" width="7" height="9" />
+                            <rect x="3" y="16" width="7" height="5" />
+                          </svg>
+                          Dashboard Admin
+                        </Link>
+                        <div className="border-t border-[#E4DDCF]"></div>
+                      </>
+                    )}
 
                     <Link
                       href="/account"
@@ -266,6 +288,15 @@ export function Navbar() {
                     </div>
                     <span className="text-sm font-semibold text-[#1A1A1A] truncate">{displayName}</span>
                   </div>
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      className="text-sm font-semibold text-[#E85D25] hover:underline py-1.5 pl-4"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Dashboard Admin
+                    </Link>
+                  )}
                   <Link
                     href="/account"
                     className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors py-1.5 pl-4"

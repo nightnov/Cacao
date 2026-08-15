@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { getCartCount, CART_EVENT } from '@/lib/cart'
+import { useAuth } from '@/hooks/useAuth'
 
 const navLinks = [
   { label: 'Catalogue', href: '/products' },
@@ -20,6 +21,7 @@ const categoryLinks = [
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [cartCount, setCartCount] = useState(0)
+  const { user, loading: authLoading, isLoggedIn } = useAuth()
 
   useEffect(() => {
     const updateCount = () => setCartCount(getCartCount())
@@ -69,6 +71,16 @@ export function Navbar() {
             </button>
           </div>
 
+          {/* Account */}
+          {!authLoading && (
+            <Link
+              href={isLoggedIn ? '/account' : '/account/login'}
+              className="hidden sm:block text-sm font-semibold text-[#1A1A1A] hover:text-[#E85D25] transition-colors"
+            >
+              {isLoggedIn ? (user?.user_metadata?.first_name || 'Mon compte') : 'Connexion'}
+            </Link>
+          )}
+
           {/* Cart Icon */}
           <Link href="/cart" className="relative hover:opacity-70 transition-opacity">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -110,6 +122,20 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
+
+            {/* Divider */}
+            <div className="border-t border-[#E4DDCF] my-2"></div>
+
+            {/* Account */}
+            {!authLoading && (
+              <Link
+                href={isLoggedIn ? '/account' : '/account/login'}
+                className="text-sm font-semibold text-[#1A1A1A] hover:text-[#E85D25] transition-colors py-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {isLoggedIn ? (user?.user_metadata?.first_name || 'Mon compte') : 'Connexion'}
+              </Link>
+            )}
 
             {/* Divider */}
             <div className="border-t border-[#E4DDCF] my-2"></div>

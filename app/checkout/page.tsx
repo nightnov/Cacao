@@ -135,8 +135,27 @@ export default function Checkout() {
       const { error: itemsError } = await supabase.from('order_items').insert(orderItemsPayload)
       if (itemsError) throw itemsError
 
+      const initiateResponse = await fetch('/api/payment/initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: order.id,
+          orderNumber,
+          totalFcfa: total,
+          items: cartItems.map(item => ({ name: item.name, price_fcfa: item.price_fcfa, quantity: item.quantity })),
+          phone,
+          fullName
+        })
+      })
+
+      const initiateResult = await initiateResponse.json()
+
+      if (!initiateResponse.ok || !initiateResult.url) {
+        throw new Error(initiateResult.error || 'Le paiement n\'a pas pu être initié. Votre commande est enregistrée, contactez-nous.')
+      }
+
       clearCart()
-      router.push(`/checkout/success/${orderNumber}`)
+      window.location.href = initiateResult.url
     } catch (err: any) {
       setError(err.message || 'Une erreur s\'est produite lors de la commande')
       setSubmitting(false)

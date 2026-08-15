@@ -114,6 +114,29 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
             </div>
           )}
 
+          {/* Delivery code */}
+          {order.delivery_code && (
+            <div>
+              <h3 className="font-semibold text-[#1A1A1A] mb-3">Code de livraison</h3>
+              <div className="bg-orange-50 border border-[#FF6600]/30 rounded-lg p-4">
+                <p className="text-2xl font-bold text-[#1A1A1A] tracking-widest">{order.delivery_code}</p>
+                <p className="text-xs text-[#56534C] mt-1">
+                  Le client doit donner ce code au livreur uniquement à la remise du colis, pour confirmer la bonne réception.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Order notes */}
+          {order.notes && (
+            <div>
+              <h3 className="font-semibold text-[#1A1A1A] mb-3">Notes du client</h3>
+              <div className="bg-[#FBF6EE] rounded-lg p-4 border border-[#E4DDCF]">
+                <p className="text-[#1A1A1A] text-sm whitespace-pre-wrap">{order.notes}</p>
+              </div>
+            </div>
+          )}
+
           {/* Order Items */}
           <div>
             <h3 className="font-semibold text-[#1A1A1A] mb-3">Produits commandés</h3>

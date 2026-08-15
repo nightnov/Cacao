@@ -31,6 +31,7 @@ interface Order {
   total_products_fcfa: number
   shipping_cost_fcfa: number
   created_at: string
+  delivery_code: string | null
   shipping_address: { city: string; address: string } | null
 }
 
@@ -86,7 +87,7 @@ export default function Account() {
 
         const { data: ordersData, error: ordersError } = await supabase
           .from('orders')
-          .select('id, order_number, status, total_fcfa, total_products_fcfa, shipping_cost_fcfa, created_at, shipping_address')
+          .select('id, order_number, status, total_fcfa, total_products_fcfa, shipping_cost_fcfa, created_at, delivery_code, shipping_address')
           .order('created_at', { ascending: false })
 
         if (ordersError) throw ordersError
@@ -280,6 +281,16 @@ export default function Account() {
                           <p className="text-xs text-[#8A8579] mb-3">
                             Livraison à {order.shipping_address.city} — {order.shipping_address.address}
                           </p>
+                        )}
+
+                        {order.delivery_code && !['delivered', 'cancelled', 'refunded'].includes(order.status) && (
+                          <div className="bg-orange-50 border border-[#FF6600]/30 rounded-lg p-3 mb-3 text-center">
+                            <p className="text-[10px] font-semibold text-[#FF6600] uppercase mb-0.5">Code de livraison</p>
+                            <p className="text-xl font-bold text-[#1A1A1A] tracking-widest">{order.delivery_code}</p>
+                            <p className="text-[10px] text-[#56534C] mt-1">
+                              À donner au livreur uniquement à la remise du colis
+                            </p>
+                          </div>
                         )}
 
                         <div className="border-t border-[#E4DDCF] pt-3 space-y-1">

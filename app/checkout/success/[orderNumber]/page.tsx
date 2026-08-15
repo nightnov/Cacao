@@ -24,6 +24,7 @@ interface Order {
   total_products_fcfa: number
   shipping_cost_fcfa: number
   total_fcfa: number
+  delivery_code: string | null
   shipping_address: { full_name: string; phone: string; city: string; address: string }
   created_at: string
 }
@@ -44,7 +45,7 @@ export default function CheckoutSuccess() {
         const supabase = getSupabaseClient()
         const { data: orderData, error: orderError } = await supabase
           .from('orders')
-          .select('id, order_number, total_products_fcfa, shipping_cost_fcfa, total_fcfa, shipping_address, created_at')
+          .select('id, order_number, total_products_fcfa, shipping_cost_fcfa, total_fcfa, delivery_code, shipping_address, created_at')
           .eq('order_number', orderNumber)
           .maybeSingle()
 
@@ -125,6 +126,16 @@ export default function CheckoutSuccess() {
               <strong>{order.shipping_address.city}</strong>.
             </p>
           </div>
+
+          {order.delivery_code && (
+            <div className="bg-orange-50 border border-[#FF6600]/30 rounded-lg p-4 mb-6 text-center">
+              <p className="text-xs font-semibold text-[#FF6600] uppercase mb-1">Code de livraison</p>
+              <p className="text-3xl font-bold text-[#1A1A1A] tracking-widest mb-2">{order.delivery_code}</p>
+              <p className="text-xs text-[#56534C]">
+                Gardez ce code précieusement. Ne le donnez au livreur qu&apos;au moment où il vous remet votre colis — cela confirme que vous avez bien reçu votre commande.
+              </p>
+            </div>
+          )}
 
           <div className="space-y-2 mb-6">
             {items.map(item => (

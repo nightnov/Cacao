@@ -23,6 +23,10 @@ function generateOrderNumber(): string {
   return `CMD-${datePart}-${randomPart}`
 }
 
+function generateDeliveryCode(): string {
+  return Math.floor(1000 + Math.random() * 9000).toString()
+}
+
 export default function Checkout() {
   const router = useRouter()
   const { user, loading: authLoading, isLoggedIn } = useAuth()
@@ -35,6 +39,7 @@ export default function Checkout() {
   const [phone, setPhone] = useState('')
   const [cityId, setCityId] = useState('')
   const [address, setAddress] = useState('')
+  const [notes, setNotes] = useState('')
 
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -100,6 +105,7 @@ export default function Checkout() {
     try {
       const supabase = getSupabaseClient()
       const orderNumber = generateOrderNumber()
+      const deliveryCode = generateDeliveryCode()
 
       const { data: order, error: orderError } = await supabase
         .from('orders')
@@ -111,6 +117,8 @@ export default function Checkout() {
           shipping_cost_fcfa: shippingCost,
           total_fcfa: total,
           payment_method: 'pending',
+          delivery_code: deliveryCode,
+          notes: notes.trim() || null,
           shipping_address: {
             full_name: fullName,
             phone,
@@ -243,6 +251,19 @@ export default function Checkout() {
                     required
                     rows={3}
                     placeholder="Quartier, rue, repère..."
+                    className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">
+                    Notes de commande <span className="font-normal text-[#8A8579]">(optionnel)</span>
+                  </label>
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    rows={2}
+                    placeholder="Instructions spéciales, informations complémentaires..."
                     className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
                   />
                 </div>

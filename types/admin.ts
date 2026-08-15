@@ -47,6 +47,8 @@ export interface Order {
   shipping_cost_fcfa: number
   payment_method: string
   created_at: string
+  delivery_code?: string | null
+  notes?: string | null
   shipping_address?: {
     full_name: string
     phone: string

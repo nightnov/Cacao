@@ -42,7 +42,7 @@ export default function AdminOrders() {
       const supabase = getSupabaseClient()
       let query = supabase
         .from('orders')
-        .select('id, order_number, user_id, status, total_fcfa, total_products_fcfa, shipping_cost_fcfa, payment_method, created_at, profiles(email, first_name, last_name)')
+        .select('id, order_number, user_id, status, total_fcfa, total_products_fcfa, shipping_cost_fcfa, payment_method, created_at, delivery_code, notes, shipping_address, profiles(email, first_name, last_name)')
         .order('created_at', { ascending: false })
 
       if (statusFilter) {

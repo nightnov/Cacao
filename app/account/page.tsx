@@ -142,7 +142,7 @@ export default function Account() {
 
   if (authLoading || !isLoggedIn) {
     return (
-      <main className="min-h-screen bg-[#FBF6EE] flex items-center justify-center">
+      <main className="min-h-screen bg-white flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-[#E85D25] border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
@@ -152,7 +152,7 @@ export default function Account() {
   const lastName = user?.user_metadata?.last_name
 
   return (
-    <main className="min-h-screen bg-[#FBF6EE] flex flex-col">
+    <main className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
       <div className="flex-1 max-w-3xl mx-auto px-10 py-16 w-full">

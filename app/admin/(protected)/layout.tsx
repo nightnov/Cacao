@@ -25,7 +25,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FBF6EE] flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-[#E85D25] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-[#56534C]">Chargement...</p>

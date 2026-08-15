@@ -39,7 +39,7 @@ export default function Home() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-[#FBF6EE]">
+    <main className="min-h-screen bg-white">
       <Navbar />
 
       {/* Hero */}

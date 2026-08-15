@@ -69,7 +69,7 @@ function ReturnContent() {
   }, [orderNumber]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <main className="min-h-screen bg-[#FBF6EE] flex flex-col">
+    <main className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
       <div className="flex-1 max-w-2xl mx-auto w-full px-10 py-24 text-center">
@@ -154,7 +154,7 @@ function ReturnContent() {
 
 export default function CheckoutReturn() {
   return (
-    <Suspense fallback={<main className="min-h-screen bg-[#FBF6EE]" />}>
+    <Suspense fallback={<main className="min-h-screen bg-white" />}>
       <ReturnContent />
     </Suspense>
   )

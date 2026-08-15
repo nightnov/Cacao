@@ -76,7 +76,7 @@ export default function CheckoutSuccess() {
 
   if (authLoading || loading) {
     return (
-      <main className="min-h-screen bg-[#FBF6EE] flex items-center justify-center">
+      <main className="min-h-screen bg-white flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-[#E85D25] border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
@@ -84,7 +84,7 @@ export default function CheckoutSuccess() {
 
   if (notFound || !order) {
     return (
-      <main className="min-h-screen bg-[#FBF6EE] flex flex-col">
+      <main className="min-h-screen bg-white flex flex-col">
         <Navbar />
         <div className="flex-1 max-w-2xl mx-auto w-full px-10 py-24 text-center">
           <h1 className="font-serif font-semibold text-3xl text-[#1A1A1A] mb-3">Commande introuvable</h1>
@@ -99,7 +99,7 @@ export default function CheckoutSuccess() {
   }
 
   return (
-    <main className="min-h-screen bg-[#FBF6EE] flex flex-col">
+    <main className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
       <div className="flex-1 max-w-2xl mx-auto w-full px-10 py-16">

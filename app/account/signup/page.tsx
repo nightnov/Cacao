@@ -49,7 +49,7 @@ export default function Signup() {
 
   if (needsConfirmation) {
     return (
-      <main className="min-h-screen bg-[#FBF6EE] flex flex-col">
+      <main className="min-h-screen bg-white flex flex-col">
         <Navbar />
         <div className="flex-1 flex items-center justify-center px-10 py-16">
           <div className="w-full max-w-md bg-white rounded-lg border border-[#E4DDCF] p-8 text-center">
@@ -65,7 +65,7 @@ export default function Signup() {
   }
 
   return (
-    <main className="min-h-screen bg-[#FBF6EE] flex flex-col">
+    <main className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
       <div className="flex-1 flex items-center justify-center px-10 py-16">

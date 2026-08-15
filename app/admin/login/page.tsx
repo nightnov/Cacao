@@ -55,7 +55,7 @@ export default function AdminLogin() {
   }
 
   return (
-    <main className="min-h-screen bg-[#FBF6EE] flex items-center justify-center px-10">
+    <main className="min-h-screen bg-white flex items-center justify-center px-10">
       <div className="w-full max-w-md">
         {/* Logo */}
         <Link href="/" className="font-serif font-bold text-3xl text-[#1A1A1A] hover:opacity-80 block text-center mb-12">

@@ -120,7 +120,7 @@ export default function ProductDetail() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#FBF6EE] flex flex-col">
+      <main className="min-h-screen bg-white flex flex-col">
         <Navbar />
         <div className="flex-1 max-w-7xl mx-auto w-full px-10 py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 animate-pulse">
@@ -140,7 +140,7 @@ export default function ProductDetail() {
 
   if (notFound || !product) {
     return (
-      <main className="min-h-screen bg-[#FBF6EE] flex flex-col">
+      <main className="min-h-screen bg-white flex flex-col">
         <Navbar />
         <div className="flex-1 max-w-2xl mx-auto w-full px-10 py-24 text-center">
           <h1 className="font-serif font-semibold text-3xl text-[#1A1A1A] mb-3">Produit introuvable</h1>
@@ -159,7 +159,7 @@ export default function ProductDetail() {
   const specEntries = Object.entries(product.specs || {}).filter(([, v]) => v)
 
   return (
-    <main className="min-h-screen bg-[#FBF6EE] flex flex-col">
+    <main className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
       <div className="flex-1 max-w-7xl mx-auto w-full px-10 py-12">

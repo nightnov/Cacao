@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { getCartCount, CART_EVENT } from '@/lib/cart'
 import { useAuth } from '@/hooks/useAuth'
@@ -20,8 +20,10 @@ const categoryLinks = [
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false)
   const [cartCount, setCartCount] = useState(0)
-  const { user, loading: authLoading, isLoggedIn } = useAuth()
+  const { user, loading: authLoading, isLoggedIn, logout } = useAuth()
+  const accountMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const updateCount = () => setCartCount(getCartCount())
@@ -33,6 +35,21 @@ export function Navbar() {
       window.removeEventListener('storage', updateCount)
     }
   }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
+        setIsAccountMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const firstName = user?.user_metadata?.first_name
+  const lastName = user?.user_metadata?.last_name
+  const displayName = firstName || lastName ? `${firstName || ''} ${lastName || ''}`.trim() : user?.email
+  const avatarLetter = (firstName || user?.email || '?').charAt(0).toUpperCase()
 
   return (
     <nav className="bg-[#FBF6EE] border-b border-[#E4DDCF]">
@@ -73,12 +90,85 @@ export function Navbar() {
 
           {/* Account */}
           {!authLoading && (
-            <Link
-              href={isLoggedIn ? '/account' : '/account/login'}
-              className="hidden sm:block text-sm font-semibold text-[#1A1A1A] hover:text-[#E85D25] transition-colors"
-            >
-              {isLoggedIn ? (user?.user_metadata?.first_name || 'Mon compte') : 'Connexion'}
-            </Link>
+            isLoggedIn ? (
+              <div className="hidden sm:block relative" ref={accountMenuRef}>
+                <button
+                  onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
+                  className="w-9 h-9 rounded-full bg-[#1A1A1A] text-white font-semibold flex items-center justify-center hover:opacity-80 transition-opacity"
+                >
+                  {avatarLetter}
+                </button>
+
+                {isAccountMenuOpen && (
+                  <div className="absolute right-0 top-12 w-64 bg-white rounded-lg border border-[#E4DDCF] shadow-lg overflow-hidden z-50">
+                    <div className="px-4 py-3 border-b border-[#E4DDCF] flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-[#1A1A1A] text-white font-semibold flex items-center justify-center flex-shrink-0">
+                        {avatarLetter}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[#1A1A1A] truncate">{displayName}</p>
+                        <Link
+                          href="/account"
+                          className="text-xs text-[#E85D25] hover:underline"
+                          onClick={() => setIsAccountMenuOpen(false)}
+                        >
+                          Voir mon profil
+                        </Link>
+                      </div>
+                    </div>
+
+                    <Link
+                      href="/account"
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-[#1A1A1A] hover:bg-[#FBF6EE] transition-colors"
+                      onClick={() => setIsAccountMenuOpen(false)}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                        <path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
+                        <path d="M14 2v5h5" />
+                      </svg>
+                      Mes commandes
+                    </Link>
+
+                    <Link
+                      href="/cart"
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-[#1A1A1A] hover:bg-[#FBF6EE] transition-colors"
+                      onClick={() => setIsAccountMenuOpen(false)}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                        <circle cx="9" cy="21" r="1" />
+                        <circle cx="20" cy="21" r="1" />
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                      </svg>
+                      Mon panier
+                    </Link>
+
+                    <div className="border-t border-[#E4DDCF]"></div>
+
+                    <button
+                      onClick={() => {
+                        setIsAccountMenuOpen(false)
+                        logout()
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#1A1A1A] hover:bg-[#FBF6EE] transition-colors text-left"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                      </svg>
+                      Se déconnecter
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                href="/account/login"
+                className="hidden sm:block text-sm font-semibold text-[#1A1A1A] hover:text-[#E85D25] transition-colors"
+              >
+                Connexion
+              </Link>
+            )
           )}
 
           {/* Cart Icon */}
@@ -128,13 +218,37 @@ export function Navbar() {
 
             {/* Account */}
             {!authLoading && (
-              <Link
-                href={isLoggedIn ? '/account' : '/account/login'}
-                className="text-sm font-semibold text-[#1A1A1A] hover:text-[#E85D25] transition-colors py-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {isLoggedIn ? (user?.user_metadata?.first_name || 'Mon compte') : 'Connexion'}
-              </Link>
+              isLoggedIn ? (
+                <>
+                  <div className="flex items-center gap-3 py-2">
+                    <div className="w-8 h-8 rounded-full bg-[#1A1A1A] text-white text-sm font-semibold flex items-center justify-center flex-shrink-0">
+                      {avatarLetter}
+                    </div>
+                    <span className="text-sm font-semibold text-[#1A1A1A] truncate">{displayName}</span>
+                  </div>
+                  <Link
+                    href="/account"
+                    className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors py-1.5 pl-4"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Mes commandes
+                  </Link>
+                  <button
+                    onClick={() => { setIsMenuOpen(false); logout() }}
+                    className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors py-1.5 pl-4 text-left"
+                  >
+                    Se déconnecter
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/account/login"
+                  className="text-sm font-semibold text-[#1A1A1A] hover:text-[#E85D25] transition-colors py-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Connexion
+                </Link>
+              )
             )}
 
             {/* Divider */}

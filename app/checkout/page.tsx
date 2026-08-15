@@ -165,7 +165,7 @@ export default function Checkout() {
   if (authLoading || cartItems.length === 0) {
     return (
       <main className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#E85D25] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-[#FF6600] border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
   }
@@ -191,7 +191,7 @@ export default function Checkout() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
-                    className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                    className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
                   />
                 </div>
 
@@ -203,7 +203,7 @@ export default function Checkout() {
                     onChange={(e) => setPhone(e.target.value)}
                     required
                     placeholder="07 00 00 00 00"
-                    className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                    className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
                   />
                 </div>
 
@@ -216,7 +216,7 @@ export default function Checkout() {
                       value={cityId}
                       onChange={(e) => setCityId(e.target.value)}
                       required
-                      className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                      className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
                     >
                       {shippingFees.map(fee => (
                         <option key={fee.id} value={fee.id}>
@@ -237,7 +237,7 @@ export default function Checkout() {
                     required
                     rows={3}
                     placeholder="Quartier, rue, repère..."
-                    className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                    className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
                   />
                 </div>
               </div>
@@ -278,7 +278,7 @@ export default function Checkout() {
                 </div>
                 <div className="flex justify-between text-lg font-bold text-[#1A1A1A] pt-2 border-t border-[#E4DDCF]">
                   <span>Total</span>
-                  <span className="text-[#E85D25]">{total.toLocaleString('fr-CI')} FCFA</span>
+                  <span className="text-[#FF6600]">{total.toLocaleString('fr-CI')} FCFA</span>
                 </div>
               </div>
 
@@ -297,7 +297,7 @@ export default function Checkout() {
                 {submitting ? 'Envoi en cours...' : 'Confirmer la commande'}
               </Button>
 
-              <Link href="/cart" className="block text-center text-sm text-[#E85D25] hover:underline mt-4">
+              <Link href="/cart" className="block text-center text-sm text-[#FF6600] hover:underline mt-4">
                 Retour au panier
               </Link>
             </div>

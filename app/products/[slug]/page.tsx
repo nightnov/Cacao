@@ -33,7 +33,7 @@ const categoryLabel: Record<string, string> = {
 
 const availabilityLabel: Record<string, { text: string; color: string }> = {
   in_stock: { text: 'En stock', color: 'bg-[#1E7A46] text-white' },
-  on_order: { text: 'En commande', color: 'bg-[#E85D25] text-white' },
+  on_order: { text: 'En commande', color: 'bg-[#FF6600] text-white' },
   discontinued: { text: 'Rupture', color: 'bg-[#8A8579] text-white' }
 }
 
@@ -165,9 +165,9 @@ export default function ProductDetail() {
       <div className="flex-1 max-w-7xl mx-auto w-full px-10 py-12">
         {/* Breadcrumb */}
         <div className="text-sm text-[#8A8579] mb-8">
-          <Link href="/products" className="hover:text-[#E85D25]">Catalogue</Link>
+          <Link href="/products" className="hover:text-[#FF6600]">Catalogue</Link>
           {' / '}
-          <Link href={`/products?category=${product.category}`} className="hover:text-[#E85D25]">
+          <Link href={`/products?category=${product.category}`} className="hover:text-[#FF6600]">
             {categoryLabel[product.category]}
           </Link>
           {' / '}
@@ -189,7 +189,7 @@ export default function ProductDetail() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={selectedMedia.value} alt={product.name} className="w-full h-full object-cover" />
               ) : (
-                <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#E85D25" strokeWidth="1">
+                <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#FF6600" strokeWidth="1">
                   <rect x="2" y="3" width="20" height="14" rx="2" />
                   <line x1="8" y1="21" x2="16" y2="21" />
                   <line x1="12" y1="17" x2="12" y2="21" />
@@ -203,7 +203,7 @@ export default function ProductDetail() {
                   <button
                     onClick={() => setSelectedMedia({ type: 'video', value: product.video_url! })}
                     className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 flex items-center justify-center bg-[#1A1A1A] ${
-                      selectedMedia?.type === 'video' ? 'border-[#E85D25]' : 'border-transparent'
+                      selectedMedia?.type === 'video' ? 'border-[#FF6600]' : 'border-transparent'
                     }`}
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
@@ -216,7 +216,7 @@ export default function ProductDetail() {
                     key={url}
                     onClick={() => setSelectedMedia({ type: 'image', value: url })}
                     className={`w-16 h-16 rounded-lg overflow-hidden border-2 ${
-                      selectedMedia?.type === 'image' && selectedMedia.value === url ? 'border-[#E85D25]' : 'border-transparent'
+                      selectedMedia?.type === 'image' && selectedMedia.value === url ? 'border-[#FF6600]' : 'border-transparent'
                     }`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -229,7 +229,7 @@ export default function ProductDetail() {
 
           {/* Info */}
           <div>
-            <div className="text-xs font-semibold text-[#E85D25] uppercase mb-2">
+            <div className="text-xs font-semibold text-[#FF6600] uppercase mb-2">
               {categoryLabel[product.category]}
             </div>
             <h1 className="font-serif font-semibold text-3xl text-[#1A1A1A] mb-4">{product.name}</h1>
@@ -252,14 +252,14 @@ export default function ProductDetail() {
                 <div className="flex items-center border-2 border-[#1A1A1A] rounded-full">
                   <button
                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                    className="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:text-[#E85D25]"
+                    className="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:text-[#FF6600]"
                   >
                     −
                   </button>
                   <span className="w-8 text-center font-semibold">{quantity}</span>
                   <button
                     onClick={() => setQuantity(q => q + 1)}
-                    className="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:text-[#E85D25]"
+                    className="w-10 h-10 flex items-center justify-center text-[#1A1A1A] hover:text-[#FF6600]"
                   >
                     +
                   </button>
@@ -283,7 +283,7 @@ export default function ProductDetail() {
 
             <Link
               href={`/account/messages?productId=${product.id}&productName=${encodeURIComponent(product.name)}`}
-              className="block text-center text-sm text-[#E85D25] hover:underline mt-4"
+              className="block text-center text-sm text-[#FF6600] hover:underline mt-4"
             >
               Une question sur ce produit ?
             </Link>

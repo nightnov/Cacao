@@ -19,7 +19,7 @@ export function ProductCard({ id, name, slug, price_fcfa, category, availability
 
   const availabilityLabel: Record<string, { text: string; color: string }> = {
     in_stock: { text: 'En stock', color: 'bg-[#1E7A46] text-white' },
-    on_order: { text: 'En commande', color: 'bg-[#E85D25] text-white' },
+    on_order: { text: 'En commande', color: 'bg-[#FF6600] text-white' },
     discontinued: { text: 'Rupture', color: 'bg-[#8A8579] text-white' }
   }
 
@@ -34,7 +34,7 @@ export function ProductCard({ id, name, slug, price_fcfa, category, availability
             // eslint-disable-next-line @next/next/no-img-element
             <img src={image_urls[0]} alt={name} className="w-full h-full object-cover" />
           ) : (
-            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#E85D25" strokeWidth="1">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#FF6600" strokeWidth="1">
               <rect x="2" y="3" width="20" height="14" rx="2" />
               <line x1="8" y1="21" x2="16" y2="21" />
               <line x1="12" y1="17" x2="12" y2="21" />
@@ -45,7 +45,7 @@ export function ProductCard({ id, name, slug, price_fcfa, category, availability
         {/* Content */}
         <div className="p-4">
           {/* Category */}
-          <div className="text-xs font-semibold text-[#E85D25] uppercase mb-2">
+          <div className="text-xs font-semibold text-[#FF6600] uppercase mb-2">
             {categoryLabel[category] || category}
           </div>
 

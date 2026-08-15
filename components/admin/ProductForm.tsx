@@ -229,7 +229,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="aspect-square rounded-lg border-2 border-dashed border-[#E4DDCF] flex flex-col items-center justify-center text-[#8A8579] hover:border-[#E85D25] hover:text-[#E85D25] transition-colors text-xs gap-1 disabled:opacity-50"
+                className="aspect-square rounded-lg border-2 border-dashed border-[#E4DDCF] flex flex-col items-center justify-center text-[#8A8579] hover:border-[#FF6600] hover:text-[#FF6600] transition-colors text-xs gap-1 disabled:opacity-50"
               >
                 {uploading ? (
                   <span>Envoi...</span>
@@ -262,7 +262,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               name="video_url"
               value={formData.video_url}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+              className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
               placeholder="https://youtube.com/watch?v=..."
             />
           </div>
@@ -276,7 +276,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+              className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
               placeholder="Ex: CacaoBook 14"
             />
           </div>
@@ -290,7 +290,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               value={formData.slug}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+              className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
               placeholder="Ex: cacaobook-14"
             />
           </div>
@@ -303,7 +303,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               value={formData.description}
               onChange={handleChange}
               rows={3}
-              className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+              className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
               placeholder="Description du produit"
             />
           </div>
@@ -316,7 +316,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
               >
                 <option value="portable">Portable</option>
                 <option value="bureau">Bureau</option>
@@ -332,7 +332,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                 name="price_fcfa"
                 value={formData.price_fcfa}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
               />
             </div>
           </div>
@@ -345,7 +345,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                 name="availability"
                 value={formData.availability}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
               >
                 <option value="in_stock">En stock</option>
                 <option value="on_order">En commande</option>
@@ -365,7 +365,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                   name="specs_cpu"
                   value={formData.specs_cpu}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                  className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
                   placeholder="Ex: Intel i5"
                 />
               </div>
@@ -376,7 +376,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                   name="specs_ram"
                   value={formData.specs_ram}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                  className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
                   placeholder="Ex: 16 Go"
                 />
               </div>
@@ -387,7 +387,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                   name="specs_storage"
                   value={formData.specs_storage}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                  className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
                   placeholder="Ex: 512 Go SSD"
                 />
               </div>
@@ -398,7 +398,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                   name="specs_screen"
                   value={formData.specs_screen}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                  className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
                   placeholder='Ex: 14"'
                 />
               </div>
@@ -413,7 +413,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               name="tags"
               value={formData.tags}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+              className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
               placeholder="Ex: portable, gaming, professionnel"
             />
           </div>

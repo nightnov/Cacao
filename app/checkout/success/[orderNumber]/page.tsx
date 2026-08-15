@@ -77,7 +77,7 @@ export default function CheckoutSuccess() {
   if (authLoading || loading) {
     return (
       <main className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#E85D25] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-[#FF6600] border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
   }
@@ -147,7 +147,7 @@ export default function CheckoutSuccess() {
             </div>
             <div className="flex justify-between text-lg font-bold text-[#1A1A1A] pt-2 border-t border-[#E4DDCF]">
               <span>Total</span>
-              <span className="text-[#E85D25]">{order.total_fcfa.toLocaleString('fr-CI')} FCFA</span>
+              <span className="text-[#FF6600]">{order.total_fcfa.toLocaleString('fr-CI')} FCFA</span>
             </div>
           </div>
 

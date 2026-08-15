@@ -109,7 +109,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <a
             href="/admin/products?action=create"
-            className="p-4 border-2 border-[#E85D25] rounded-lg hover:bg-[#FBF6EE] transition-colors text-center"
+            className="p-4 border-2 border-[#FF6600] rounded-lg hover:bg-[#FBF6EE] transition-colors text-center"
           >
             <div className="text-2xl mb-2">➕</div>
             <p className="font-semibold text-[#1A1A1A]">Ajouter un produit</p>
@@ -118,7 +118,7 @@ export default function AdminDashboard() {
 
           <a
             href="/admin/shipping"
-            className="p-4 border-2 border-[#E85D25] rounded-lg hover:bg-[#FBF6EE] transition-colors text-center"
+            className="p-4 border-2 border-[#FF6600] rounded-lg hover:bg-[#FBF6EE] transition-colors text-center"
           >
             <div className="text-2xl mb-2">⚙️</div>
             <p className="font-semibold text-[#1A1A1A]">Gérer livraison</p>
@@ -127,7 +127,7 @@ export default function AdminDashboard() {
 
           <a
             href="/admin/orders"
-            className="p-4 border-2 border-[#E85D25] rounded-lg hover:bg-[#FBF6EE] transition-colors text-center"
+            className="p-4 border-2 border-[#FF6600] rounded-lg hover:bg-[#FBF6EE] transition-colors text-center"
           >
             <div className="text-2xl mb-2">📋</div>
             <p className="font-semibold text-[#1A1A1A]">Voir commandes</p>
@@ -136,7 +136,7 @@ export default function AdminDashboard() {
 
           <a
             href="/admin/customers"
-            className="p-4 border-2 border-[#E85D25] rounded-lg hover:bg-[#FBF6EE] transition-colors text-center"
+            className="p-4 border-2 border-[#FF6600] rounded-lg hover:bg-[#FBF6EE] transition-colors text-center"
           >
             <div className="text-2xl mb-2">👥</div>
             <p className="font-semibold text-[#1A1A1A]">Clients</p>

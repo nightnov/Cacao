@@ -143,7 +143,7 @@ export default function Account() {
   if (authLoading || !isLoggedIn) {
     return (
       <main className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#E85D25] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-[#FF6600] border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
   }
@@ -174,7 +174,7 @@ export default function Account() {
                   value={profile.phone || ''}
                   onChange={(e) => setProfile(p => ({ ...p, phone: e.target.value }))}
                   placeholder="07 00 00 00 00"
-                  className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                  className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
                 />
               </div>
               <div>
@@ -184,7 +184,7 @@ export default function Account() {
                   value={profile.city || ''}
                   onChange={(e) => setProfile(p => ({ ...p, city: e.target.value }))}
                   placeholder="Abidjan"
-                  className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                  className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
                 />
               </div>
             </div>
@@ -195,7 +195,7 @@ export default function Account() {
                 value={profile.address || ''}
                 onChange={(e) => setProfile(p => ({ ...p, address: e.target.value }))}
                 placeholder="Quartier, rue, repère..."
-                className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
               />
             </div>
 

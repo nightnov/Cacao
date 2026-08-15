@@ -110,7 +110,7 @@ export default function AdminShipping() {
                   <td className="px-6 py-4 text-right space-x-2">
                     <button
                       onClick={() => handleEdit(fee)}
-                      className="px-3 py-1 text-sm bg-[#E85D25] text-white rounded hover:bg-[#d04a1a] transition-colors"
+                      className="px-3 py-1 text-sm bg-[#FF6600] text-white rounded hover:bg-[#E65C00] transition-colors"
                     >
                       Modifier
                     </button>

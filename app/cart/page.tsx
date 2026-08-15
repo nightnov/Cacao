@@ -38,7 +38,7 @@ export default function Cart() {
                 height="48"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="#E85D25"
+                stroke="#FF6600"
                 strokeWidth="1.5"
                 className="mx-auto mb-4"
               >
@@ -77,7 +77,7 @@ export default function Cart() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                   ) : (
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E85D25" strokeWidth="1.5">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF6600" strokeWidth="1.5">
                       <rect x="2" y="3" width="20" height="14" rx="2" />
                       <line x1="8" y1="21" x2="16" y2="21" />
                       <line x1="12" y1="17" x2="12" y2="21" />
@@ -86,7 +86,7 @@ export default function Cart() {
                 </Link>
 
                 <div className="flex-1 min-w-0">
-                  <Link href={`/products/${item.slug}`} className="font-semibold text-[#1A1A1A] hover:text-[#E85D25] transition-colors line-clamp-1">
+                  <Link href={`/products/${item.slug}`} className="font-semibold text-[#1A1A1A] hover:text-[#FF6600] transition-colors line-clamp-1">
                     {item.name}
                   </Link>
                   <p className="text-sm text-[#8A8579] mt-1">{item.price_fcfa.toLocaleString('fr-CI')} FCFA</p>
@@ -95,14 +95,14 @@ export default function Cart() {
                 <div className="flex items-center border-2 border-[#1A1A1A] rounded-full flex-shrink-0">
                   <button
                     onClick={() => updateCartItemQuantity(item.id, item.quantity - 1)}
-                    className="w-8 h-8 flex items-center justify-center text-[#1A1A1A] hover:text-[#E85D25]"
+                    className="w-8 h-8 flex items-center justify-center text-[#1A1A1A] hover:text-[#FF6600]"
                   >
                     −
                   </button>
                   <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
                   <button
                     onClick={() => updateCartItemQuantity(item.id, item.quantity + 1)}
-                    className="w-8 h-8 flex items-center justify-center text-[#1A1A1A] hover:text-[#E85D25]"
+                    className="w-8 h-8 flex items-center justify-center text-[#1A1A1A] hover:text-[#FF6600]"
                   >
                     +
                   </button>
@@ -139,14 +139,14 @@ export default function Cart() {
               </p>
               <div className="flex justify-between text-lg font-bold text-[#1A1A1A] pt-4 border-t border-[#E4DDCF] mb-6">
                 <span>Total</span>
-                <span className="text-[#E85D25]">{total.toLocaleString('fr-CI')} FCFA</span>
+                <span className="text-[#FF6600]">{total.toLocaleString('fr-CI')} FCFA</span>
               </div>
               <Link href="/checkout">
                 <Button variant="primary" className="w-full">
                   Passer commande
                 </Button>
               </Link>
-              <Link href="/products" className="block text-center text-sm text-[#E85D25] hover:underline mt-4">
+              <Link href="/products" className="block text-center text-sm text-[#FF6600] hover:underline mt-4">
                 Continuer les achats
               </Link>
             </div>

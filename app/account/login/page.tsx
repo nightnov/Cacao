@@ -55,7 +55,7 @@ export default function AccountLogin() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                  className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
                   placeholder="vous@exemple.com"
                 />
               </div>
@@ -67,7 +67,7 @@ export default function AccountLogin() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                  className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
                   placeholder="••••••••"
                 />
               </div>
@@ -85,7 +85,7 @@ export default function AccountLogin() {
 
             <p className="text-xs text-[#8A8579] text-center mt-6">
               Pas encore de compte ?{' '}
-              <Link href="/account/signup" className="text-[#E85D25] hover:underline font-semibold">
+              <Link href="/account/signup" className="text-[#FF6600] hover:underline font-semibold">
                 Créer un compte
               </Link>
             </p>

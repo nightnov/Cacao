@@ -65,7 +65,7 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
           <div className="bg-[#FBF6EE] rounded-lg p-4 border border-[#E4DDCF]">
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-[#1A1A1A]">Statut actuel</h3>
-              <span className="px-3 py-1 bg-[#E85D25] text-white rounded-full text-sm font-semibold">
+              <span className="px-3 py-1 bg-[#FF6600] text-white rounded-full text-sm font-semibold">
                 {statusLabels[order.status]}
               </span>
             </div>
@@ -73,7 +73,7 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
               <button
                 onClick={handleStatusChange}
                 disabled={updating}
-                className="w-full px-4 py-2 bg-[#E85D25] text-white rounded-lg hover:bg-[#d04a1a] transition-colors font-semibold disabled:opacity-50"
+                className="w-full px-4 py-2 bg-[#FF6600] text-white rounded-lg hover:bg-[#E65C00] transition-colors font-semibold disabled:opacity-50"
               >
                 {updating ? 'Mise à jour...' : `Passer à ${statusLabels[nextStatus[order.status]]}`}
               </button>
@@ -150,7 +150,7 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
               </div>
               <div className="flex justify-between text-lg font-bold text-[#1A1A1A] pt-2 border-t border-[#E4DDCF]">
                 <span>Total</span>
-                <span className="text-[#E85D25]">{order.total_fcfa.toLocaleString('fr-CI')} FCFA</span>
+                <span className="text-[#FF6600]">{order.total_fcfa.toLocaleString('fr-CI')} FCFA</span>
               </div>
             </div>
           </div>

@@ -219,7 +219,7 @@ export default function AdminSettings() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+            className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
           />
           <Button type="submit" variant="primary" disabled={emailLoading}>
             {emailLoading ? 'Envoi...' : 'Mettre à jour l\'e-mail'}
@@ -240,7 +240,7 @@ export default function AdminSettings() {
             onChange={(e) => setNewPassword(e.target.value)}
             placeholder="Au moins 6 caractères"
             required
-            className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+            className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
           />
           <input
             type="password"
@@ -248,7 +248,7 @@ export default function AdminSettings() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Confirmer le nouveau mot de passe"
             required
-            className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+            className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
           />
           <Button type="submit" variant="primary" disabled={passwordLoading}>
             {passwordLoading ? 'Envoi...' : 'Mettre à jour le mot de passe'}

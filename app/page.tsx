@@ -63,7 +63,7 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-10 py-12">
         <Badge>NOUVEAU SUR LE MARCHÉ</Badge>
         <h1 className="font-serif font-semibold text-5xl leading-tight mb-4 max-w-2xl mt-5">
-          Des PC pro, à prix <em className="italic text-[#E85D25]">juste.</em>
+          Des PC pro, à prix <em className="italic text-[#FF6600]">juste.</em>
         </h1>
         <p className="text-[#56534C] text-base max-w-md leading-relaxed">
           Une sélection de machines fiables, choisies pour durer, livrées chez vous en toute confiance.
@@ -88,7 +88,7 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-10 py-20">
         <div className="flex items-center justify-between mb-10">
           <h2 className="font-serif font-semibold text-3xl">Le catalogue</h2>
-          <Link href="/products" className="text-[#E85D25] font-semibold hover:underline">
+          <Link href="/products" className="text-[#FF6600] font-semibold hover:underline">
             Voir tout le catalogue →
           </Link>
         </div>
@@ -115,7 +115,7 @@ export default function Home() {
         ) : (
           <div className="text-center py-20 px-6 bg-white rounded-2xl border-2 border-dashed border-[#E4DDCF]">
             <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[#FBF6EE] flex items-center justify-center">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E85D25" strokeWidth="1.5">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF6600" strokeWidth="1.5">
                 <rect x="2" y="3" width="20" height="14" rx="2" />
                 <line x1="8" y1="21" x2="16" y2="21" />
                 <line x1="12" y1="17" x2="12" y2="21" />

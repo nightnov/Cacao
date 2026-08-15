@@ -106,7 +106,7 @@ function MessagesContent() {
   if (authLoading || !isLoggedIn) {
     return (
       <main className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#E85D25] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-[#FF6600] border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
   }
@@ -130,7 +130,7 @@ function MessagesContent() {
               messages.map(msg => (
                 <div key={msg.id} className={`flex ${msg.sender === 'customer' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] rounded-lg px-4 py-3 ${
-                    msg.sender === 'customer' ? 'bg-[#E85D25] text-white' : 'bg-[#FBF6EE] text-[#1A1A1A]'
+                    msg.sender === 'customer' ? 'bg-[#FF6600] text-white' : 'bg-[#FBF6EE] text-[#1A1A1A]'
                   }`}>
                     {msg.product_name && (
                       <p className={`text-xs mb-1 font-semibold ${msg.sender === 'customer' ? 'text-white/80' : 'text-[#8A8579]'}`}>
@@ -154,7 +154,7 @@ function MessagesContent() {
               onChange={(e) => setBody(e.target.value)}
               rows={2}
               placeholder="Écrivez votre message..."
-              className="flex-1 px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25] resize-none text-sm"
+              className="flex-1 px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] resize-none text-sm"
             />
             <Button type="submit" variant="primary" disabled={sending || !body.trim()}>
               Envoyer

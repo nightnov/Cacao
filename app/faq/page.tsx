@@ -54,7 +54,7 @@ function FAQAccordion({ item }: { item: FAQItem }) {
         className="w-full px-6 py-4 flex justify-between items-center hover:bg-[#FFF9F3] transition-colors"
       >
         <span className="text-left font-semibold text-[#1A1A1A]">{item.question}</span>
-        <span className={`text-[#E85D25] text-xl transform transition-transform ${isOpen ? 'rotate-45' : ''}`}>
+        <span className={`text-[#FF6600] text-xl transform transition-transform ${isOpen ? 'rotate-45' : ''}`}>
           +
         </span>
       </button>
@@ -86,7 +86,7 @@ export default function FAQ() {
         <div className="mt-16 p-8 bg-white rounded-lg border border-[#E4DDCF]">
           <h2 className="font-serif font-semibold text-xl mb-2">Vous ne trouvez pas votre réponse ?</h2>
           <p className="text-[#56534C] mb-4">Contactez-nous directement via le formulaire de contact ou par email.</p>
-          <a href="/contact" className="text-[#E85D25] font-semibold hover:underline">
+          <a href="/contact" className="text-[#FF6600] font-semibold hover:underline">
             Aller au formulaire de contact →
           </a>
         </div>

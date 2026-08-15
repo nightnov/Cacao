@@ -21,17 +21,17 @@ export function Footer() {
           <h3 className="font-semibold text-[#1A1A1A] mb-5">Produits</h3>
           <ul className="space-y-3">
             <li>
-              <Link href="/products?category=portable" className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors">
+              <Link href="/products?category=portable" className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors">
                 Portables
               </Link>
             </li>
             <li>
-              <Link href="/products?category=bureau" className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors">
+              <Link href="/products?category=bureau" className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors">
                 Ordinateurs de bureau
               </Link>
             </li>
             <li>
-              <Link href="/products?category=accessoire" className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors">
+              <Link href="/products?category=accessoire" className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors">
                 Accessoires
               </Link>
             </li>
@@ -43,17 +43,17 @@ export function Footer() {
           <h3 className="font-semibold text-[#1A1A1A] mb-5">Support</h3>
           <ul className="space-y-3">
             <li>
-              <Link href="/faq" className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors">
+              <Link href="/faq" className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors">
                 FAQ
               </Link>
             </li>
             <li>
-              <Link href="/contact" className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors">
+              <Link href="/contact" className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors">
                 Contact
               </Link>
             </li>
             <li>
-              <Link href="/about" className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors">
+              <Link href="/about" className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors">
                 À propos
               </Link>
             </li>
@@ -65,12 +65,12 @@ export function Footer() {
           <h3 className="font-semibold text-[#1A1A1A] mb-5">Légal</h3>
           <ul className="space-y-3">
             <li>
-              <Link href="/legal/terms" className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors">
+              <Link href="/legal/terms" className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors">
                 Conditions d&apos;utilisation
               </Link>
             </li>
             <li>
-              <Link href="/legal/privacy" className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors">
+              <Link href="/legal/privacy" className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors">
                 Politique de confidentialité
               </Link>
             </li>

@@ -28,7 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-[#E85D25] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-[#FF6600] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-[#56534C]">Chargement...</p>
         </div>
       </div>
@@ -90,7 +90,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           )}
           <button
             onClick={logout}
-            className="w-full px-4 py-2 bg-[#E85D25] hover:bg-[#d04a1a] rounded-lg font-semibold text-sm transition-colors"
+            className="w-full px-4 py-2 bg-[#FF6600] hover:bg-[#E65C00] rounded-lg font-semibold text-sm transition-colors"
           >
             {sidebarOpen || mobileSidebarOpen ? 'Déconnexion' : '⎋'}
           </button>
@@ -113,7 +113,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
 
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-sm text-[#56534C] hover:text-[#E85D25]">
+            <Link href="/" className="text-sm text-[#56534C] hover:text-[#FF6600]">
               ← Voir le site
             </Link>
           </div>

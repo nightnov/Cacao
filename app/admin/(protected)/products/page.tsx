@@ -106,7 +106,7 @@ export default function AdminProducts() {
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={product.image_urls[0]} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E85D25" strokeWidth="1.5">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF6600" strokeWidth="1.5">
                           <rect x="2" y="3" width="20" height="14" rx="2" />
                           <line x1="8" y1="21" x2="16" y2="21" />
                           <line x1="12" y1="17" x2="12" y2="21" />
@@ -137,7 +137,7 @@ export default function AdminProducts() {
                   <td className="px-6 py-4 text-right space-x-2">
                     <button
                       onClick={() => handleEdit(product)}
-                      className="px-3 py-1 text-sm bg-[#E85D25] text-white rounded hover:bg-[#d04a1a] transition-colors"
+                      className="px-3 py-1 text-sm bg-[#FF6600] text-white rounded hover:bg-[#E65C00] transition-colors"
                     >
                       Modifier
                     </button>

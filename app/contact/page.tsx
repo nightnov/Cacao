@@ -56,7 +56,7 @@ export default function Contact() {
                 <input
                   type="text"
                   required
-                  className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                  className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
                   placeholder="Votre nom"
                 />
               </div>
@@ -66,7 +66,7 @@ export default function Contact() {
                 <input
                   type="email"
                   required
-                  className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                  className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
                   placeholder="votre@email.com"
                 />
               </div>
@@ -76,7 +76,7 @@ export default function Contact() {
                 <input
                   type="text"
                   required
-                  className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                  className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
                   placeholder="Sujet du message"
                 />
               </div>
@@ -86,7 +86,7 @@ export default function Contact() {
                 <textarea
                   required
                   rows={5}
-                  className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+                  className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
                   placeholder="Votre message..."
                 />
               </div>

@@ -161,7 +161,7 @@ export default function AdminMessages() {
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm font-semibold text-[#1A1A1A] truncate">{convo.customerName}</span>
                   {convo.unreadCount > 0 && (
-                    <span className="bg-[#E85D25] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="bg-[#FF6600] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">
                       {convo.unreadCount}
                     </span>
                   )}
@@ -184,7 +184,7 @@ export default function AdminMessages() {
                   {selectedConvo.messages.map(msg => (
                     <div key={msg.id} className={`flex ${msg.sender === 'admin' ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[75%] rounded-lg px-4 py-3 ${
-                        msg.sender === 'admin' ? 'bg-[#E85D25] text-white' : 'bg-[#FBF6EE] text-[#1A1A1A]'
+                        msg.sender === 'admin' ? 'bg-[#FF6600] text-white' : 'bg-[#FBF6EE] text-[#1A1A1A]'
                       }`}>
                         {msg.product_name && (
                           <p className={`text-xs mb-1 font-semibold ${msg.sender === 'admin' ? 'text-white/80' : 'text-[#8A8579]'}`}>
@@ -207,7 +207,7 @@ export default function AdminMessages() {
                     onChange={(e) => setReply(e.target.value)}
                     rows={2}
                     placeholder="Répondre..."
-                    className="flex-1 px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25] resize-none text-sm"
+                    className="flex-1 px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] resize-none text-sm"
                   />
                   <Button type="submit" variant="primary" disabled={sending || !reply.trim()}>
                     Envoyer

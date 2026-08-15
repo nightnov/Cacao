@@ -10,7 +10,7 @@ const config: Config = {
       colors: {
         bg: '#FBF6EE',
         'bg-card': '#FFFFFF',
-        orange: '#E85D25',
+        orange: '#FF6600',
         ink: '#1A1A1A',
         'ink-dim': '#56534C',
         'ink-dimmer': '#8A8579',

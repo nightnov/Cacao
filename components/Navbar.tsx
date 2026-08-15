@@ -79,7 +79,7 @@ export function Navbar() {
   const isAdmin = user?.id === ADMIN_UUID
 
   return (
-    <nav className="bg-[#FBF6EE] border-b border-[#E4DDCF]">
+    <nav className="bg-white border-b border-[#E4DDCF]">
       <div className="max-w-7xl mx-auto px-10 py-4 flex items-center justify-between">
         {/* Logo + Mobile Menu Button */}
         <div className="flex items-center gap-3 flex-shrink-0">
@@ -103,7 +103,7 @@ export function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-semibold text-[#1A1A1A] hover:text-[#E85D25] transition-colors"
+              className="text-sm font-semibold text-[#1A1A1A] hover:text-[#FF6600] transition-colors"
             >
               {link.label}
             </Link>
@@ -118,7 +118,7 @@ export function Navbar() {
               placeholder="Chercher..."
               className="text-sm bg-transparent outline-none text-[#1A1A1A] placeholder-[#8A8579] w-40 md:w-64"
             />
-            <button className="bg-[#E85D25] w-8 h-8 rounded-full flex items-center justify-center text-white hover:bg-[#d04a1a]">
+            <button className="bg-[#FF6600] w-8 h-8 rounded-full flex items-center justify-center text-white hover:bg-[#E65C00]">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -147,7 +147,7 @@ export function Navbar() {
                         <p className="text-sm font-semibold text-[#1A1A1A] truncate">{displayName}</p>
                         <Link
                           href="/account"
-                          className="text-xs text-[#E85D25] hover:underline"
+                          className="text-xs text-[#FF6600] hover:underline"
                           onClick={() => setIsAccountMenuOpen(false)}
                         >
                           Voir mon profil
@@ -159,7 +159,7 @@ export function Navbar() {
                       <>
                         <Link
                           href="/admin"
-                          className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#E85D25] hover:bg-[#FBF6EE] transition-colors"
+                          className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#FF6600] hover:bg-[#FBF6EE] transition-colors"
                           onClick={() => setIsAccountMenuOpen(false)}
                         >
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -196,7 +196,7 @@ export function Navbar() {
                       </svg>
                       Messages
                       {unreadCount > 0 && (
-                        <span className="ml-auto bg-[#E85D25] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                        <span className="ml-auto bg-[#FF6600] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                           {unreadCount}
                         </span>
                       )}
@@ -237,7 +237,7 @@ export function Navbar() {
             ) : (
               <Link
                 href="/account/login"
-                className="hidden sm:block text-sm font-semibold text-[#1A1A1A] hover:text-[#E85D25] transition-colors"
+                className="hidden sm:block text-sm font-semibold text-[#1A1A1A] hover:text-[#FF6600] transition-colors"
               >
                 Connexion
               </Link>
@@ -252,7 +252,7 @@ export function Navbar() {
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
             </svg>
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-[#E85D25] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+              <span className="absolute -top-2 -right-2 bg-[#FF6600] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                 {cartCount}
               </span>
             )}
@@ -269,7 +269,7 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-semibold text-[#1A1A1A] hover:text-[#E85D25] transition-colors py-2"
+                className="text-sm font-semibold text-[#1A1A1A] hover:text-[#FF6600] transition-colors py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {link.label}
@@ -292,7 +292,7 @@ export function Navbar() {
                   {isAdmin && (
                     <Link
                       href="/admin"
-                      className="text-sm font-semibold text-[#E85D25] hover:underline py-1.5 pl-4"
+                      className="text-sm font-semibold text-[#FF6600] hover:underline py-1.5 pl-4"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       Dashboard Admin
@@ -300,26 +300,26 @@ export function Navbar() {
                   )}
                   <Link
                     href="/account"
-                    className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors py-1.5 pl-4"
+                    className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors py-1.5 pl-4"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Mes commandes
                   </Link>
                   <Link
                     href="/account/messages"
-                    className="flex items-center gap-2 text-sm text-[#56534C] hover:text-[#E85D25] transition-colors py-1.5 pl-4"
+                    className="flex items-center gap-2 text-sm text-[#56534C] hover:text-[#FF6600] transition-colors py-1.5 pl-4"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Messages
                     {unreadCount > 0 && (
-                      <span className="bg-[#E85D25] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                      <span className="bg-[#FF6600] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                         {unreadCount}
                       </span>
                     )}
                   </Link>
                   <button
                     onClick={() => { setIsMenuOpen(false); logout() }}
-                    className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors py-1.5 pl-4 text-left"
+                    className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors py-1.5 pl-4 text-left"
                   >
                     Se déconnecter
                   </button>
@@ -327,7 +327,7 @@ export function Navbar() {
               ) : (
                 <Link
                   href="/account/login"
-                  className="text-sm font-semibold text-[#1A1A1A] hover:text-[#E85D25] transition-colors py-2"
+                  className="text-sm font-semibold text-[#1A1A1A] hover:text-[#FF6600] transition-colors py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Connexion
@@ -344,7 +344,7 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm text-[#56534C] hover:text-[#E85D25] transition-colors py-1.5 pl-4"
+                className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors py-1.5 pl-4"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {link.label}
@@ -352,13 +352,13 @@ export function Navbar() {
             ))}
 
             {/* Mobile Search */}
-            <div className="flex bg-[#FBF6EE] border-2 border-[#1A1A1A] rounded-lg px-3 py-2 items-center gap-2 mt-4">
+            <div className="flex bg-white border-2 border-[#1A1A1A] rounded-lg px-3 py-2 items-center gap-2 mt-4">
               <input
                 type="text"
                 placeholder="Chercher..."
                 className="text-sm bg-transparent outline-none text-[#1A1A1A] placeholder-[#8A8579] flex-1"
               />
-              <button className="bg-[#E85D25] w-8 h-8 rounded flex items-center justify-center text-white hover:bg-[#d04a1a]">
+              <button className="bg-[#FF6600] w-8 h-8 rounded flex items-center justify-center text-white hover:bg-[#E65C00]">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
                   <circle cx="11" cy="11" r="8" />
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />

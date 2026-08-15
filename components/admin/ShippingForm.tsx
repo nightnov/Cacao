@@ -116,7 +116,7 @@ export default function ShippingForm({ fee, onClose }: ShippingFormProps) {
               value={formData.city}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+              className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
               placeholder="Ex: Abidjan"
             />
           </div>
@@ -130,7 +130,7 @@ export default function ShippingForm({ fee, onClose }: ShippingFormProps) {
               value={formData.price_fcfa}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E85D25]"
+              className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
               placeholder="5000"
             />
           </div>

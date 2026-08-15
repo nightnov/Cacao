@@ -281,6 +281,13 @@ export default function ProductDetail() {
                 : 'Ajouter au panier'}
             </Button>
 
+            <Link
+              href={`/account/messages?productId=${product.id}&productName=${encodeURIComponent(product.name)}`}
+              className="block text-center text-sm text-[#E85D25] hover:underline mt-4"
+            >
+              Une question sur ce produit ?
+            </Link>
+
             {/* Specs */}
             {specEntries.length > 0 && (
               <div className="mt-10 pt-8 border-t border-[#E4DDCF]">

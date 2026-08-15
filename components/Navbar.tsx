@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { getCartCount, CART_EVENT } from '@/lib/cart'
 import { useAuth } from '@/hooks/useAuth'
+import { getSupabaseClient } from '@/lib/supabase'
 
 const navLinks = [
   { label: 'Catalogue', href: '/products' },
@@ -22,6 +23,7 @@ export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false)
   const [cartCount, setCartCount] = useState(0)
+  const [unreadCount, setUnreadCount] = useState(0)
   const { user, loading: authLoading, isLoggedIn, logout } = useAuth()
   const accountMenuRef = useRef<HTMLDivElement>(null)
 
@@ -35,6 +37,28 @@ export function Navbar() {
       window.removeEventListener('storage', updateCount)
     }
   }, [])
+
+  useEffect(() => {
+    if (!isLoggedIn || !user) return
+
+    const fetchUnread = async () => {
+      try {
+        const supabase = getSupabaseClient()
+        const { count } = await supabase
+          .from('messages')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .eq('sender', 'admin')
+          .eq('read_by_customer', false)
+
+        setUnreadCount(count || 0)
+      } catch {
+        // silencieux: le badge n'est pas critique
+      }
+    }
+
+    fetchUnread()
+  }, [isLoggedIn, user])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -127,6 +151,22 @@ export function Navbar() {
                         <path d="M14 2v5h5" />
                       </svg>
                       Mes commandes
+                    </Link>
+
+                    <Link
+                      href="/account/messages"
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-[#1A1A1A] hover:bg-[#FBF6EE] transition-colors"
+                      onClick={() => setIsAccountMenuOpen(false)}
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                      </svg>
+                      Messages
+                      {unreadCount > 0 && (
+                        <span className="ml-auto bg-[#E85D25] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                          {unreadCount}
+                        </span>
+                      )}
                     </Link>
 
                     <Link
@@ -232,6 +272,18 @@ export function Navbar() {
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Mes commandes
+                  </Link>
+                  <Link
+                    href="/account/messages"
+                    className="flex items-center gap-2 text-sm text-[#56534C] hover:text-[#E85D25] transition-colors py-1.5 pl-4"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Messages
+                    {unreadCount > 0 && (
+                      <span className="bg-[#E85D25] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                        {unreadCount}
+                      </span>
+                    )}
                   </Link>
                   <button
                     onClick={() => { setIsMenuOpen(false); logout() }}

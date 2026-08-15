@@ -43,3 +43,20 @@ export interface OrderItem {
   unit_price_fcfa: number
   subtotal_fcfa: number
 }
+
+export interface Message {
+  id: string
+  user_id: string
+  product_id: string | null
+  product_name: string | null
+  sender: 'customer' | 'admin'
+  body: string
+  read_by_admin: boolean
+  read_by_customer: boolean
+  created_at: string
+  profiles?: {
+    email: string
+    first_name: string
+    last_name: string
+  }
+}

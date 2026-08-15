@@ -8,6 +8,7 @@ const adminLinks = [
   { label: 'Tableau de bord', href: '/admin', icon: '📊' },
   { label: 'Produits', href: '/admin/products', icon: '🖥️' },
   { label: 'Commandes', href: '/admin/orders', icon: '📦' },
+  { label: 'Messages', href: '/admin/messages', icon: '💬' },
   { label: 'Frais livraison', href: '/admin/shipping', icon: '🚚' },
   { label: 'Clients', href: '/admin/customers', icon: '👥' }
 ]

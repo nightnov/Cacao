@@ -2,9 +2,12 @@
 
 import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { getCartCount, CART_EVENT } from '@/lib/cart'
 import { useAuth } from '@/hooks/useAuth'
 import { getSupabaseClient } from '@/lib/supabase'
+
+const FALLBACK_SEARCH_SUGGESTIONS = ['Portables', 'Ordinateurs de bureau', 'Accessoires']
 
 const ADMIN_UUID = 'f4e9e8fd-8e85-4045-a6e5-c2c62204c5ff'
 
@@ -22,12 +25,41 @@ const categoryLinks = [
 ]
 
 export function Navbar() {
+  const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false)
   const [cartCount, setCartCount] = useState(0)
   const [unreadCount, setUnreadCount] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [popularSearches, setPopularSearches] = useState<string[]>([])
   const { user, loading: authLoading, isLoggedIn, logout } = useAuth()
   const accountMenuRef = useRef<HTMLDivElement>(null)
+
+  const suggestions = popularSearches.length > 0 ? popularSearches : FALLBACK_SEARCH_SUGGESTIONS
+
+  const handleSearchSubmit = (query?: string) => {
+    const q = (query ?? searchQuery).trim()
+    if (!q) return
+    setShowSuggestions(false)
+    setIsMenuOpen(false)
+    router.push(`/products?search=${encodeURIComponent(q)}`)
+  }
+
+  useEffect(() => {
+    const fetchPopularSearches = async () => {
+      try {
+        const supabase = getSupabaseClient()
+        const { data } = await supabase.from('popular_searches').select('query').limit(5)
+        if (data && data.length > 0) {
+          setPopularSearches(data.map((d: { query: string }) => d.query))
+        }
+      } catch {
+        // silencieux: on garde les suggestions par défaut
+      }
+    }
+    fetchPopularSearches()
+  }, [])
 
   useEffect(() => {
     const updateCount = () => setCartCount(getCartCount())
@@ -112,18 +144,47 @@ export function Navbar() {
 
         {/* Search + Cart */}
         <div className="flex items-center gap-4 flex-shrink-0">
-          <div className="hidden sm:flex bg-white border-2 border-[#1A1A1A] rounded-full px-4 py-2 items-center gap-2">
-            <input
-              type="text"
-              placeholder="Chercher..."
-              className="text-sm bg-transparent outline-none text-[#1A1A1A] placeholder-[#8A8579] w-40 md:w-64"
-            />
-            <button className="bg-[#FF6600] w-8 h-8 rounded-full flex items-center justify-center text-white hover:bg-[#E65C00]">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-            </button>
+          <div className="hidden sm:block relative">
+            <div className="flex bg-white border-2 border-[#1A1A1A] rounded-full px-4 py-2 items-center gap-2">
+              <input
+                type="text"
+                placeholder="Chercher..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') handleSearchSubmit()
+                }}
+                className="text-sm bg-transparent outline-none text-[#1A1A1A] placeholder-[#8A8579] w-56 md:w-80"
+              />
+              <button
+                onClick={() => handleSearchSubmit()}
+                className="bg-[#FF6600] w-8 h-8 rounded-full flex items-center justify-center text-white hover:bg-[#E65C00] flex-shrink-0"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+              </button>
+            </div>
+
+            {showSuggestions && (
+              <div className="absolute left-0 top-12 w-80 bg-white rounded-lg border border-[#E4DDCF] shadow-lg p-4 z-50">
+                <p className="text-xs font-semibold text-[#8A8579] uppercase mb-3">Recherches populaires</p>
+                <div className="flex flex-wrap gap-2">
+                  {suggestions.map(s => (
+                    <button
+                      key={s}
+                      onClick={() => handleSearchSubmit(s)}
+                      className="px-3 py-1.5 bg-gray-100 hover:bg-orange-50 hover:text-[#FF6600] rounded-full text-sm text-[#56534C] transition-colors"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Account */}
@@ -356,14 +417,35 @@ export function Navbar() {
               <input
                 type="text"
                 placeholder="Chercher..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') handleSearchSubmit()
+                }}
                 className="text-sm bg-transparent outline-none text-[#1A1A1A] placeholder-[#8A8579] flex-1"
               />
-              <button className="bg-[#FF6600] w-8 h-8 rounded flex items-center justify-center text-white hover:bg-[#E65C00]">
+              <button
+                onClick={() => handleSearchSubmit()}
+                className="bg-[#FF6600] w-8 h-8 rounded flex items-center justify-center text-white hover:bg-[#E65C00] flex-shrink-0"
+              >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
                   <circle cx="11" cy="11" r="8" />
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
               </button>
+            </div>
+
+            {/* Mobile popular searches */}
+            <div className="flex flex-wrap gap-2 mt-3">
+              {suggestions.map(s => (
+                <button
+                  key={s}
+                  onClick={() => handleSearchSubmit(s)}
+                  className="px-3 py-1.5 bg-gray-100 hover:bg-orange-50 hover:text-[#FF6600] rounded-full text-xs text-[#56534C] transition-colors"
+                >
+                  {s}
+                </button>
+              ))}
             </div>
           </div>
         </div>

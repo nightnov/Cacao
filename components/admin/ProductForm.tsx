@@ -32,6 +32,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     description: '',
     category: 'portable',
     price_fcfa: 0,
+    compare_at_price_fcfa: '' as string | number,
     availability: 'in_stock',
     specs_cpu: '',
     specs_ram: '',
@@ -50,6 +51,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         description: product.description,
         category: product.category,
         price_fcfa: product.price_fcfa,
+        compare_at_price_fcfa: product.compare_at_price_fcfa ?? '',
         availability: product.availability,
         specs_cpu: (product.specs?.cpu as string) || '',
         specs_ram: (product.specs?.ram as string) || '',
@@ -66,7 +68,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'price_fcfa' ? parseInt(value) || 0 : value
+      [name]: name === 'price_fcfa' ? parseInt(value) || 0 : name === 'compare_at_price_fcfa' ? (value === '' ? '' : parseInt(value) || 0) : value
     }))
   }
 
@@ -144,6 +146,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         description: formData.description,
         category: formData.category,
         price_fcfa: formData.price_fcfa,
+        compare_at_price_fcfa: formData.compare_at_price_fcfa === '' ? null : Number(formData.compare_at_price_fcfa),
         availability: formData.availability,
         specs,
         tags,
@@ -338,6 +341,20 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
+            {/* Compare-at price */}
+            <div>
+              <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">Ancien prix (barré, optionnel)</label>
+              <input
+                type="number"
+                name="compare_at_price_fcfa"
+                value={formData.compare_at_price_fcfa}
+                onChange={handleChange}
+                placeholder="Laisser vide si pas de promo"
+                className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
+              />
+              <p className="text-xs text-[#8A8579] mt-1">Doit être supérieur au prix actuel pour s&apos;afficher comme promo.</p>
+            </div>
+
             {/* Availability */}
             <div>
               <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">Disponibilité</label>

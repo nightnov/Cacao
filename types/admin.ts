@@ -5,6 +5,7 @@ export interface Product {
   description: string
   category: string
   price_fcfa: number
+  compare_at_price_fcfa: number | null
   availability: string
   specs: Record<string, unknown>
   tags: string[]

@@ -14,6 +14,7 @@ interface Product {
   name: string
   slug: string
   price_fcfa: number
+  compare_at_price_fcfa?: number | null
   category: string
   availability: 'in_stock' | 'on_order' | 'discontinued'
   image_urls: string[]

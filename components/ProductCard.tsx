@@ -5,12 +5,14 @@ interface ProductCardProps {
   name: string
   slug: string
   price_fcfa: number
+  compare_at_price_fcfa?: number | null
   category: string
   availability: 'in_stock' | 'on_order' | 'discontinued'
   image_urls?: string[]
 }
 
-export function ProductCard({ id, name, slug, price_fcfa, category, availability, image_urls }: ProductCardProps) {
+export function ProductCard({ id, name, slug, price_fcfa, compare_at_price_fcfa, category, availability, image_urls }: ProductCardProps) {
+  const hasPromo = !!compare_at_price_fcfa && compare_at_price_fcfa > price_fcfa
   const categoryLabel: Record<string, string> = {
     portable: 'Portable',
     bureau: 'Bureau',
@@ -55,10 +57,15 @@ export function ProductCard({ id, name, slug, price_fcfa, category, availability
           </h3>
 
           {/* Price */}
-          <div className="mb-3 pb-3 border-t border-[#E4DDCF]">
-            <div className="text-xl font-bold text-[#1A1A1A]">
+          <div className="mb-3 pb-3 border-t border-[#E4DDCF] pt-3 flex items-center gap-2 flex-wrap">
+            <span className={`text-xl font-bold ${hasPromo ? 'text-[#1E7A46]' : 'text-[#1A1A1A]'}`}>
               {price_fcfa.toLocaleString('fr-CI')} FCFA
-            </div>
+            </span>
+            {hasPromo && (
+              <span className="text-sm text-[#8A8579] line-through">
+                {compare_at_price_fcfa!.toLocaleString('fr-CI')} FCFA
+              </span>
+            )}
           </div>
 
           {/* Availability Badge */}

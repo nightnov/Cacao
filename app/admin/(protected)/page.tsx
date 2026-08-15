@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
-import { Users, ShoppingCart, Wallet, Package, Plus, Settings, ClipboardList } from 'lucide-react'
+import { Users, ShoppingCart, Wallet, Package, Plus, Settings, ClipboardList, SearchX, TrendingUp } from 'lucide-react'
 import { StatCard } from '@/components/admin/StatCard'
 import { RevenueChart } from '@/components/admin/RevenueChart'
 import { TableShell, Column } from '@/components/admin/TableShell'
@@ -58,6 +58,77 @@ export default function AdminDashboard() {
   const [chartLoading, setChartLoading] = useState(true)
   const [recentOrders, setRecentOrders] = useState<Order[]>([])
   const [recentOrdersLoading, setRecentOrdersLoading] = useState(true)
+  const [failedSearches, setFailedSearches] = useState<{ query: string; count: number }[]>([])
+  const [topProducts, setTopProducts] = useState<{ name: string; slug: string; count: number }[]>([])
+  const [analyticsLoading, setAnalyticsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+        )
+
+        const { data: searches } = await supabase
+          .from('search_logs')
+          .select('query')
+          .eq('results_count', 0)
+          .order('created_at', { ascending: false })
+          .limit(500)
+
+        const searchCounts = new Map<string, number>()
+        for (const s of searches || []) {
+          const key = s.query.toLowerCase().trim()
+          searchCounts.set(key, (searchCounts.get(key) || 0) + 1)
+        }
+        setFailedSearches(
+          Array.from(searchCounts.entries())
+            .map(([query, count]) => ({ query, count }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 5)
+        )
+
+        const { data: views } = await supabase
+          .from('product_views')
+          .select('product_id')
+          .order('created_at', { ascending: false })
+          .limit(1000)
+
+        const viewCounts = new Map<string, number>()
+        for (const v of views || []) {
+          viewCounts.set(v.product_id, (viewCounts.get(v.product_id) || 0) + 1)
+        }
+        const topProductIds = Array.from(viewCounts.entries())
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5)
+
+        if (topProductIds.length > 0) {
+          const { data: productsData } = await supabase
+            .from('products')
+            .select('id, name, slug')
+            .in('id', topProductIds.map(([id]) => id))
+
+          const productsById = new Map((productsData || []).map((p: any) => [p.id, p]))
+          setTopProducts(
+            topProductIds.map(([id, count]) => ({
+              name: productsById.get(id)?.name || 'Produit supprimé',
+              slug: productsById.get(id)?.slug || '',
+              count
+            }))
+          )
+        } else {
+          setTopProducts([])
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des analytics:', error)
+      } finally {
+        setAnalyticsLoading(false)
+      }
+    }
+
+    fetchAnalytics()
+  }, [])
 
   useEffect(() => {
     const fetchRecentOrders = async () => {
@@ -293,6 +364,64 @@ export default function AdminDashboard() {
           loading={recentOrdersLoading}
           emptyMessage="Aucune commande pour le moment"
         />
+      </div>
+
+      {/* Analytics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        <div className="bg-white rounded-2xl border border-[#E4DDCF] p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <SearchX size={18} className="text-[#FF6600]" />
+            <h2 className="font-serif font-semibold text-lg text-[#1A1A1A]">Recherches sans résultat</h2>
+          </div>
+          {analyticsLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map(i => <div key={i} className="h-5 bg-[#E4DDCF] rounded animate-pulse"></div>)}
+            </div>
+          ) : failedSearches.length > 0 ? (
+            <ul className="space-y-3">
+              {failedSearches.map(s => (
+                <li key={s.query} className="flex items-center justify-between text-sm">
+                  <span className="text-[#1A1A1A]">« {s.query} »</span>
+                  <span className="text-[#8A8579]">{s.count}×</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-[#8A8579]">Aucune recherche infructueuse pour le moment.</p>
+          )}
+          <p className="text-xs text-[#8A8579] mt-4 pt-4 border-t border-[#E4DDCF]">
+            Produits recherchés par les clients mais absents du catalogue — pistes pour de futurs ajouts.
+          </p>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-[#E4DDCF] p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <TrendingUp size={18} className="text-[#FF6600]" />
+            <h2 className="font-serif font-semibold text-lg text-[#1A1A1A]">Produits les plus vus</h2>
+          </div>
+          {analyticsLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map(i => <div key={i} className="h-5 bg-[#E4DDCF] rounded animate-pulse"></div>)}
+            </div>
+          ) : topProducts.length > 0 ? (
+            <ul className="space-y-3">
+              {topProducts.map(p => (
+                <li key={p.name} className="flex items-center justify-between text-sm">
+                  {p.slug ? (
+                    <Link href={`/products/${p.slug}`} className="text-[#1A1A1A] hover:text-[#FF6600] truncate">
+                      {p.name}
+                    </Link>
+                  ) : (
+                    <span className="text-[#1A1A1A] truncate">{p.name}</span>
+                  )}
+                  <span className="text-[#8A8579] flex-shrink-0 ml-2">{p.count} vue{p.count !== 1 ? 's' : ''}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-[#8A8579]">Aucune vue enregistrée pour le moment.</p>
+          )}
+        </div>
       </div>
 
       {/* Quick Actions */}

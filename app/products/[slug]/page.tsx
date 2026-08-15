@@ -18,6 +18,7 @@ interface Product {
   description: string
   category: 'portable' | 'bureau' | 'accessoire'
   price_fcfa: number
+  compare_at_price_fcfa: number | null
   availability: 'in_stock' | 'on_order' | 'discontinued'
   specs: Record<string, unknown>
   tags: string[]
@@ -64,7 +65,7 @@ export default function ProductDetail() {
         const supabase = getSupabaseClient()
         const { data, error } = await supabase
           .from('products')
-          .select('id, name, slug, description, category, price_fcfa, availability, specs, tags, image_urls, video_url')
+          .select('id, name, slug, description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url')
           .eq('slug', slug)
           .maybeSingle()
 
@@ -79,6 +80,11 @@ export default function ProductDetail() {
         setProduct(typedProduct)
         setQuantity(1)
         setAdded(false)
+
+        supabase.from('product_views').insert([{ product_id: typedProduct.id }]).then(
+          () => {},
+          () => {}
+        )
 
         if (typedProduct.image_urls && typedProduct.image_urls.length > 0) {
           setSelectedMedia({ type: 'image', value: typedProduct.image_urls[0] })
@@ -155,6 +161,7 @@ export default function ProductDetail() {
   }
 
   const avail = availabilityLabel[product.availability]
+  const hasPromo = !!product.compare_at_price_fcfa && product.compare_at_price_fcfa > product.price_fcfa
   const embedUrl = product.video_url ? getVideoEmbedUrl(product.video_url) : null
   const specEntries = Object.entries(product.specs || {}).filter(([, v]) => v)
 
@@ -234,10 +241,15 @@ export default function ProductDetail() {
             </div>
             <h1 className="font-serif font-semibold text-3xl text-[#1A1A1A] mb-4">{product.name}</h1>
 
-            <div className="flex items-center gap-3 mb-6">
-              <span className="text-2xl font-bold text-[#1A1A1A]">
+            <div className="flex items-center gap-3 mb-6 flex-wrap">
+              <span className={`text-2xl font-bold ${hasPromo ? 'text-[#1E7A46]' : 'text-[#1A1A1A]'}`}>
                 {product.price_fcfa.toLocaleString('fr-CI')} FCFA
               </span>
+              {hasPromo && (
+                <span className="text-base text-[#8A8579] line-through">
+                  {product.compare_at_price_fcfa!.toLocaleString('fr-CI')} FCFA
+                </span>
+              )}
               <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${avail.color}`}>
                 {avail.text}
               </span>

@@ -14,6 +14,7 @@ export async function GET(request: Request) {
     let query = supabase
       .from('products')
       .select('id, name, slug, description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url, created_at')
+      .eq('status', 'active')
       .order('created_at', { ascending: false })
 
     if (category) {

@@ -5,6 +5,8 @@ export interface CartItem {
   price_fcfa: number
   image_url: string | null
   quantity: number
+  variant_id?: string
+  variant_label?: string
 }
 
 const CART_KEY = 'cart'
@@ -25,6 +27,10 @@ function writeCart(items: CartItem[]) {
   window.dispatchEvent(new Event(CART_EVENT))
 }
 
+function sameLine(item: CartItem, id: string, variantId?: string): boolean {
+  return item.id === id && item.variant_id === variantId
+}
+
 export function getCart(): CartItem[] {
   return readCart()
 }
@@ -38,11 +44,19 @@ export function getCartTotal(): number {
 }
 
 export function addToCart(
-  product: { id: string; name: string; slug: string; price_fcfa: number; image_url: string | null },
+  product: {
+    id: string
+    name: string
+    slug: string
+    price_fcfa: number
+    image_url: string | null
+    variant_id?: string
+    variant_label?: string
+  },
   quantity: number = 1
 ) {
   const items = readCart()
-  const existing = items.find(i => i.id === product.id)
+  const existing = items.find(i => sameLine(i, product.id, product.variant_id))
   if (existing) {
     existing.quantity += quantity
   } else {
@@ -51,20 +65,20 @@ export function addToCart(
   writeCart(items)
 }
 
-export function updateCartItemQuantity(id: string, quantity: number) {
+export function updateCartItemQuantity(id: string, quantity: number, variantId?: string) {
   const items = readCart()
-  const item = items.find(i => i.id === id)
+  const item = items.find(i => sameLine(i, id, variantId))
   if (!item) return
   if (quantity <= 0) {
-    writeCart(items.filter(i => i.id !== id))
+    writeCart(items.filter(i => !sameLine(i, id, variantId)))
   } else {
     item.quantity = quantity
     writeCart(items)
   }
 }
 
-export function removeFromCart(id: string) {
-  writeCart(readCart().filter(i => i.id !== id))
+export function removeFromCart(id: string, variantId?: string) {
+  writeCart(readCart().filter(i => !sameLine(i, id, variantId)))
 }
 
 export function clearCart() {

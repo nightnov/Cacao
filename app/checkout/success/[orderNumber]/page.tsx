@@ -15,6 +15,7 @@ interface OrderItem {
   quantity: number
   unit_price_fcfa: number
   subtotal_fcfa: number
+  variant_label?: string | null
 }
 
 interface Order {
@@ -57,7 +58,7 @@ export default function CheckoutSuccess() {
 
         const { data: itemsData, error: itemsError } = await supabase
           .from('order_items')
-          .select('id, product_name, quantity, unit_price_fcfa, subtotal_fcfa')
+          .select('id, product_name, quantity, unit_price_fcfa, subtotal_fcfa, variant_label')
           .eq('order_id', orderData.id)
 
         if (itemsError) throw itemsError
@@ -128,7 +129,9 @@ export default function CheckoutSuccess() {
           <div className="space-y-2 mb-6">
             {items.map(item => (
               <div key={item.id} className="flex justify-between text-sm">
-                <span className="text-[#56534C]">{item.product_name} × {item.quantity}</span>
+                <span className="text-[#56534C]">
+                  {item.product_name}{item.variant_label ? ` (${item.variant_label})` : ''} × {item.quantity}
+                </span>
                 <span className="text-[#1A1A1A] font-medium">
                   {item.subtotal_fcfa.toLocaleString('fr-CI')} FCFA
                 </span>

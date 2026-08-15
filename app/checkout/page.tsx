@@ -129,7 +129,9 @@ export default function Checkout() {
         product_name: item.name,
         unit_price_fcfa: item.price_fcfa,
         quantity: item.quantity,
-        subtotal_fcfa: item.price_fcfa * item.quantity
+        subtotal_fcfa: item.price_fcfa * item.quantity,
+        variant_id: item.variant_id || null,
+        variant_label: item.variant_label || null
       }))
 
       const { error: itemsError } = await supabase.from('order_items').insert(orderItemsPayload)
@@ -142,7 +144,11 @@ export default function Checkout() {
           orderId: order.id,
           orderNumber,
           totalFcfa: total,
-          items: cartItems.map(item => ({ name: item.name, price_fcfa: item.price_fcfa, quantity: item.quantity })),
+          items: cartItems.map(item => ({
+            name: item.variant_label ? `${item.name} (${item.variant_label})` : item.name,
+            price_fcfa: item.price_fcfa,
+            quantity: item.quantity
+          })),
           phone,
           fullName
         })

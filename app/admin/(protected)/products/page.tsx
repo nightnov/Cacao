@@ -41,7 +41,7 @@ export default function AdminProducts() {
       const supabase = getSupabaseClient()
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, slug, description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url')
+        .select('id, name, slug, description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url, status, variant_options, supplier_name')
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -100,7 +100,17 @@ export default function AdminProducts() {
         </div>
       )
     },
-    { key: 'name', header: 'Nom', render: p => <span className="font-medium text-[#1A1A1A]">{p.name}</span> },
+    {
+      key: 'name',
+      header: 'Nom',
+      render: p => (
+        <div className="flex items-center gap-2">
+          <span className="font-medium text-[#1A1A1A]">{p.name}</span>
+          {p.status === 'draft' && <StatusBadge label="Brouillon" tone="neutral" />}
+          {!!p.variant_options?.length && <StatusBadge label={`${p.variant_options.length} option(s)`} tone="info" />}
+        </div>
+      )
+    },
     { key: 'category', header: 'Catégorie', render: p => <span className="text-[#56534C]">{categoryLabels[p.category] || p.category}</span> },
     { key: 'price', header: 'Prix', render: p => `${p.price_fcfa.toLocaleString('fr-CI')} FCFA` },
     {

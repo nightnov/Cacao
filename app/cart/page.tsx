@@ -71,7 +71,7 @@ export default function Cart() {
           {/* Items */}
           <div className="md:col-span-2 space-y-4">
             {items.map(item => (
-              <div key={item.id} className="bg-white rounded-lg border border-[#E4DDCF] p-4 flex gap-4 items-center">
+              <div key={`${item.id}-${item.variant_id || 'default'}`} className="bg-white rounded-lg border border-[#E4DDCF] p-4 flex gap-4 items-center">
                 <Link href={`/products/${item.slug}`} className="w-20 h-20 rounded-lg bg-[#FBF6EE] border border-[#E4DDCF] overflow-hidden flex items-center justify-center flex-shrink-0">
                   {item.image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -89,19 +89,22 @@ export default function Cart() {
                   <Link href={`/products/${item.slug}`} className="font-semibold text-[#1A1A1A] hover:text-[#FF6600] transition-colors line-clamp-1">
                     {item.name}
                   </Link>
+                  {item.variant_label && (
+                    <p className="text-xs text-[#8A8579] mt-0.5">{item.variant_label}</p>
+                  )}
                   <p className="text-sm text-[#8A8579] mt-1">{item.price_fcfa.toLocaleString('fr-CI')} FCFA</p>
                 </div>
 
                 <div className="flex items-center border-2 border-[#1A1A1A] rounded-full flex-shrink-0">
                   <button
-                    onClick={() => updateCartItemQuantity(item.id, item.quantity - 1)}
+                    onClick={() => updateCartItemQuantity(item.id, item.quantity - 1, item.variant_id)}
                     className="w-8 h-8 flex items-center justify-center text-[#1A1A1A] hover:text-[#FF6600]"
                   >
                     −
                   </button>
                   <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
                   <button
-                    onClick={() => updateCartItemQuantity(item.id, item.quantity + 1)}
+                    onClick={() => updateCartItemQuantity(item.id, item.quantity + 1, item.variant_id)}
                     className="w-8 h-8 flex items-center justify-center text-[#1A1A1A] hover:text-[#FF6600]"
                   >
                     +
@@ -113,7 +116,7 @@ export default function Cart() {
                 </div>
 
                 <button
-                  onClick={() => removeFromCart(item.id)}
+                  onClick={() => removeFromCart(item.id, item.variant_id)}
                   className="text-[#8A8579] hover:text-red-600 transition-colors flex-shrink-0"
                   aria-label="Retirer du panier"
                 >

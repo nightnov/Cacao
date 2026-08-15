@@ -9,7 +9,6 @@ import {
   Truck,
   Users,
   Settings,
-  ShoppingBag,
   LucideIcon
 } from 'lucide-react'
 
@@ -55,19 +54,35 @@ const sections: GuideSection[] = [
     content: [
       {
         title: 'Ajouter ou modifier un produit',
-        body: 'Bouton "Ajouter produit" en haut, ou icône crayon sur une ligne du tableau pour modifier. Le formulaire couvre photos, vidéo, nom, description, catégorie, prix, disponibilité, spécifications techniques et tags.'
+        body: 'Bouton "Ajouter produit" en haut, ou icône crayon sur une ligne du tableau pour modifier. Le formulaire couvre photos, vidéo, nom, description, catégorie, prix, disponibilité, spécifications techniques, tags, fournisseur, variantes, statut et référencement (SEO).'
       },
       {
         title: 'Photos des produits',
         body: 'Utilisez des images carrées (ratio 1:1, idéalement 800×800 px) pour que le catalogue soit uniforme. La première photo ajoutée devient l\'image principale. 5 Mo max par photo.'
       },
       {
+        title: 'Importer depuis Jumia ou une autre plateforme',
+        body: 'Dans la section "Fournisseur" du formulaire : collez l\'URL du produit fournisseur, puis remplissez le reste à la main (nom, prix, images, description) en vous aidant de la page fournisseur ouverte à côté. Le coût fournisseur peut aussi être renseigné pour suivre votre marge. Pas d\'import automatique : ces plateformes ne fournissent pas d\'accès pour ça, donc tout se fait via ce formulaire guidé.'
+      },
+      {
+        title: 'Variantes (couleur, taille...)',
+        body: 'Cochez "Ce produit a des variantes", ajoutez une ou plusieurs options avec leurs valeurs (ex. "Couleur: Noir, Rouge"), puis cliquez "Générer les combinaisons" — un tableau apparaît pour définir prix, stock, SKU et image de chaque combinaison. Le prix et la disponibilité du produit sont alors calculés automatiquement à partir des variantes.'
+      },
+      {
+        title: 'Statut brouillon / actif',
+        body: 'Un produit en "Brouillon" reste invisible sur le site public — pratique pour préparer une fiche sans la publier tout de suite. Passez-le en "Actif" quand il est prêt.'
+      },
+      {
         title: 'Prix barré (promotion)',
         body: 'Le champ "Ancien prix" est optionnel. Si vous le remplissez avec un montant supérieur au prix actuel, le produit s\'affiche avec le prix actuel en vert et l\'ancien prix barré en gris partout sur le site.'
       },
       {
+        title: 'Référencement (SEO)',
+        body: 'Titre SEO et meta description optionnels, utilisés pour l\'affichage dans les résultats Google. Si laissés vides, le nom et la description du produit servent de repli.'
+      },
+      {
         title: 'Disponibilité',
-        body: 'En stock / En commande / Rupture — s\'affiche comme badge coloré sur la fiche produit et dans le catalogue.'
+        body: 'En stock / En commande / Rupture — s\'affiche comme badge coloré sur la fiche produit et dans le catalogue. Calculée automatiquement pour les produits à variantes.'
       },
       {
         title: 'Supprimer un produit',
@@ -148,26 +163,6 @@ const sections: GuideSection[] = [
       {
         title: 'Changer l\'e-mail ou le mot de passe admin',
         body: 'Deux formulaires séparés en bas de la page. Le changement d\'e-mail envoie un lien de confirmation à la nouvelle adresse.'
-      }
-    ]
-  },
-  {
-    id: 'import',
-    label: 'Import produits (plateformes externes)',
-    icon: ShoppingBag,
-    badge: 'Bientôt disponible',
-    content: [
-      {
-        title: 'Ce qui est prévu',
-        body: 'Un formulaire pour importer un produit depuis Jumia ou une autre plateforme ivoirienne : vous collez l\'URL du produit fournisseur, puis vous copiez/collez manuellement le titre, le prix, les images et la description dans un formulaire guidé.'
-      },
-      {
-        title: 'Pourquoi manuel et pas automatique',
-        body: 'Ces plateformes n\'offrent pas d\'accès automatique (API publique) aux données produit pour un site comme le vôtre — un import 100% automatique ne serait ni fiable ni autorisé. La version manuelle reste rapide tout en respectant les règles de ces sites.'
-      },
-      {
-        title: 'Ce que ça gérera une fois construit',
-        body: 'Variantes (couleur, taille...), stock par variante, prix d\'achat vs prix de vente, statut brouillon/actif, et des champs de référencement (titre et description optimisés pour Google).'
       }
     ]
   }

@@ -10,6 +10,8 @@ import { ProductCard } from '@/components/ProductCard'
 import { getSupabaseClient } from '@/lib/supabase'
 import { getVideoEmbedUrl } from '@/lib/video'
 import { addToCart } from '@/lib/cart'
+import { VariantOption, ProductVariant } from '@/types/admin'
+import { findMatchingVariant, variantLabel } from '@/lib/variants'
 
 interface Product {
   id: string
@@ -24,6 +26,7 @@ interface Product {
   tags: string[]
   image_urls: string[]
   video_url: string | null
+  variant_options?: VariantOption[]
 }
 
 const categoryLabel: Record<string, string> = {
@@ -56,6 +59,8 @@ export default function ProductDetail() {
   const [selectedMedia, setSelectedMedia] = useState<{ type: 'image' | 'video'; value: string } | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
+  const [variants, setVariants] = useState<ProductVariant[]>([])
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -65,8 +70,9 @@ export default function ProductDetail() {
         const supabase = getSupabaseClient()
         const { data, error } = await supabase
           .from('products')
-          .select('id, name, slug, description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url')
+          .select('id, name, slug, description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url, variant_options')
           .eq('slug', slug)
+          .eq('status', 'active')
           .maybeSingle()
 
         if (error) throw error
@@ -80,11 +86,22 @@ export default function ProductDetail() {
         setProduct(typedProduct)
         setQuantity(1)
         setAdded(false)
+        setSelectedOptions({})
 
         supabase.from('product_views').insert([{ product_id: typedProduct.id }]).then(
           () => {},
           () => {}
         )
+
+        if (typedProduct.variant_options && typedProduct.variant_options.length > 0) {
+          const { data: variantsData } = await supabase
+            .from('product_variants')
+            .select('id, product_id, option_values, sku, price_fcfa, supplier_cost_fcfa, stock, image_url')
+            .eq('product_id', typedProduct.id)
+          setVariants((variantsData as unknown as ProductVariant[]) || [])
+        } else {
+          setVariants([])
+        }
 
         if (typedProduct.image_urls && typedProduct.image_urls.length > 0) {
           setSelectedMedia({ type: 'image', value: typedProduct.image_urls[0] })
@@ -108,15 +125,27 @@ export default function ProductDetail() {
     if (slug) fetchProduct()
   }, [slug])
 
+  const hasVariants = !!product?.variant_options && product.variant_options.length > 0
+  const allOptionsSelected = hasVariants && product!.variant_options!.every(o => selectedOptions[o.name])
+  const matchedVariant = allOptionsSelected ? findMatchingVariant(variants, selectedOptions) : undefined
+
+  const handleSelectOption = (optionName: string, value: string) => {
+    setSelectedOptions(prev => ({ ...prev, [optionName]: value }))
+  }
+
   const handleAddToCart = () => {
     if (!product) return
+    if (hasVariants && !matchedVariant) return
+
     addToCart(
       {
         id: product.id,
         name: product.name,
         slug: product.slug,
-        price_fcfa: product.price_fcfa,
-        image_url: product.image_urls?.[0] || null
+        price_fcfa: matchedVariant ? matchedVariant.price_fcfa : product.price_fcfa,
+        image_url: matchedVariant?.image_url || product.image_urls?.[0] || null,
+        variant_id: matchedVariant?.id,
+        variant_label: matchedVariant ? variantLabel(selectedOptions) : undefined
       },
       quantity
     )
@@ -161,9 +190,13 @@ export default function ProductDetail() {
   }
 
   const avail = availabilityLabel[product.availability]
-  const hasPromo = !!product.compare_at_price_fcfa && product.compare_at_price_fcfa > product.price_fcfa
+  const displayPrice = matchedVariant ? matchedVariant.price_fcfa : product.price_fcfa
+  const hasPromo = !matchedVariant && !!product.compare_at_price_fcfa && product.compare_at_price_fcfa > product.price_fcfa
   const embedUrl = product.video_url ? getVideoEmbedUrl(product.video_url) : null
   const specEntries = Object.entries(product.specs || {}).filter(([, v]) => v)
+  const canAddToCart = hasVariants
+    ? !!matchedVariant && matchedVariant.stock > 0
+    : product.availability !== 'discontinued'
 
   return (
     <main className="min-h-screen bg-white flex flex-col">
@@ -243,20 +276,61 @@ export default function ProductDetail() {
 
             <div className="flex items-center gap-3 mb-6 flex-wrap">
               <span className={`text-2xl font-bold ${hasPromo ? 'text-[#1E7A46]' : 'text-[#1A1A1A]'}`}>
-                {product.price_fcfa.toLocaleString('fr-CI')} FCFA
+                {hasVariants && !matchedVariant && 'À partir de '}
+                {displayPrice.toLocaleString('fr-CI')} FCFA
               </span>
               {hasPromo && (
                 <span className="text-base text-[#8A8579] line-through">
                   {product.compare_at_price_fcfa!.toLocaleString('fr-CI')} FCFA
                 </span>
               )}
-              <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${avail.color}`}>
-                {avail.text}
-              </span>
+              {!hasVariants && (
+                <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${avail.color}`}>
+                  {avail.text}
+                </span>
+              )}
+              {hasVariants && matchedVariant && (
+                <span className={`text-xs font-semibold px-3 py-1.5 rounded-full ${matchedVariant.stock > 0 ? 'bg-[#1E7A46] text-white' : 'bg-[#8A8579] text-white'}`}>
+                  {matchedVariant.stock > 0 ? 'En stock' : 'Rupture pour cette variante'}
+                </span>
+              )}
             </div>
 
             {product.description && (
               <p className="text-[#56534C] leading-relaxed mb-6">{product.description}</p>
+            )}
+
+            {/* Variant picker */}
+            {hasVariants && (
+              <div className="mb-6 space-y-4">
+                {product.variant_options!.map(option => (
+                  <div key={option.name}>
+                    <p className="text-sm font-semibold text-[#1A1A1A] mb-2">{option.name}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {option.values.map(value => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => handleSelectOption(option.name, value)}
+                          className={`px-4 py-2 rounded-full text-sm border-2 transition-colors ${
+                            selectedOptions[option.name] === value
+                              ? 'border-[#FF6600] bg-orange-50 text-[#FF6600] font-semibold'
+                              : 'border-[#E4DDCF] text-[#56534C] hover:border-[#1A1A1A]'
+                          }`}
+                        >
+                          {value}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                {!allOptionsSelected && (
+                  <p className="text-xs text-[#8A8579]">Choisissez une option pour chaque caractéristique ci-dessus.</p>
+                )}
+                {allOptionsSelected && !matchedVariant && (
+                  <p className="text-xs text-red-600">Cette combinaison n&apos;est pas disponible.</p>
+                )}
+              </div>
             )}
 
             {product.availability !== 'discontinued' && (
@@ -283,10 +357,12 @@ export default function ProductDetail() {
               variant="primary"
               size="lg"
               className="w-full"
-              disabled={product.availability === 'discontinued'}
+              disabled={!canAddToCart}
               onClick={handleAddToCart}
             >
-              {product.availability === 'discontinued'
+              {hasVariants && !matchedVariant
+                ? 'Choisissez une combinaison'
+                : !canAddToCart
                 ? 'Rupture de stock'
                 : added
                 ? 'Ajouté au panier ✓'

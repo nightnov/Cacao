@@ -66,7 +66,7 @@ export default function AdminOrders() {
       const supabase = getSupabaseClient()
       const { data, error } = await supabase
         .from('order_items')
-        .select('id, product_name, quantity, unit_price_fcfa, subtotal_fcfa')
+        .select('id, product_name, quantity, unit_price_fcfa, subtotal_fcfa, variant_label')
         .eq('order_id', order.id)
 
       if (error) throw error

@@ -122,6 +122,9 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
                 <div key={item.id} className="flex items-center justify-between bg-[#FBF6EE] rounded-lg p-4 border border-[#E4DDCF]">
                   <div>
                     <p className="font-medium text-[#1A1A1A]">{item.product_name}</p>
+                    {item.variant_label && (
+                      <p className="text-xs text-[#8A8579]">{item.variant_label}</p>
+                    )}
                     <p className="text-sm text-[#56534C]">Quantité: {item.quantity}</p>
                   </div>
                   <div className="text-right">

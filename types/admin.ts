@@ -1,3 +1,19 @@
+export interface VariantOption {
+  name: string
+  values: string[]
+}
+
+export interface ProductVariant {
+  id: string
+  product_id: string
+  option_values: Record<string, string>
+  sku: string | null
+  price_fcfa: number
+  supplier_cost_fcfa: number | null
+  stock: number
+  image_url: string | null
+}
+
 export interface Product {
   id: string
   name: string
@@ -11,6 +27,14 @@ export interface Product {
   tags: string[]
   image_urls: string[]
   video_url: string | null
+  supplier_name?: string | null
+  supplier_url?: string | null
+  supplier_product_id?: string | null
+  supplier_cost_fcfa?: number | null
+  status?: 'draft' | 'active'
+  meta_title?: string | null
+  meta_description?: string | null
+  variant_options?: VariantOption[]
 }
 
 export interface Order {
@@ -43,6 +67,7 @@ export interface OrderItem {
   quantity: number
   unit_price_fcfa: number
   subtotal_fcfa: number
+  variant_label?: string | null
 }
 
 export interface Message {

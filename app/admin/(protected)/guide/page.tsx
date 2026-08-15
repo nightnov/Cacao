@@ -1,0 +1,235 @@
+'use client'
+
+import Link from 'next/link'
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  MessageSquare,
+  Truck,
+  Users,
+  Settings,
+  ShoppingBag,
+  LucideIcon
+} from 'lucide-react'
+
+interface GuideSection {
+  id: string
+  label: string
+  icon: LucideIcon
+  href?: string
+  badge?: string
+  content: { title: string; body: string }[]
+}
+
+const sections: GuideSection[] = [
+  {
+    id: 'dashboard',
+    label: 'Tableau de bord',
+    icon: LayoutDashboard,
+    href: '/admin',
+    content: [
+      {
+        title: 'Les 4 cartes en haut',
+        body: 'Clients, Commandes, Revenus du mois et Produits. Le badge vert ↑ ou rouge ↓ à côté du chiffre compare la valeur actuelle à celle du début du mois — c\'est une vraie mesure, pas une estimation.'
+      },
+      {
+        title: 'Le graphique "Revenus mensuels"',
+        body: 'Additionne le total des commandes (hors annulées/remboursées) mois par mois. Le menu déroulant en haut à droite permet de changer d\'année.'
+      },
+      {
+        title: '"Recherches sans résultat" et "Produits les plus vus"',
+        body: 'Deux encarts qui montrent ce que les clients cherchent sans le trouver (pistes pour de futurs produits à ajouter) et quels produits sont les plus consultés (pour savoir ce qui marche).'
+      },
+      {
+        title: 'Dernières commandes et Actions rapides',
+        body: 'Un aperçu des 5 dernières commandes, et des raccourcis vers les actions les plus fréquentes (ajouter un produit, gérer la livraison, etc.).'
+      }
+    ]
+  },
+  {
+    id: 'products',
+    label: 'Produits',
+    icon: Package,
+    href: '/admin/products',
+    content: [
+      {
+        title: 'Ajouter ou modifier un produit',
+        body: 'Bouton "Ajouter produit" en haut, ou icône crayon sur une ligne du tableau pour modifier. Le formulaire couvre photos, vidéo, nom, description, catégorie, prix, disponibilité, spécifications techniques et tags.'
+      },
+      {
+        title: 'Photos des produits',
+        body: 'Utilisez des images carrées (ratio 1:1, idéalement 800×800 px) pour que le catalogue soit uniforme. La première photo ajoutée devient l\'image principale. 5 Mo max par photo.'
+      },
+      {
+        title: 'Prix barré (promotion)',
+        body: 'Le champ "Ancien prix" est optionnel. Si vous le remplissez avec un montant supérieur au prix actuel, le produit s\'affiche avec le prix actuel en vert et l\'ancien prix barré en gris partout sur le site.'
+      },
+      {
+        title: 'Disponibilité',
+        body: 'En stock / En commande / Rupture — s\'affiche comme badge coloré sur la fiche produit et dans le catalogue.'
+      },
+      {
+        title: 'Supprimer un produit',
+        body: 'Icône poubelle sur la ligne du tableau. Une confirmation est demandée avant suppression définitive.'
+      }
+    ]
+  },
+  {
+    id: 'orders',
+    label: 'Commandes',
+    icon: ShoppingCart,
+    href: '/admin/orders',
+    content: [
+      {
+        title: 'Filtrer par statut',
+        body: 'Les boutons en haut (En attente, Confirmée, Préparation, Expédiée, Livrée, Annulée, Remboursée) filtrent la liste. "Toutes" réaffiche tout.'
+      },
+      {
+        title: 'Voir le détail d\'une commande',
+        body: 'Icône œil sur la ligne : ouvre les articles commandés, l\'adresse de livraison et permet de changer le statut de la commande (par exemple passer de "Confirmée" à "Expédiée").'
+      },
+      {
+        title: 'Pagination',
+        body: '10 commandes par page. Les numéros de page et les flèches en bas du tableau permettent de naviguer.'
+      }
+    ]
+  },
+  {
+    id: 'messages',
+    label: 'Messages',
+    icon: MessageSquare,
+    href: '/admin/messages',
+    content: [
+      {
+        title: 'Répondre aux clients',
+        body: 'Chaque client a un seul fil de discussion. La liste à gauche montre les conversations, cliquez sur une pour voir et répondre aux messages. Un badge orange indique les messages non lus.'
+      },
+      {
+        title: 'Origine des messages',
+        body: 'Les clients peuvent écrire depuis leur compte ou directement depuis une fiche produit ("Une question sur ce produit ?") — le nom du produit concerné apparaît alors dans le message.'
+      }
+    ]
+  },
+  {
+    id: 'shipping',
+    label: 'Frais de livraison',
+    icon: Truck,
+    href: '/admin/shipping',
+    content: [
+      {
+        title: 'Gérer les villes et tarifs',
+        body: 'Chaque ville a un tarif de livraison fixe en FCFA. "Ajouter tarif" pour une nouvelle ville, icônes crayon/poubelle pour modifier ou supprimer. Ces tarifs apparaissent automatiquement au moment du paiement, selon la ville choisie par le client.'
+      }
+    ]
+  },
+  {
+    id: 'customers',
+    label: 'Clients',
+    icon: Users,
+    href: '/admin/customers',
+    content: [
+      {
+        title: 'Liste des clients',
+        body: 'Affiche uniquement les clients ayant passé au moins une commande, avec leur nombre de commandes et le total dépensé. La barre de recherche filtre par nom ou email.'
+      }
+    ]
+  },
+  {
+    id: 'settings',
+    label: 'Réglages',
+    icon: Settings,
+    href: '/admin/settings',
+    content: [
+      {
+        title: 'Bannière de la page d\'accueil',
+        body: 'Image large affichée au-dessus du catalogue sur la page d\'accueil. Format recommandé : ratio 3:1 (ex. 1600×530 px). "Remplacer l\'image" pour la changer, "Retirer" pour la masquer.'
+      },
+      {
+        title: 'Changer l\'e-mail ou le mot de passe admin',
+        body: 'Deux formulaires séparés en bas de la page. Le changement d\'e-mail envoie un lien de confirmation à la nouvelle adresse.'
+      }
+    ]
+  },
+  {
+    id: 'import',
+    label: 'Import produits (plateformes externes)',
+    icon: ShoppingBag,
+    badge: 'Bientôt disponible',
+    content: [
+      {
+        title: 'Ce qui est prévu',
+        body: 'Un formulaire pour importer un produit depuis Jumia ou une autre plateforme ivoirienne : vous collez l\'URL du produit fournisseur, puis vous copiez/collez manuellement le titre, le prix, les images et la description dans un formulaire guidé.'
+      },
+      {
+        title: 'Pourquoi manuel et pas automatique',
+        body: 'Ces plateformes n\'offrent pas d\'accès automatique (API publique) aux données produit pour un site comme le vôtre — un import 100% automatique ne serait ni fiable ni autorisé. La version manuelle reste rapide tout en respectant les règles de ces sites.'
+      },
+      {
+        title: 'Ce que ça gérera une fois construit',
+        body: 'Variantes (couleur, taille...), stock par variante, prix d\'achat vs prix de vente, statut brouillon/actif, et des champs de référencement (titre et description optimisés pour Google).'
+      }
+    ]
+  }
+]
+
+export default function AdminGuide() {
+  return (
+    <div className="max-w-4xl">
+      <h1 className="font-serif font-semibold text-4xl text-[#1A1A1A] mb-2">Guide du dashboard</h1>
+      <p className="text-[#56534C] mb-10">Comment utiliser chaque partie de l&apos;administration Cacao.</p>
+
+      {/* Table of contents */}
+      <div className="bg-white rounded-2xl border border-[#E4DDCF] p-6 mb-10">
+        <p className="text-xs font-semibold text-[#8A8579] uppercase mb-3">Sommaire</p>
+        <div className="flex flex-wrap gap-2">
+          {sections.map(s => (
+            <a
+              key={s.id}
+              href={`#${s.id}`}
+              className="px-3 py-1.5 bg-gray-100 hover:bg-orange-50 hover:text-[#FF6600] rounded-full text-sm text-[#56534C] transition-colors"
+            >
+              {s.label}
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-8">
+        {sections.map(section => {
+          const Icon = section.icon
+          return (
+            <div key={section.id} id={section.id} className="bg-white rounded-2xl border border-[#E4DDCF] p-6 scroll-mt-8">
+              <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0">
+                    <Icon size={18} className="text-[#FF6600]" />
+                  </div>
+                  <h2 className="font-serif font-semibold text-xl text-[#1A1A1A]">{section.label}</h2>
+                </div>
+                {section.badge ? (
+                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-orange-50 text-[#FF6600]">
+                    {section.badge}
+                  </span>
+                ) : section.href ? (
+                  <Link href={section.href} className="text-sm text-[#FF6600] font-semibold hover:underline">
+                    Ouvrir →
+                  </Link>
+                ) : null}
+              </div>
+
+              <div className="space-y-4">
+                {section.content.map(item => (
+                  <div key={item.title} className="pb-4 border-b border-[#E4DDCF] last:border-b-0 last:pb-0">
+                    <p className="font-semibold text-sm text-[#1A1A1A] mb-1">{item.title}</p>
+                    <p className="text-sm text-[#56534C] leading-relaxed">{item.body}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}

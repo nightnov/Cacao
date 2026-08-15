@@ -12,6 +12,7 @@ import {
   Truck,
   Users,
   Settings,
+  BookOpen,
   Menu,
   LogOut,
   ChevronDown
@@ -25,7 +26,8 @@ const adminLinks = [
   { label: 'Messages', href: '/admin/messages', icon: MessageSquare },
   { label: 'Frais livraison', href: '/admin/shipping', icon: Truck },
   { label: 'Clients', href: '/admin/customers', icon: Users },
-  { label: 'Réglages', href: '/admin/settings', icon: Settings }
+  { label: 'Réglages', href: '/admin/settings', icon: Settings },
+  { label: 'Guide', href: '/admin/guide', icon: BookOpen }
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

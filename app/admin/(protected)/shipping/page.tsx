@@ -1,9 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/Button'
 import ShippingForm from '@/components/admin/ShippingForm'
+import { TableShell, Column } from '@/components/admin/TableShell'
+import { IconButton } from '@/components/admin/IconButton'
+import { Pagination } from '@/components/admin/Pagination'
 
 interface ShippingFee {
   id: string
@@ -12,11 +16,14 @@ interface ShippingFee {
   created_at: string
 }
 
+const PAGE_SIZE = 10
+
 export default function AdminShipping() {
   const [fees, setFees] = useState<ShippingFee[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [selectedFee, setSelectedFee] = useState<ShippingFee | null>(null)
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     fetchFees()
@@ -65,6 +72,24 @@ export default function AdminShipping() {
     fetchFees()
   }
 
+  const pagedFees = fees.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  const columns: Column<ShippingFee>[] = [
+    { key: 'city', header: 'Ville', render: f => <span className="font-medium text-[#1A1A1A]">{f.city}</span> },
+    { key: 'price', header: 'Tarif', render: f => `${f.price_fcfa.toLocaleString('fr-CI')} FCFA` },
+    {
+      key: 'actions',
+      header: 'Actions',
+      align: 'right',
+      render: f => (
+        <div className="flex justify-end gap-1">
+          <IconButton icon={Pencil} label="Modifier" onClick={() => handleEdit(f)} />
+          <IconButton icon={Trash2} label="Supprimer" tone="danger" onClick={() => handleDelete(f.id)} />
+        </div>
+      )
+    }
+  ]
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
@@ -76,64 +101,23 @@ export default function AdminShipping() {
             setShowForm(true)
           }}
         >
-          ➕ Ajouter tarif
+          <Plus size={16} /> Ajouter tarif
         </Button>
       </div>
 
-      {/* Shipping Fees List */}
-      {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="bg-white rounded-lg border border-[#E4DDCF] p-4 animate-pulse">
-              <div className="h-6 bg-[#E4DDCF] rounded w-1/3 mb-2"></div>
-              <div className="h-4 bg-[#E4DDCF] rounded w-1/2"></div>
-            </div>
-          ))}
-        </div>
-      ) : fees.length > 0 ? (
-        <div className="bg-white rounded-lg border border-[#E4DDCF] overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-[#FBF6EE] border-b border-[#E4DDCF]">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]">Ville</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]">Tarif</th>
-                <th className="px-6 py-4 text-right text-sm font-semibold text-[#1A1A1A]">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {fees.map(fee => (
-                <tr key={fee.id} className="border-t border-[#E4DDCF] hover:bg-[#FBF6EE] transition-colors">
-                  <td className="px-6 py-4 text-sm text-[#1A1A1A] font-medium">{fee.city}</td>
-                  <td className="px-6 py-4 text-sm text-[#1A1A1A] font-medium">
-                    {fee.price_fcfa.toLocaleString('fr-CI')} FCFA
-                  </td>
-                  <td className="px-6 py-4 text-right space-x-2">
-                    <button
-                      onClick={() => handleEdit(fee)}
-                      className="px-3 py-1 text-sm bg-[#FF6600] text-white rounded hover:bg-[#E65C00] transition-colors"
-                    >
-                      Modifier
-                    </button>
-                    <button
-                      onClick={() => handleDelete(fee.id)}
-                      className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-                    >
-                      Supprimer
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg border border-[#E4DDCF] p-12 text-center">
-          <p className="text-[#56534C] mb-4">Aucun tarif de livraison</p>
+      <TableShell
+        columns={columns}
+        rows={pagedFees}
+        rowKey={f => f.id}
+        loading={loading}
+        emptyMessage="Aucun tarif de livraison"
+        emptyAction={
           <Button variant="primary" onClick={() => setShowForm(true)}>
-            ➕ Ajouter le premier tarif
+            <Plus size={16} /> Ajouter le premier tarif
           </Button>
-        </div>
-      )}
+        }
+        footer={<Pagination page={page} pageSize={PAGE_SIZE} total={fees.length} onPageChange={setPage} />}
+      />
 
       {/* Form Modal */}
       {showForm && (

@@ -2,22 +2,123 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import Link from 'next/link'
+import { Users, ShoppingCart, Wallet, Package, Plus, Settings, ClipboardList } from 'lucide-react'
+import { StatCard } from '@/components/admin/StatCard'
+import { RevenueChart } from '@/components/admin/RevenueChart'
+import { TableShell, Column } from '@/components/admin/TableShell'
+import { StatusBadge, StatusTone } from '@/components/admin/StatusBadge'
+import { Avatar } from '@/components/admin/Avatar'
+import { Order } from '@/types/admin'
+
+const MONTH_LABELS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
+
+const orderStatusLabels: Record<string, { label: string; tone: StatusTone }> = {
+  pending: { label: 'En attente', tone: 'neutral' },
+  confirmed: { label: 'Confirmée', tone: 'info' },
+  preparing: { label: 'Préparation', tone: 'pending' },
+  shipped: { label: 'Expédiée', tone: 'info' },
+  delivered: { label: 'Livrée', tone: 'success' },
+  cancelled: { label: 'Annulée', tone: 'danger' },
+  refunded: { label: 'Remboursée', tone: 'danger' }
+}
+
+interface Trend {
+  value: number
+  direction: 'up' | 'down'
+}
 
 interface Stats {
   products: number
   orders: number
+  customers: number
   revenue: number
-  cities: number
+  productsTrend?: Trend
+  ordersTrend?: Trend
+  customersTrend?: Trend
+  revenueTrend?: Trend
+}
+
+function computeTrend(current: number, before: number): Trend | undefined {
+  if (before === 0) {
+    if (current === 0) return undefined
+    return { value: 100, direction: 'up' }
+  }
+  const pct = ((current - before) / before) * 100
+  return { value: pct, direction: pct >= 0 ? 'up' : 'down' }
 }
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<Stats>({
-    products: 0,
-    orders: 0,
-    revenue: 0,
-    cities: 0
-  })
+  const [stats, setStats] = useState<Stats>({ products: 0, orders: 0, customers: 0, revenue: 0 })
   const [loading, setLoading] = useState(true)
+  const [chartYear, setChartYear] = useState(new Date().getFullYear())
+  const [chartData, setChartData] = useState<{ month: string; revenus: number }[]>(
+    MONTH_LABELS.map(month => ({ month, revenus: 0 }))
+  )
+  const [chartLoading, setChartLoading] = useState(true)
+  const [recentOrders, setRecentOrders] = useState<Order[]>([])
+  const [recentOrdersLoading, setRecentOrdersLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchRecentOrders = async () => {
+      try {
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+        )
+        const { data, error } = await supabase
+          .from('orders')
+          .select('id, order_number, status, total_fcfa, created_at, profiles(email, first_name, last_name)')
+          .order('created_at', { ascending: false })
+          .limit(5)
+
+        if (error) throw error
+        setRecentOrders((data as unknown as Order[]) || [])
+      } catch (error) {
+        console.error('Erreur lors du chargement des dernières commandes:', error)
+      } finally {
+        setRecentOrdersLoading(false)
+      }
+    }
+
+    fetchRecentOrders()
+  }, [])
+
+  useEffect(() => {
+    const fetchMonthlyRevenue = async () => {
+      setChartLoading(true)
+      try {
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+        )
+
+        const startOfYear = new Date(chartYear, 0, 1).toISOString()
+        const startOfNextYear = new Date(chartYear + 1, 0, 1).toISOString()
+
+        const { data } = await supabase
+          .from('orders')
+          .select('total_fcfa, created_at')
+          .gte('created_at', startOfYear)
+          .lt('created_at', startOfNextYear)
+          .not('status', 'in', '(cancelled,refunded)')
+
+        const monthlyTotals = new Array(12).fill(0)
+        for (const order of data || []) {
+          const monthIndex = new Date(order.created_at).getMonth()
+          monthlyTotals[monthIndex] += order.total_fcfa || 0
+        }
+
+        setChartData(MONTH_LABELS.map((month, i) => ({ month, revenus: monthlyTotals[i] })))
+      } catch (error) {
+        console.error('Erreur lors du chargement du graphique de revenus:', error)
+      } finally {
+        setChartLoading(false)
+      }
+    }
+
+    fetchMonthlyRevenue()
+  }, [chartYear])
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -27,18 +128,38 @@ export default function AdminDashboard() {
           process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
         )
 
-        // Récupérer les stats
-        const [productsRes, ordersRes, shippingRes] = await Promise.all([
+        const now = new Date()
+        const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString()
+
+        const [
+          productsNow, productsBefore,
+          ordersNow, ordersBefore,
+          customersNow, customersBefore,
+          revenueThisMonthRes, revenueLastMonthRes
+        ] = await Promise.all([
           supabase.from('products').select('id', { count: 'exact', head: true }),
+          supabase.from('products').select('id', { count: 'exact', head: true }).lt('created_at', startOfThisMonth),
           supabase.from('orders').select('id', { count: 'exact', head: true }),
-          supabase.from('shipping_fees').select('id', { count: 'exact', head: true })
+          supabase.from('orders').select('id', { count: 'exact', head: true }).lt('created_at', startOfThisMonth),
+          supabase.from('profiles').select('id', { count: 'exact', head: true }),
+          supabase.from('profiles').select('id', { count: 'exact', head: true }).lt('created_at', startOfThisMonth),
+          supabase.from('orders').select('total_fcfa').gte('created_at', startOfThisMonth).not('status', 'in', '(cancelled,refunded)'),
+          supabase.from('orders').select('total_fcfa').gte('created_at', startOfLastMonth).lt('created_at', startOfThisMonth).not('status', 'in', '(cancelled,refunded)')
         ])
 
+        const revenueThisMonth = (revenueThisMonthRes.data || []).reduce((sum, o: any) => sum + (o.total_fcfa || 0), 0)
+        const revenueLastMonth = (revenueLastMonthRes.data || []).reduce((sum, o: any) => sum + (o.total_fcfa || 0), 0)
+
         setStats({
-          products: productsRes.count || 0,
-          orders: ordersRes.count || 0,
-          revenue: 0, // À implémenter
-          cities: shippingRes.count || 0
+          products: productsNow.count || 0,
+          orders: ordersNow.count || 0,
+          customers: customersNow.count || 0,
+          revenue: revenueThisMonth,
+          productsTrend: computeTrend(productsNow.count || 0, productsBefore.count || 0),
+          ordersTrend: computeTrend(ordersNow.count || 0, ordersBefore.count || 0),
+          customersTrend: computeTrend(customersNow.count || 0, customersBefore.count || 0),
+          revenueTrend: computeTrend(revenueThisMonth, revenueLastMonth)
         })
       } catch (error) {
         console.error('Erreur lors du chargement des stats:', error)
@@ -52,22 +173,40 @@ export default function AdminDashboard() {
 
   const statCards = [
     {
-      label: 'Produits',
-      value: stats.products,
-      icon: '🖥️',
-      href: '/admin/products'
+      label: 'Clients',
+      value: stats.customers,
+      icon: Users,
+      iconBg: 'bg-orange-50',
+      iconColor: 'text-[#FF6600]',
+      trend: stats.customersTrend,
+      href: '/admin/customers'
     },
     {
       label: 'Commandes',
       value: stats.orders,
-      icon: '📦',
+      icon: ShoppingCart,
+      iconBg: 'bg-blue-50',
+      iconColor: 'text-blue-600',
+      trend: stats.ordersTrend,
       href: '/admin/orders'
     },
     {
-      label: 'Villes',
-      value: stats.cities,
-      icon: '🚚',
-      href: '/admin/shipping'
+      label: 'Revenus ce mois (FCFA)',
+      value: stats.revenue.toLocaleString('fr-CI'),
+      icon: Wallet,
+      iconBg: 'bg-green-50',
+      iconColor: 'text-green-700',
+      trend: stats.revenueTrend,
+      href: '/admin/orders'
+    },
+    {
+      label: 'Produits',
+      value: stats.products,
+      icon: Package,
+      iconBg: 'bg-purple-50',
+      iconColor: 'text-purple-600',
+      trend: stats.productsTrend,
+      href: '/admin/products'
     }
   ]
 
@@ -78,67 +217,121 @@ export default function AdminDashboard() {
 
       {/* Stats Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="bg-white rounded-lg border border-[#E4DDCF] p-6 animate-pulse">
-              <div className="h-12 bg-[#E4DDCF] rounded w-1/2 mb-4"></div>
-              <div className="h-8 bg-[#E4DDCF] rounded w-1/3"></div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="bg-white rounded-2xl border border-[#E4DDCF] p-6 animate-pulse">
+              <div className="h-11 w-11 bg-[#E4DDCF] rounded-full mb-4"></div>
+              <div className="h-8 bg-[#E4DDCF] rounded w-1/2 mb-2"></div>
+              <div className="h-4 bg-[#E4DDCF] rounded w-1/3"></div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
           {statCards.map((card, idx) => (
-            <a
-              key={idx}
-              href={card.href}
-              className="bg-white rounded-lg border border-[#E4DDCF] p-6 hover:shadow-md transition-shadow cursor-pointer"
-            >
-              <div className="text-4xl mb-3">{card.icon}</div>
-              <p className="text-[#8A8579] text-sm mb-2">{card.label}</p>
-              <p className="font-serif font-bold text-3xl text-[#1A1A1A]">{card.value}</p>
-            </a>
+            <StatCard key={idx} {...card} />
           ))}
         </div>
       )}
 
+      {/* Revenue Chart */}
+      <div className="mb-12">
+        {chartLoading ? (
+          <div className="bg-white rounded-2xl border border-[#E4DDCF] p-6 animate-pulse">
+            <div className="h-6 bg-[#E4DDCF] rounded w-1/4 mb-6"></div>
+            <div className="h-64 bg-[#E4DDCF] rounded"></div>
+          </div>
+        ) : (
+          <RevenueChart
+            data={chartData}
+            year={chartYear}
+            onYearChange={setChartYear}
+            years={[new Date().getFullYear(), new Date().getFullYear() - 1, new Date().getFullYear() - 2]}
+          />
+        )}
+      </div>
+
+      {/* Recent Orders */}
+      <div className="mb-12">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-serif font-semibold text-xl text-[#1A1A1A]">Dernières commandes</h2>
+          <Link href="/admin/orders" className="text-sm text-[#FF6600] font-semibold hover:underline">
+            Voir tout →
+          </Link>
+        </div>
+        <TableShell
+          columns={
+            [
+              { key: 'order_number', header: 'Commande', render: (o: Order) => <span className="font-medium text-[#1A1A1A]">{o.order_number}</span> },
+              {
+                key: 'client',
+                header: 'Client',
+                render: (o: Order) => {
+                  const name = `${o.profiles?.first_name || ''} ${o.profiles?.last_name || ''}`.trim() || o.profiles?.email || 'Client'
+                  return (
+                    <div className="flex items-center gap-3">
+                      <Avatar name={name} size="sm" />
+                      <span className="text-[#56534C]">{name}</span>
+                    </div>
+                  )
+                }
+              },
+              { key: 'total', header: 'Total', render: (o: Order) => `${o.total_fcfa.toLocaleString('fr-CI')} FCFA` },
+              {
+                key: 'status',
+                header: 'Statut',
+                render: (o: Order) => {
+                  const status = orderStatusLabels[o.status] || { label: o.status, tone: 'neutral' as StatusTone }
+                  return <StatusBadge label={status.label} tone={status.tone} />
+                }
+              },
+              { key: 'date', header: 'Date', render: (o: Order) => new Date(o.created_at).toLocaleDateString('fr-CI') }
+            ] as Column<Order>[]
+          }
+          rows={recentOrders}
+          rowKey={(o: Order) => o.id}
+          loading={recentOrdersLoading}
+          emptyMessage="Aucune commande pour le moment"
+        />
+      </div>
+
       {/* Quick Actions */}
-      <div className="bg-white rounded-lg border border-[#E4DDCF] p-8">
+      <div className="bg-white rounded-2xl border border-[#E4DDCF] p-8">
         <h2 className="font-serif font-semibold text-2xl text-[#1A1A1A] mb-6">Actions rapides</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <a
             href="/admin/products?action=create"
-            className="p-4 border-2 border-[#FF6600] rounded-lg hover:bg-[#FBF6EE] transition-colors text-center"
+            className="flex flex-col items-center gap-2 p-4 border-2 border-[#FF6600] rounded-xl hover:bg-orange-50 transition-colors text-center"
           >
-            <div className="text-2xl mb-2">➕</div>
+            <Plus size={22} className="text-[#FF6600]" />
             <p className="font-semibold text-[#1A1A1A]">Ajouter un produit</p>
             <p className="text-sm text-[#56534C]">Créer un nouveau produit</p>
           </a>
 
           <a
             href="/admin/shipping"
-            className="p-4 border-2 border-[#FF6600] rounded-lg hover:bg-[#FBF6EE] transition-colors text-center"
+            className="flex flex-col items-center gap-2 p-4 border-2 border-[#FF6600] rounded-xl hover:bg-orange-50 transition-colors text-center"
           >
-            <div className="text-2xl mb-2">⚙️</div>
+            <Settings size={22} className="text-[#FF6600]" />
             <p className="font-semibold text-[#1A1A1A]">Gérer livraison</p>
             <p className="text-sm text-[#56534C]">Configurer frais et villes</p>
           </a>
 
           <a
             href="/admin/orders"
-            className="p-4 border-2 border-[#FF6600] rounded-lg hover:bg-[#FBF6EE] transition-colors text-center"
+            className="flex flex-col items-center gap-2 p-4 border-2 border-[#FF6600] rounded-xl hover:bg-orange-50 transition-colors text-center"
           >
-            <div className="text-2xl mb-2">📋</div>
+            <ClipboardList size={22} className="text-[#FF6600]" />
             <p className="font-semibold text-[#1A1A1A]">Voir commandes</p>
             <p className="text-sm text-[#56534C]">Gérer les commandes clients</p>
           </a>
 
           <a
             href="/admin/customers"
-            className="p-4 border-2 border-[#FF6600] rounded-lg hover:bg-[#FBF6EE] transition-colors text-center"
+            className="flex flex-col items-center gap-2 p-4 border-2 border-[#FF6600] rounded-xl hover:bg-orange-50 transition-colors text-center"
           >
-            <div className="text-2xl mb-2">👥</div>
+            <Users size={22} className="text-[#FF6600]" />
             <p className="font-semibold text-[#1A1A1A]">Clients</p>
             <p className="text-sm text-[#56534C]">Liste des utilisateurs</p>
           </a>

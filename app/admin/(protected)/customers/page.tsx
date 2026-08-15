@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { getSupabaseClient } from '@/lib/supabase'
+import { TableShell, Column } from '@/components/admin/TableShell'
+import { Pagination } from '@/components/admin/Pagination'
+import { Avatar } from '@/components/admin/Avatar'
+import { StatusBadge } from '@/components/admin/StatusBadge'
 
 interface Customer {
   id: string
@@ -14,14 +18,21 @@ interface Customer {
   created_at: string
 }
 
+const PAGE_SIZE = 10
+
 export default function AdminCustomers() {
   const [customers, setCustomers] = useState<Customer[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     fetchCustomers()
   }, [])
+
+  useEffect(() => {
+    setPage(1)
+  }, [searchTerm])
 
   const fetchCustomers = async () => {
     try {
@@ -71,6 +82,28 @@ export default function AdminCustomers() {
     customer.last_name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  const pagedCustomers = filteredCustomers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  const columns: Column<Customer>[] = [
+    {
+      key: 'name',
+      header: 'Nom',
+      render: c => {
+        const name = `${c.first_name} ${c.last_name}`.trim()
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar name={name} size="sm" />
+            <span className="font-medium text-[#1A1A1A]">{name}</span>
+          </div>
+        )
+      }
+    },
+    { key: 'email', header: 'Email', render: c => <span className="text-[#56534C]">{c.email}</span> },
+    { key: 'phone', header: 'Téléphone', render: c => <span className="text-[#56534C]">{c.phone}</span> },
+    { key: 'orders', header: 'Commandes', align: 'center', render: c => <StatusBadge label={String(c.order_count)} tone="info" /> },
+    { key: 'total', header: 'Total dépensé', align: 'right', render: c => `${c.total_spent_fcfa.toLocaleString('fr-CI')} FCFA` }
+  ]
+
   return (
     <div>
       <div className="mb-8">
@@ -88,54 +121,14 @@ export default function AdminCustomers() {
         </div>
       </div>
 
-      {/* Customers List */}
-      {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="bg-white rounded-lg border border-[#E4DDCF] p-4 animate-pulse">
-              <div className="h-6 bg-[#E4DDCF] rounded w-1/3 mb-2"></div>
-              <div className="h-4 bg-[#E4DDCF] rounded w-1/2"></div>
-            </div>
-          ))}
-        </div>
-      ) : filteredCustomers.length > 0 ? (
-        <div className="bg-white rounded-lg border border-[#E4DDCF] overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-[#FBF6EE] border-b border-[#E4DDCF]">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]">Nom</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]">Email</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]">Téléphone</th>
-                <th className="px-6 py-4 text-center text-sm font-semibold text-[#1A1A1A]">Commandes</th>
-                <th className="px-6 py-4 text-right text-sm font-semibold text-[#1A1A1A]">Total dépensé</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredCustomers.map(customer => (
-                <tr key={customer.id} className="border-t border-[#E4DDCF] hover:bg-[#FBF6EE] transition-colors">
-                  <td className="px-6 py-4 text-sm text-[#1A1A1A] font-medium">
-                    {customer.first_name} {customer.last_name}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-[#56534C]">{customer.email}</td>
-                  <td className="px-6 py-4 text-sm text-[#56534C]">{customer.phone}</td>
-                  <td className="px-6 py-4 text-sm text-center">
-                    <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
-                      {customer.order_count}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-[#1A1A1A] font-medium text-right">
-                    {customer.total_spent_fcfa.toLocaleString('fr-CI')} FCFA
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg border border-[#E4DDCF] p-12 text-center">
-          <p className="text-[#56534C]">Aucun client trouvé</p>
-        </div>
-      )}
+      <TableShell
+        columns={columns}
+        rows={pagedCustomers}
+        rowKey={c => c.id}
+        loading={loading}
+        emptyMessage="Aucun client trouvé"
+        footer={<Pagination page={page} pageSize={PAGE_SIZE} total={filteredCustomers.length} onPageChange={setPage} />}
+      />
     </div>
   )
 }

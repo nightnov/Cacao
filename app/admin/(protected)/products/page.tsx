@@ -1,16 +1,36 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Plus, Pencil, Trash2 } from 'lucide-react'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/Button'
 import ProductForm from '@/components/admin/ProductForm'
+import { TableShell, Column } from '@/components/admin/TableShell'
+import { StatusBadge, StatusTone } from '@/components/admin/StatusBadge'
+import { IconButton } from '@/components/admin/IconButton'
+import { Pagination } from '@/components/admin/Pagination'
 import { Product } from '@/types/admin'
+
+const categoryLabels: Record<string, string> = {
+  portable: 'Portable',
+  bureau: 'Bureau',
+  accessoire: 'Accessoire'
+}
+
+const availabilityLabels: Record<string, { label: string; tone: StatusTone }> = {
+  in_stock: { label: 'En stock', tone: 'success' },
+  on_order: { label: 'En commande', tone: 'pending' },
+  discontinued: { label: 'Rupture', tone: 'neutral' }
+}
+
+const PAGE_SIZE = 10
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     fetchProducts()
@@ -59,6 +79,51 @@ export default function AdminProducts() {
     fetchProducts()
   }
 
+  const pagedProducts = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  const columns: Column<Product>[] = [
+    {
+      key: 'photo',
+      header: '',
+      render: p => (
+        <div className="w-10 h-10 rounded-lg bg-gray-50 border border-[#E4DDCF] overflow-hidden flex items-center justify-center flex-shrink-0">
+          {p.image_urls?.[0] ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={p.image_urls[0]} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF6600" strokeWidth="1.5">
+              <rect x="2" y="3" width="20" height="14" rx="2" />
+              <line x1="8" y1="21" x2="16" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+          )}
+        </div>
+      )
+    },
+    { key: 'name', header: 'Nom', render: p => <span className="font-medium text-[#1A1A1A]">{p.name}</span> },
+    { key: 'category', header: 'Catégorie', render: p => <span className="text-[#56534C]">{categoryLabels[p.category] || p.category}</span> },
+    { key: 'price', header: 'Prix', render: p => `${p.price_fcfa.toLocaleString('fr-CI')} FCFA` },
+    {
+      key: 'availability',
+      header: 'Disponibilité',
+      render: p => {
+        const avail = availabilityLabels[p.availability] || { label: p.availability, tone: 'neutral' as StatusTone }
+        return <StatusBadge label={avail.label} tone={avail.tone} />
+      }
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      align: 'right',
+      render: p => (
+        <div className="flex justify-end gap-1">
+          <IconButton icon={Pencil} label="Modifier" onClick={() => handleEdit(p)} />
+          <IconButton icon={Trash2} label="Supprimer" tone="danger" onClick={() => handleDelete(p.id)} />
+        </div>
+      )
+    }
+  ]
+
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
@@ -70,97 +135,23 @@ export default function AdminProducts() {
             setShowForm(true)
           }}
         >
-          ➕ Ajouter produit
+          <Plus size={16} /> Ajouter produit
         </Button>
       </div>
 
-      {/* Product List */}
-      {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="bg-white rounded-lg border border-[#E4DDCF] p-4 animate-pulse">
-              <div className="h-6 bg-[#E4DDCF] rounded w-1/3 mb-2"></div>
-              <div className="h-4 bg-[#E4DDCF] rounded w-1/2"></div>
-            </div>
-          ))}
-        </div>
-      ) : products.length > 0 ? (
-        <div className="bg-white rounded-lg border border-[#E4DDCF] overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-[#FBF6EE] border-b border-[#E4DDCF]">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]"></th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]">Nom</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]">Catégorie</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]">Prix</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]">Disponibilité</th>
-                <th className="px-6 py-4 text-right text-sm font-semibold text-[#1A1A1A]">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map(product => (
-                <tr key={product.id} className="border-t border-[#E4DDCF] hover:bg-[#FBF6EE] transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="w-12 h-12 rounded bg-[#FBF6EE] border border-[#E4DDCF] overflow-hidden flex items-center justify-center">
-                      {product.image_urls?.[0] ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={product.image_urls[0]} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FF6600" strokeWidth="1.5">
-                          <rect x="2" y="3" width="20" height="14" rx="2" />
-                          <line x1="8" y1="21" x2="16" y2="21" />
-                          <line x1="12" y1="17" x2="12" y2="21" />
-                        </svg>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-[#1A1A1A] font-medium">{product.name}</td>
-                  <td className="px-6 py-4 text-sm text-[#56534C]">
-                    {product.category === 'portable' && 'Portable'}
-                    {product.category === 'bureau' && 'Bureau'}
-                    {product.category === 'accessoire' && 'Accessoire'}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-[#1A1A1A] font-medium">
-                    {product.price_fcfa.toLocaleString('fr-CI')} FCFA
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      product.availability === 'in_stock' ? 'bg-green-100 text-green-700' :
-                      product.availability === 'on_order' ? 'bg-orange-100 text-orange-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
-                      {product.availability === 'in_stock' && 'En stock'}
-                      {product.availability === 'on_order' && 'En commande'}
-                      {product.availability === 'discontinued' && 'Rupture'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right space-x-2">
-                    <button
-                      onClick={() => handleEdit(product)}
-                      className="px-3 py-1 text-sm bg-[#FF6600] text-white rounded hover:bg-[#E65C00] transition-colors"
-                    >
-                      Modifier
-                    </button>
-                    <button
-                      onClick={() => handleDelete(product.id)}
-                      className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
-                    >
-                      Supprimer
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg border border-[#E4DDCF] p-12 text-center">
-          <p className="text-[#56534C] mb-4">Aucun produit trouvé</p>
+      <TableShell
+        columns={columns}
+        rows={pagedProducts}
+        rowKey={p => p.id}
+        loading={loading}
+        emptyMessage="Aucun produit trouvé"
+        emptyAction={
           <Button variant="primary" onClick={() => setShowForm(true)}>
-            ➕ Créer le premier produit
+            <Plus size={16} /> Créer le premier produit
           </Button>
-        </div>
-      )}
+        }
+        footer={<Pagination page={page} pageSize={PAGE_SIZE} total={products.length} onPageChange={setPage} />}
+      />
 
       {/* Form Modal */}
       {showForm && (

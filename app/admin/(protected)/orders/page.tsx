@@ -1,19 +1,27 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Eye } from 'lucide-react'
 import { getSupabaseClient } from '@/lib/supabase'
 import OrderDetailModal from '@/components/admin/OrderDetailModal'
+import { TableShell, Column } from '@/components/admin/TableShell'
+import { StatusBadge, StatusTone } from '@/components/admin/StatusBadge'
+import { IconButton } from '@/components/admin/IconButton'
+import { Pagination } from '@/components/admin/Pagination'
+import { Avatar } from '@/components/admin/Avatar'
 import { Order, OrderItem } from '@/types/admin'
 
-const statusLabels: Record<string, { label: string; color: string }> = {
-  pending: { label: 'En attente', color: 'bg-gray-100 text-gray-700' },
-  confirmed: { label: 'Confirmée', color: 'bg-blue-100 text-blue-700' },
-  preparing: { label: 'Préparation', color: 'bg-yellow-100 text-yellow-700' },
-  shipped: { label: 'Expédiée', color: 'bg-purple-100 text-purple-700' },
-  delivered: { label: 'Livrée', color: 'bg-green-100 text-green-700' },
-  cancelled: { label: 'Annulée', color: 'bg-red-100 text-red-700' },
-  refunded: { label: 'Remboursée', color: 'bg-red-100 text-red-700' }
+const statusLabels: Record<string, { label: string; tone: StatusTone }> = {
+  pending: { label: 'En attente', tone: 'neutral' },
+  confirmed: { label: 'Confirmée', tone: 'info' },
+  preparing: { label: 'Préparation', tone: 'pending' },
+  shipped: { label: 'Expédiée', tone: 'info' },
+  delivered: { label: 'Livrée', tone: 'success' },
+  cancelled: { label: 'Annulée', tone: 'danger' },
+  refunded: { label: 'Remboursée', tone: 'danger' }
 }
+
+const PAGE_SIZE = 10
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>([])
@@ -21,9 +29,11 @@ export default function AdminOrders() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [orderItems, setOrderItems] = useState<OrderItem[]>([])
   const [statusFilter, setStatusFilter] = useState<string>('')
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     fetchOrders()
+    setPage(1)
   }, [statusFilter])
 
   const fetchOrders = async () => {
@@ -87,6 +97,45 @@ export default function AdminOrders() {
     }
   }
 
+  const pagedOrders = orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  const columns: Column<Order>[] = [
+    { key: 'order_number', header: 'Commande', render: o => <span className="font-medium text-[#1A1A1A]">{o.order_number}</span> },
+    {
+      key: 'client',
+      header: 'Client',
+      render: o => {
+        const name = `${o.profiles?.first_name || ''} ${o.profiles?.last_name || ''}`.trim() || o.profiles?.email || 'Client'
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar name={name} size="sm" />
+            <span className="text-[#56534C]">{name}</span>
+          </div>
+        )
+      }
+    },
+    { key: 'total', header: 'Total', render: o => `${o.total_fcfa.toLocaleString('fr-CI')} FCFA` },
+    {
+      key: 'status',
+      header: 'Statut',
+      render: o => {
+        const status = statusLabels[o.status] || { label: o.status, tone: 'neutral' as StatusTone }
+        return <StatusBadge label={status.label} tone={status.tone} />
+      }
+    },
+    { key: 'date', header: 'Date', render: o => new Date(o.created_at).toLocaleDateString('fr-CI') },
+    {
+      key: 'actions',
+      header: 'Actions',
+      align: 'right',
+      render: o => (
+        <div className="flex justify-end">
+          <IconButton icon={Eye} label="Voir détails" onClick={() => handleViewDetails(o)} />
+        </div>
+      )
+    }
+  ]
+
   return (
     <div>
       <div className="mb-8">
@@ -120,65 +169,14 @@ export default function AdminOrders() {
         </div>
       </div>
 
-      {/* Orders List */}
-      {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="bg-white rounded-lg border border-[#E4DDCF] p-4 animate-pulse">
-              <div className="h-6 bg-[#E4DDCF] rounded w-1/4 mb-2"></div>
-              <div className="h-4 bg-[#E4DDCF] rounded w-1/2"></div>
-            </div>
-          ))}
-        </div>
-      ) : orders.length > 0 ? (
-        <div className="bg-white rounded-lg border border-[#E4DDCF] overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-[#FBF6EE] border-b border-[#E4DDCF]">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]">Commande</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]">Client</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]">Total</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]">Statut</th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-[#1A1A1A]">Date</th>
-                <th className="px-6 py-4 text-right text-sm font-semibold text-[#1A1A1A]">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map(order => (
-                <tr key={order.id} className="border-t border-[#E4DDCF] hover:bg-[#FBF6EE] transition-colors">
-                  <td className="px-6 py-4 text-sm font-medium text-[#1A1A1A]">{order.order_number}</td>
-                  <td className="px-6 py-4 text-sm text-[#56534C]">
-                    {order.profiles?.first_name} {order.profiles?.last_name}
-                  </td>
-                  <td className="px-6 py-4 text-sm font-medium text-[#1A1A1A]">
-                    {order.total_fcfa.toLocaleString('fr-CI')} FCFA
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${statusLabels[order.status]?.color || 'bg-gray-100'}`}>
-                      {statusLabels[order.status]?.label || order.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-[#56534C]">
-                    {new Date(order.created_at).toLocaleDateString('fr-CI')}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => handleViewDetails(order)}
-                      className="px-3 py-1 text-sm bg-[#FF6600] text-white rounded hover:bg-[#E65C00] transition-colors"
-                    >
-                      Voir détails
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg border border-[#E4DDCF] p-12 text-center">
-          <p className="text-[#56534C]">Aucune commande trouvée</p>
-        </div>
-      )}
+      <TableShell
+        columns={columns}
+        rows={pagedOrders}
+        rowKey={o => o.id}
+        loading={loading}
+        emptyMessage="Aucune commande trouvée"
+        footer={<Pagination page={page} pageSize={PAGE_SIZE} total={orders.length} onPageChange={setPage} />}
+      />
 
       {/* Detail Modal */}
       {selectedOrder && (

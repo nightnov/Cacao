@@ -16,6 +16,12 @@ const adminLinks = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { isAdmin, loading, user, logout } = useAdminAuth()
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen)
+    setMobileSidebarOpen(!mobileSidebarOpen)
+  }
 
   if (loading) {
     return (
@@ -33,13 +39,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex h-screen bg-[#FBF6EE]">
+    <div className="flex h-screen bg-[#FBF6EE] overflow-hidden">
+      {/* Mobile backdrop */}
+      {mobileSidebarOpen && (
+        <div
+          onClick={() => setMobileSidebarOpen(false)}
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+        ></div>
+      )}
+
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-[#1A1A1A] text-white transition-all duration-300 flex flex-col`}>
+      <aside className={`
+        fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300
+        ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        md:relative md:translate-x-0 md:z-auto md:transition-all
+        ${sidebarOpen ? 'md:w-64' : 'md:w-20'}
+        bg-[#1A1A1A] text-white flex flex-col flex-shrink-0
+      `}>
         {/* Logo */}
         <div className="p-6 border-b border-[#333]">
           <Link href="/admin" className="font-serif font-bold text-2xl hover:opacity-80">
-            {sidebarOpen ? 'Cacao' : 'C'}
+            {sidebarOpen || mobileSidebarOpen ? 'Cacao' : 'C'}
           </Link>
         </div>
 
@@ -49,18 +69,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link
               key={link.href}
               href={link.href}
+              onClick={() => setMobileSidebarOpen(false)}
               className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-[#333] transition-colors text-sm font-medium"
               title={link.label}
             >
               <span className="text-lg">{link.icon}</span>
-              {sidebarOpen && <span>{link.label}</span>}
+              {(sidebarOpen || mobileSidebarOpen) && <span>{link.label}</span>}
             </Link>
           ))}
         </nav>
 
         {/* User Info & Logout */}
         <div className="p-4 border-t border-[#333] space-y-3">
-          {sidebarOpen && (
+          {(sidebarOpen || mobileSidebarOpen) && (
             <div className="text-xs">
               <p className="text-[#8A8579]">Connecté en tant que</p>
               <p className="font-semibold truncate">{user?.email}</p>
@@ -70,7 +91,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             onClick={logout}
             className="w-full px-4 py-2 bg-[#E85D25] hover:bg-[#d04a1a] rounded-lg font-semibold text-sm transition-colors"
           >
-            {sidebarOpen ? 'Déconnexion' : '⎋'}
+            {sidebarOpen || mobileSidebarOpen ? 'Déconnexion' : '⎋'}
           </button>
         </div>
       </aside>
@@ -80,7 +101,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Top Navbar */}
         <header className="bg-white border-b border-[#E4DDCF] px-6 py-4 flex items-center justify-between">
           <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
+            onClick={toggleSidebar}
             className="p-2 hover:bg-[#FBF6EE] rounded-lg transition-colors"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

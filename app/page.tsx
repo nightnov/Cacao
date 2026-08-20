@@ -19,6 +19,10 @@ interface Product {
   availability: 'in_stock' | 'on_order' | 'discontinued'
   image_urls: string[]
   created_at?: string
+  avg_rating?: number | null
+  review_count?: number
+  view_count?: number
+  specs?: Record<string, unknown>
 }
 
 const categoryShortcuts = [
@@ -43,8 +47,45 @@ const editorialCards = [
   }
 ]
 
+function ProductGridSkeleton({ count = 4 }: { count?: number }) {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8">
+      {[...Array(count)].map((_, i) => (
+        <div key={i} className="animate-pulse">
+          <div className="bg-[#E4DDCF] aspect-square rounded-xl"></div>
+          <div className="pt-2.5 space-y-2">
+            <div className="h-3.5 bg-[#E4DDCF] rounded w-3/4"></div>
+            <div className="h-3.5 bg-[#E4DDCF] rounded w-1/3"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function ProductSection({ title, products, href }: { title: string; products: Product[]; href?: string }) {
+  if (products.length === 0) return null
+  return (
+    <section className="max-w-7xl mx-auto px-10 py-14">
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="font-serif font-semibold text-2xl text-[#1A1A1A]">{title}</h2>
+        {href && (
+          <Link href={href} className="text-[#FF6600] font-semibold hover:underline text-sm">
+            Voir tout →
+          </Link>
+        )}
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8">
+        {products.map(product => (
+          <ProductCard key={product.id} {...product} />
+        ))}
+      </div>
+    </section>
+  )
+}
+
 export default function Home() {
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true)
   const [bannerUrl, setBannerUrl] = useState<string | null>(null)
 
@@ -56,7 +97,7 @@ export default function Home() {
       try {
         const res = await fetch('/api/products')
         const data = await res.json()
-        setProducts((data || []).slice(0, 8))
+        setProducts(data || [])
       } catch (error) {
         console.error('Erreur lors du chargement des produits:', error)
       } finally {
@@ -99,24 +140,28 @@ export default function Home() {
     }
   }
 
+  const popular = [...products].sort((a, b) => (b.view_count || 0) - (a.view_count || 0)).slice(0, 4)
+  const newest = [...products].slice(0, 4) // déjà trié par created_at desc côté API
+  const deals = products.filter(p => !!p.compare_at_price_fcfa && p.compare_at_price_fcfa > p.price_fcfa).slice(0, 4)
+
   return (
     <main className="min-h-screen bg-white">
       <Navbar />
 
-      {/* Hero */}
-      <section className="max-w-7xl mx-auto px-10 py-12">
+      {/* Hero — compact, la découverte prime */}
+      <section className="max-w-7xl mx-auto px-10 pt-8 pb-6">
         <Badge>DÉCOUVREZ LA SÉLECTION CACAO</Badge>
-        <h1 className="font-serif font-semibold text-5xl leading-tight mb-4 max-w-2xl mt-5">
+        <h1 className="font-serif font-semibold text-4xl leading-tight mb-3 max-w-2xl mt-4">
           Trouvez ce qui vous <em className="italic text-[#FF6600]">plaît.</em>
         </h1>
-        <p className="text-[#56534C] text-base max-w-md leading-relaxed mb-6">
+        <p className="text-[#56534C] text-base max-w-md leading-relaxed mb-5">
           Des produits choisis avec soin, livrés chez vous en toute confiance en Côte d&apos;Ivoire.
         </p>
         <div className="flex items-center gap-4 flex-wrap">
-          <Link href="/products" className="px-6 py-3 bg-[#FF6600] hover:bg-[#E65C00] text-white rounded-full font-semibold text-sm transition-colors">
+          <Link href="/products" className="px-6 py-2.5 bg-[#FF6600] hover:bg-[#E65C00] text-white rounded-full font-semibold text-sm transition-colors">
             Découvrir les produits
           </Link>
-          <a href="#categories" className="px-6 py-3 border-2 border-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white rounded-full font-semibold text-sm transition-colors">
+          <a href="#categories" className="px-6 py-2.5 border-2 border-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white rounded-full font-semibold text-sm transition-colors">
             Explorer les catégories
           </a>
         </div>
@@ -161,34 +206,20 @@ export default function Home() {
         </section>
       )}
 
-      {/* Sélection du moment */}
-      <section className="max-w-7xl mx-auto px-10 py-20">
-        <div className="flex items-center justify-between mb-10">
-          <h2 className="font-serif font-semibold text-3xl">Sélection du moment</h2>
-          <Link href="/products" className="text-[#FF6600] font-semibold hover:underline">
-            Voir tout le catalogue →
-          </Link>
-        </div>
-
-        {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="bg-[#E4DDCF] aspect-square rounded-xl"></div>
-                <div className="pt-2.5 space-y-2">
-                  <div className="h-3.5 bg-[#E4DDCF] rounded w-3/4"></div>
-                  <div className="h-3.5 bg-[#E4DDCF] rounded w-1/3"></div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : products.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8">
-            {products.map(product => (
-              <ProductCard key={product.id} {...product} />
-            ))}
-          </div>
-        ) : (
+      {/* Produits populaires */}
+      {loading ? (
+        <section className="max-w-7xl mx-auto px-10 py-14">
+          <h2 className="font-serif font-semibold text-2xl text-[#1A1A1A] mb-8">Produits populaires</h2>
+          <ProductGridSkeleton />
+        </section>
+      ) : products.length > 0 ? (
+        <>
+          <ProductSection title="Produits populaires" products={popular} href="/products?sort=popular" />
+          <ProductSection title="Nouveautés" products={newest} href="/products?sort=newest" />
+          <ProductSection title="Meilleures offres" products={deals} href="/products?sort=newest" />
+        </>
+      ) : (
+        <section className="max-w-7xl mx-auto px-10 py-14">
           <div className="text-center py-20 px-6 bg-white rounded-2xl border-2 border-dashed border-[#E4DDCF]">
             <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[#FBF6EE] flex items-center justify-center">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF6600" strokeWidth="1.5">
@@ -204,8 +235,8 @@ export default function Home() {
               Aucun produit n&apos;est disponible pour le moment. Les premiers produits seront ajoutés très prochainement.
             </p>
           </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* Découverte éditoriale */}
       <section className="bg-[#FBF3E7] border-t border-b border-[#E4DDCF]">

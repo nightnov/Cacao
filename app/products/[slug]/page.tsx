@@ -7,9 +7,15 @@ import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { Button } from '@/components/Button'
 import { ProductCard } from '@/components/ProductCard'
+import { FavoriteButton } from '@/components/FavoriteButton'
+import { SoldByBlock } from '@/components/SoldByBlock'
+import { StarRating } from '@/components/StarRating'
 import { getSupabaseClient } from '@/lib/supabase'
 import { getVideoEmbedUrl } from '@/lib/video'
 import { addToCart } from '@/lib/cart'
+import { useAuth } from '@/hooks/useAuth'
+import { useRouter } from 'next/navigation'
+import { Star } from 'lucide-react'
 import { VariantOption, ProductVariant } from '@/types/admin'
 import { findMatchingVariant, variantLabel } from '@/lib/variants'
 
@@ -30,6 +36,15 @@ interface Product {
   created_at?: string
 }
 
+interface Review {
+  id: string
+  user_id: string
+  rating: number
+  comment: string | null
+  created_at: string
+  profiles?: { first_name: string | null } | null
+}
+
 const categoryLabel: Record<string, string> = {
   portable: 'Portable',
   bureau: 'Ordinateur de bureau',
@@ -43,9 +58,18 @@ const specLabels: Record<string, string> = {
   screen: 'Écran'
 }
 
+const tabs = [
+  { key: 'description', label: 'Description' },
+  { key: 'specs', label: 'Caractéristiques' },
+  { key: 'shipping', label: 'Livraison & garantie' },
+  { key: 'reviews', label: 'Avis' }
+] as const
+
 export default function ProductDetail() {
   const params = useParams()
+  const router = useRouter()
   const slug = params.slug as string
+  const { user, isLoggedIn } = useAuth()
 
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
@@ -57,6 +81,12 @@ export default function ProductDetail() {
   const [variants, setVariants] = useState<ProductVariant[]>([])
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
   const [shared, setShared] = useState(false)
+  const [activeTab, setActiveTab] = useState<typeof tabs[number]['key']>('description')
+
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [myRating, setMyRating] = useState(0)
+  const [myComment, setMyComment] = useState('')
+  const [submittingReview, setSubmittingReview] = useState(false)
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -83,11 +113,19 @@ export default function ProductDetail() {
         setQuantity(1)
         setAdded(false)
         setSelectedOptions({})
+        setActiveTab('description')
 
         supabase.from('product_views').insert([{ product_id: typedProduct.id }]).then(
           () => {},
           () => {}
         )
+
+        const { data: reviewsData } = await supabase
+          .from('reviews')
+          .select('id, user_id, rating, comment, created_at, profiles(first_name)')
+          .eq('product_id', typedProduct.id)
+          .order('created_at', { ascending: false })
+        setReviews((reviewsData as unknown as Review[]) || [])
 
         if (typedProduct.variant_options && typedProduct.variant_options.length > 0) {
           const { data: variantsData } = await supabase
@@ -151,24 +189,66 @@ export default function ProductDetail() {
     }
   }
 
+  const buildCartItem = () => {
+    if (!product) return null
+    return {
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      price_fcfa: matchedVariant ? matchedVariant.price_fcfa : product.price_fcfa,
+      image_url: matchedVariant?.image_url || product.image_urls?.[0] || null,
+      variant_id: matchedVariant?.id,
+      variant_label: matchedVariant ? variantLabel(selectedOptions) : undefined
+    }
+  }
+
   const handleAddToCart = () => {
     if (!product) return
     if (hasVariants && !matchedVariant) return
-
-    addToCart(
-      {
-        id: product.id,
-        name: product.name,
-        slug: product.slug,
-        price_fcfa: matchedVariant ? matchedVariant.price_fcfa : product.price_fcfa,
-        image_url: matchedVariant?.image_url || product.image_urls?.[0] || null,
-        variant_id: matchedVariant?.id,
-        variant_label: matchedVariant ? variantLabel(selectedOptions) : undefined
-      },
-      quantity
-    )
+    const item = buildCartItem()
+    if (!item) return
+    addToCart(item, quantity)
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
+  }
+
+  const handleBuyNow = () => {
+    if (!product) return
+    if (hasVariants && !matchedVariant) return
+    const item = buildCartItem()
+    if (!item) return
+    addToCart(item, quantity)
+    router.push('/checkout')
+  }
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!product || !user || myRating === 0) return
+
+    setSubmittingReview(true)
+    try {
+      const supabase = getSupabaseClient()
+      const { error } = await supabase
+        .from('reviews')
+        .upsert(
+          { product_id: product.id, user_id: user.id, rating: myRating, comment: myComment.trim() || null },
+          { onConflict: 'product_id,user_id' }
+        )
+      if (error) throw error
+
+      const { data: reviewsData } = await supabase
+        .from('reviews')
+        .select('id, user_id, rating, comment, created_at, profiles(first_name)')
+        .eq('product_id', product.id)
+        .order('created_at', { ascending: false })
+      setReviews((reviewsData as unknown as Review[]) || [])
+      setMyRating(0)
+      setMyComment('')
+    } catch (err) {
+      console.error('Erreur lors de l\'envoi de l\'avis:', err)
+    } finally {
+      setSubmittingReview(false)
+    }
   }
 
   if (loading) {
@@ -215,6 +295,10 @@ export default function ProductDetail() {
     ? !!matchedVariant && matchedVariant.stock > 0
     : product.availability !== 'discontinued'
 
+  const reviewCount = reviews.length
+  const avgRating = reviewCount > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount : 0
+  const myExistingReview = isLoggedIn && user ? reviews.find(r => r.user_id === user.id) : undefined
+
   return (
     <main className="min-h-screen bg-white flex flex-col">
       <Navbar />
@@ -231,7 +315,7 @@ export default function ProductDetail() {
           <span className="text-[#1A1A1A]">{product.name}</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
           {/* Gallery */}
           <div className="flex gap-3">
             {(product.image_urls?.length > 0 || embedUrl) && (
@@ -263,7 +347,7 @@ export default function ProductDetail() {
               </div>
             )}
 
-            <div className="aspect-square bg-white rounded-lg border border-[#E4DDCF] overflow-hidden flex items-center justify-center flex-1 min-w-0">
+            <div className="relative aspect-square bg-white rounded-lg border border-[#E4DDCF] overflow-hidden flex items-center justify-center flex-1 min-w-0">
               {selectedMedia?.type === 'video' && embedUrl ? (
                 <iframe
                   src={embedUrl}
@@ -281,6 +365,7 @@ export default function ProductDetail() {
                   <line x1="12" y1="17" x2="12" y2="21" />
                 </svg>
               )}
+              <FavoriteButton productId={product.id} size={18} className="absolute top-3 right-3 w-9 h-9 shadow-sm" />
             </div>
           </div>
 
@@ -289,7 +374,17 @@ export default function ProductDetail() {
             <div className="text-xs font-semibold text-[#FF6600] uppercase mb-1.5">
               {categoryLabel[product.category]}
             </div>
-            <h1 className="font-serif font-semibold text-2xl text-[#1A1A1A] mb-3">{product.name}</h1>
+            <h1 className="font-serif font-semibold text-2xl text-[#1A1A1A] mb-2">{product.name}</h1>
+
+            {reviewCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setActiveTab('reviews')}
+                className="mb-3 hover:opacity-70 transition-opacity"
+              >
+                <StarRating rating={avgRating} reviewCount={reviewCount} />
+              </button>
+            )}
 
             <div className="flex items-center gap-2.5 mb-4 flex-wrap">
               <span className={`text-xl font-bold ${hasPromo ? 'text-[#1E7A46]' : 'text-[#1A1A1A]'}`}>
@@ -308,8 +403,18 @@ export default function ProductDetail() {
               )}
             </div>
 
-            {product.description && (
-              <p className="text-sm text-[#56534C] leading-relaxed mb-4">{product.description}</p>
+            <SoldByBlock />
+
+            {/* Caractéristiques clés (aperçu rapide) */}
+            {specEntries.length > 0 && (
+              <ul className="flex flex-wrap gap-x-4 gap-y-1.5 my-4 text-sm text-[#56534C]">
+                {specEntries.slice(0, 4).map(([key, value]) => (
+                  <li key={key} className="flex items-center gap-1.5">
+                    <span className="w-1 h-1 rounded-full bg-[#FF6600]"></span>
+                    {String(value)}
+                  </li>
+                ))}
+              </ul>
             )}
 
             {/* Variant picker */}
@@ -365,21 +470,32 @@ export default function ProductDetail() {
               </div>
             )}
 
-            <Button
-              variant="primary"
-              size="lg"
-              className="w-full"
-              disabled={!canAddToCart}
-              onClick={handleAddToCart}
-            >
-              {hasVariants && !matchedVariant
-                ? 'Choisissez une combinaison'
-                : !canAddToCart
-                ? 'Rupture de stock'
-                : added
-                ? 'Ajouté au panier ✓'
-                : 'Ajouter au panier'}
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                variant="outline"
+                size="lg"
+                className="flex-1"
+                disabled={!canAddToCart}
+                onClick={handleAddToCart}
+              >
+                {hasVariants && !matchedVariant
+                  ? 'Choisissez une combinaison'
+                  : !canAddToCart
+                  ? 'Rupture de stock'
+                  : added
+                  ? 'Ajouté ✓'
+                  : 'Ajouter au panier'}
+              </Button>
+              <Button
+                variant="primary"
+                size="lg"
+                className="flex-1"
+                disabled={!canAddToCart}
+                onClick={handleBuyNow}
+              >
+                Acheter maintenant
+              </Button>
+            </div>
 
             <div className="flex items-center justify-center gap-4 mt-3">
               <Link
@@ -398,21 +514,6 @@ export default function ProductDetail() {
               </button>
             </div>
 
-            {/* Specs */}
-            {specEntries.length > 0 && (
-              <div className="mt-6 pt-6 border-t border-[#E4DDCF]">
-                <h2 className="font-serif font-semibold text-lg text-[#1A1A1A] mb-3">Spécifications</h2>
-                <div className="space-y-1.5">
-                  {specEntries.map(([key, value]) => (
-                    <div key={key} className="flex justify-between py-1.5 border-b border-[#E4DDCF] text-sm">
-                      <span className="text-[#8A8579]">{specLabels[key] || key}</span>
-                      <span className="text-[#1A1A1A] font-medium">{String(value)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Tags */}
             {product.tags?.length > 0 && (
               <div className="mt-4 flex gap-2 flex-wrap">
@@ -424,6 +525,117 @@ export default function ProductDetail() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="mb-16">
+          <div className="flex gap-6 border-b border-[#E4DDCF] mb-6 overflow-x-auto">
+            {tabs.map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`pb-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
+                  activeTab === tab.key
+                    ? 'border-[#FF6600] text-[#1A1A1A]'
+                    : 'border-transparent text-[#8A8579] hover:text-[#1A1A1A]'
+                }`}
+              >
+                {tab.label}
+                {tab.key === 'reviews' && reviewCount > 0 && ` (${reviewCount})`}
+              </button>
+            ))}
+          </div>
+
+          {activeTab === 'description' && (
+            <p className="text-sm text-[#56534C] leading-relaxed max-w-2xl">
+              {product.description || 'Aucune description disponible pour ce produit.'}
+            </p>
+          )}
+
+          {activeTab === 'specs' && (
+            <div className="max-w-xl">
+              {specEntries.length > 0 ? (
+                <table className="w-full text-sm">
+                  <tbody className="divide-y divide-[#E4DDCF]">
+                    {specEntries.map(([key, value]) => (
+                      <tr key={key}>
+                        <td className="py-2.5 pr-4 text-[#8A8579] w-1/3">{specLabels[key] || key}</td>
+                        <td className="py-2.5 text-[#1A1A1A] font-medium">{String(value)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p className="text-sm text-[#8A8579]">Aucune caractéristique renseignée pour ce produit.</p>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'shipping' && (
+            <div className="max-w-xl space-y-3 text-sm text-[#56534C] leading-relaxed">
+              <p>Livraison via Yango partout à Abidjan. Les délais sont estimatifs et peuvent varier selon la zone.</p>
+              <p>Paiement sécurisé via MoneyFusion (Wave, Orange Money, MTN Money, Moov Money, carte bancaire).</p>
+              <p>Retour possible sous 14 jours après réception pour un produit non utilisé ; remboursement traité sous 7 à 10 jours ouvrables.</p>
+              <Link href="/legal/terms" className="inline-block text-[#FF6600] font-semibold hover:underline">
+                Voir les conditions complètes →
+              </Link>
+            </div>
+          )}
+
+          {activeTab === 'reviews' && (
+            <div className="max-w-2xl space-y-8">
+              {isLoggedIn && (
+                <form onSubmit={handleSubmitReview} className="bg-[#FBF6EE] rounded-xl p-5 border border-[#E4DDCF]">
+                  <p className="text-sm font-semibold text-[#1A1A1A] mb-3">
+                    {myExistingReview ? 'Modifier votre avis' : 'Laisser un avis'}
+                  </p>
+                  <div className="flex items-center gap-1 mb-3">
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setMyRating(star)}
+                        aria-label={`${star} étoiles`}
+                      >
+                        <Star
+                          size={24}
+                          className={star <= (myRating || myExistingReview?.rating || 0) ? 'fill-[#FF6600] text-[#FF6600]' : 'text-[#E4DDCF]'}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    value={myComment}
+                    onChange={e => setMyComment(e.target.value)}
+                    placeholder="Votre avis (optionnel)"
+                    rows={2}
+                    className="w-full px-3 py-2 text-sm border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] mb-3 bg-white"
+                  />
+                  <Button type="submit" variant="primary" disabled={submittingReview || myRating === 0}>
+                    {submittingReview ? 'Envoi...' : 'Publier'}
+                  </Button>
+                </form>
+              )}
+
+              {reviews.length === 0 ? (
+                <p className="text-sm text-[#8A8579]">Aucun avis pour le moment. Soyez le premier à donner votre avis sur ce produit.</p>
+              ) : (
+                <div className="space-y-5">
+                  {reviews.map(review => (
+                    <div key={review.id} className="pb-5 border-b border-[#E4DDCF] last:border-b-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <StarRating rating={review.rating} showCount={false} size={13} />
+                        <span className="text-xs text-[#8A8579]">
+                          {review.profiles?.first_name || 'Client'} · {new Date(review.created_at).toLocaleDateString('fr-CI')}
+                        </span>
+                      </div>
+                      {review.comment && <p className="text-sm text-[#56534C]">{review.comment}</p>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Related products */}

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { FavoriteButton } from '@/components/FavoriteButton'
+import { StarRating } from '@/components/StarRating'
 
 interface ProductCardProps {
   id: string
@@ -11,13 +12,34 @@ interface ProductCardProps {
   availability: 'in_stock' | 'on_order' | 'discontinued'
   image_urls?: string[]
   created_at?: string
+  avg_rating?: number | null
+  review_count?: number
+  specs?: Record<string, unknown>
 }
 
 const NEW_THRESHOLD_DAYS = 14
 
-export function ProductCard({ id, name, slug, price_fcfa, compare_at_price_fcfa, image_urls, created_at }: ProductCardProps) {
+function specsSummary(specs?: Record<string, unknown>): string | null {
+  if (!specs) return null
+  const parts = [specs.cpu, specs.ram && `${specs.ram} RAM`, specs.storage].filter(Boolean)
+  return parts.length > 0 ? parts.join(' · ') : null
+}
+
+export function ProductCard({
+  id,
+  name,
+  slug,
+  price_fcfa,
+  compare_at_price_fcfa,
+  image_urls,
+  created_at,
+  avg_rating,
+  review_count,
+  specs
+}: ProductCardProps) {
   const hasPromo = !!compare_at_price_fcfa && compare_at_price_fcfa > price_fcfa
   const isNew = !!created_at && Date.now() - new Date(created_at).getTime() < NEW_THRESHOLD_DAYS * 24 * 60 * 60 * 1000
+  const summary = specsSummary(specs)
 
   return (
     <Link href={`/products/${slug}`} className="group block">
@@ -52,6 +74,15 @@ export function ProductCard({ id, name, slug, price_fcfa, compare_at_price_fcfa,
         <h3 className="text-sm text-[#1A1A1A] truncate group-hover:text-[#FF6600] transition-colors">
           {name}
         </h3>
+
+        {summary && <p className="text-xs text-[#8A8579] truncate mt-0.5">{summary}</p>}
+
+        {!!review_count && avg_rating != null && (
+          <div className="mt-1">
+            <StarRating rating={avg_rating} reviewCount={review_count} size={12} />
+          </div>
+        )}
+
         <div className="flex items-center gap-1.5 mt-1 flex-wrap">
           <span className={`text-sm font-bold ${hasPromo ? 'text-[#1E7A46]' : 'text-[#1A1A1A]'}`}>
             {price_fcfa.toLocaleString('fr-CI')} FCFA

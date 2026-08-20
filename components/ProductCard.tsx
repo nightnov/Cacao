@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { FavoriteButton } from '@/components/FavoriteButton'
 
 interface ProductCardProps {
   id: string
@@ -9,15 +10,19 @@ interface ProductCardProps {
   category: string
   availability: 'in_stock' | 'on_order' | 'discontinued'
   image_urls?: string[]
+  created_at?: string
 }
 
-export function ProductCard({ id, name, slug, price_fcfa, compare_at_price_fcfa, image_urls }: ProductCardProps) {
+const NEW_THRESHOLD_DAYS = 14
+
+export function ProductCard({ id, name, slug, price_fcfa, compare_at_price_fcfa, image_urls, created_at }: ProductCardProps) {
   const hasPromo = !!compare_at_price_fcfa && compare_at_price_fcfa > price_fcfa
+  const isNew = !!created_at && Date.now() - new Date(created_at).getTime() < NEW_THRESHOLD_DAYS * 24 * 60 * 60 * 1000
 
   return (
     <Link href={`/products/${slug}`} className="group block">
       {/* Image */}
-      <div className="bg-[#FBF6EE] aspect-square rounded-xl overflow-hidden flex items-center justify-center">
+      <div className="relative bg-[#FBF6EE] aspect-square rounded-xl overflow-hidden flex items-center justify-center">
         {image_urls && image_urls.length > 0 ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -32,6 +37,14 @@ export function ProductCard({ id, name, slug, price_fcfa, compare_at_price_fcfa,
             <line x1="12" y1="17" x2="12" y2="21" />
           </svg>
         )}
+
+        {(isNew || hasPromo) && (
+          <span className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-1 rounded-full text-white ${hasPromo ? 'bg-[#1E7A46]' : 'bg-[#FF6600]'}`}>
+            {hasPromo ? 'Bon plan' : 'Nouveau'}
+          </span>
+        )}
+
+        <FavoriteButton productId={id} size={16} className="absolute top-2 right-2 w-7 h-7" />
       </div>
 
       {/* Content */}

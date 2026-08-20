@@ -3,9 +3,11 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { Heart } from 'lucide-react'
 import { getCartCount, CART_EVENT } from '@/lib/cart'
 import { useAuth } from '@/hooks/useAuth'
 import { getSupabaseClient } from '@/lib/supabase'
+import { TrustBar } from '@/components/TrustBar'
 
 const FALLBACK_SEARCH_SUGGESTIONS = ['Portables', 'Ordinateurs de bureau', 'Accessoires']
 
@@ -19,6 +21,15 @@ const navLinks = [
 ]
 
 const categoryLinks = [
+  { label: 'Informatique', href: '/products' },
+  { label: 'Maison & déco', href: null },
+  { label: 'Mode', href: null },
+  { label: 'Beauté', href: null },
+  { label: 'Loisirs', href: null },
+  { label: 'Services', href: null }
+]
+
+const informatiqueSubcategories = [
   { label: 'Portables', href: '/products?category=portable' },
   { label: 'Ordinateurs de bureau', href: '/products?category=bureau' },
   { label: 'Accessoires', href: '/products?category=accessoire' }
@@ -115,6 +126,7 @@ export function Navbar() {
   const isAdmin = user?.id === ADMIN_UUID
 
   return (
+    <>
     <nav className="bg-white border-b border-[#E4DDCF]">
       <div className="max-w-7xl mx-auto px-10 py-4 flex items-center justify-between">
         {/* Logo + Menu Button */}
@@ -134,7 +146,7 @@ export function Navbar() {
 
           {/* Desktop dropdown */}
           {isMenuOpen && (
-            <div className="hidden md:block absolute left-0 top-12 w-64 bg-white rounded-lg border border-[#E4DDCF] shadow-lg overflow-hidden z-50">
+            <div className="hidden md:block absolute left-0 top-12 w-72 bg-white rounded-lg border border-[#E4DDCF] shadow-lg overflow-hidden z-50">
               <Link
                 href="/products"
                 onClick={() => setIsMenuOpen(false)}
@@ -143,12 +155,30 @@ export function Navbar() {
                 Catalogue
               </Link>
               <div className="border-t border-[#E4DDCF]"></div>
-              {categoryLinks.map(link => (
+              <p className="px-4 pt-3 pb-1 text-[10px] font-semibold text-[#8A8579] uppercase tracking-wide">Catégories</p>
+              {categoryLinks.map(cat =>
+                cat.href ? (
+                  <Link
+                    key={cat.label}
+                    href={cat.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="block px-4 py-2 text-sm text-[#56534C] hover:bg-[#FBF6EE] hover:text-[#FF6600] transition-colors"
+                  >
+                    {cat.label}
+                  </Link>
+                ) : (
+                  <div key={cat.label} className="flex items-center justify-between px-4 py-2 text-sm text-[#C4BDAF] cursor-default">
+                    <span>{cat.label}</span>
+                    <span className="text-[10px] bg-gray-50 px-2 py-0.5 rounded-full">Bientôt</span>
+                  </div>
+                )
+              )}
+              {informatiqueSubcategories.map(link => (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className="block px-4 py-2.5 text-sm text-[#56534C] hover:bg-[#FBF6EE] hover:text-[#FF6600] transition-colors"
+                  className="block pl-8 pr-4 py-1.5 text-xs text-[#8A8579] hover:text-[#FF6600] transition-colors"
                 >
                   {link.label}
                 </Link>
@@ -177,7 +207,7 @@ export function Navbar() {
             <div className="flex bg-white border-2 border-[#1A1A1A] rounded-full px-4 py-2 items-center gap-2">
               <input
                 type="text"
-                placeholder="Chercher..."
+                placeholder="Rechercher un produit, une idée, une catégorie…"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 onFocus={() => setShowSuggestions(true)}
@@ -185,7 +215,7 @@ export function Navbar() {
                 onKeyDown={e => {
                   if (e.key === 'Enter') handleSearchSubmit()
                 }}
-                className="text-sm bg-transparent outline-none text-[#1A1A1A] placeholder-[#8A8579] w-56 md:w-80"
+                className="text-sm bg-transparent outline-none text-[#1A1A1A] placeholder-[#8A8579] w-56 md:w-96"
               />
               <button
                 onClick={() => handleSearchSubmit()}
@@ -334,6 +364,11 @@ export function Navbar() {
             )
           )}
 
+          {/* Favorites Icon */}
+          <Link href="/account/favorites" className="hidden sm:block hover:opacity-70 transition-opacity" aria-label="Mes favoris">
+            <Heart size={20} strokeWidth={1.8} className="text-[#1A1A1A]" />
+          </Link>
+
           {/* Cart Icon */}
           <Link href="/cart" className="relative hover:opacity-70 transition-opacity">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -430,22 +465,47 @@ export function Navbar() {
 
             {/* Category filters */}
             <div className="text-xs font-semibold text-[#8A8579] py-2 uppercase">Catégories</div>
-            {categoryLinks.map(link => (
+            {categoryLinks.map(cat =>
+              cat.href ? (
+                <Link
+                  key={cat.label}
+                  href={cat.href}
+                  className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors py-1.5 pl-4"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  {cat.label}
+                </Link>
+              ) : (
+                <div key={cat.label} className="flex items-center justify-between text-sm text-[#C4BDAF] py-1.5 pl-4 pr-2">
+                  <span>{cat.label}</span>
+                  <span className="text-[10px] bg-gray-50 px-2 py-0.5 rounded-full">Bientôt</span>
+                </div>
+              )
+            )}
+            {informatiqueSubcategories.map(link => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors py-1.5 pl-4"
+                className="text-xs text-[#8A8579] hover:text-[#FF6600] transition-colors py-1 pl-8"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {link.label}
               </Link>
             ))}
 
+            <Link
+              href="/account/favorites"
+              className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors py-1.5 pl-4"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Mes favoris
+            </Link>
+
             {/* Mobile Search */}
             <div className="flex bg-white border-2 border-[#1A1A1A] rounded-lg px-3 py-2 items-center gap-2 mt-4">
               <input
                 type="text"
-                placeholder="Chercher..."
+                placeholder="Rechercher un produit..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 onKeyDown={e => {
@@ -480,5 +540,7 @@ export function Navbar() {
         </div>
       )}
     </nav>
+    <TrustBar />
+    </>
   )
 }

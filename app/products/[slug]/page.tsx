@@ -27,6 +27,7 @@ interface Product {
   image_urls: string[]
   video_url: string | null
   variant_options?: VariantOption[]
+  created_at?: string
 }
 
 const categoryLabel: Record<string, string> = {

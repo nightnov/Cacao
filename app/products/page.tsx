@@ -19,6 +19,7 @@ interface Product {
   specs: Record<string, unknown>
   tags: string[]
   image_urls: string[]
+  created_at?: string
 }
 
 function ProductsContent() {

@@ -175,6 +175,12 @@ function ProductsContent() {
       <Navbar />
 
       <div className="flex-1 max-w-7xl mx-auto w-full px-10 py-16">
+        <div className="text-sm text-[#8A8579] mb-6">
+          <Link href="/" className="hover:text-[#FF6600]">Accueil</Link>
+          {' / '}
+          <span className="text-[#1A1A1A]">Catalogue</span>
+        </div>
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="font-serif font-semibold text-4xl mb-2 text-[#1A1A1A]">

@@ -90,12 +90,22 @@ export default function ProductDetail() {
       setNotFound(false)
       try {
         const supabase = getSupabaseClient()
-        const { data, error } = await supabase
+        let { data, error } = await supabase
           .from('products')
           .select('id, name, slug, description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url, variant_options, sellers(name)')
           .eq('slug', slug)
           .eq('status', 'active')
           .maybeSingle()
+
+        // Repli si la table/relation "sellers" n'est pas encore en place (migration non exécutée)
+        if (error?.code === 'PGRST200') {
+          ;({ data, error } = await supabase
+            .from('products')
+            .select('id, name, slug, description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url, variant_options')
+            .eq('slug', slug)
+            .eq('status', 'active')
+            .maybeSingle())
+        }
 
         if (error) throw error
 
@@ -302,6 +312,8 @@ export default function ProductDetail() {
       <div className="flex-1 max-w-5xl mx-auto w-full px-10 py-10">
         {/* Breadcrumb */}
         <div className="text-sm text-[#8A8579] mb-6">
+          <Link href="/" className="hover:text-[#FF6600]">Accueil</Link>
+          {' / '}
           <Link href="/products" className="hover:text-[#FF6600]">Catalogue</Link>
           {' / '}
           <Link href={`/products?category=${product.category}`} className="hover:text-[#FF6600]">

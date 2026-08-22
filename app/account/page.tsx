@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { User, ShoppingBag, MapPin, Heart, Settings, HelpCircle, Star, Clock, CheckCircle2 } from 'lucide-react'
+import { User, ShoppingBag, MapPin, Heart, Settings, HelpCircle, Star, Clock, CheckCircle2, LayoutGrid, MessageCircle, LogOut } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/Button'
@@ -23,6 +23,7 @@ interface OrderItem {
   quantity: number
   unit_price_fcfa: number
   subtotal_fcfa: number
+  products: { slug: string; image_urls: string[] } | null
 }
 
 interface Order {
@@ -54,16 +55,6 @@ interface AccountSection {
   href?: string
 }
 
-const sections: AccountSection[] = [
-  { key: 'profile', label: 'Profil', icon: User },
-  { key: 'orders', label: 'Commandes', icon: ShoppingBag },
-  { key: 'reviews', label: 'Mes avis', icon: Star },
-  { key: 'addresses', label: 'Adresses', icon: MapPin },
-  { key: 'favorites', label: 'Favoris', icon: Heart, href: '/account/favorites' },
-  { key: 'settings', label: 'Paramètres', icon: Settings },
-  { key: 'help', label: 'Aide', icon: HelpCircle }
-]
-
 interface Review {
   id: string
   product_id: string
@@ -73,10 +64,33 @@ interface Review {
   products: { name: string; slug: string } | null
 }
 
+interface FavoriteProduct {
+  id: string
+  name: string
+  slug: string
+  price_fcfa: number
+  image_urls: string[]
+  avg_rating?: number | null
+  review_count?: number
+}
+
+const sections: AccountSection[] = [
+  { key: 'dashboard', label: 'Tableau de bord', icon: LayoutGrid },
+  { key: 'orders', label: 'Mes commandes', icon: ShoppingBag },
+  { key: 'favorites', label: 'Mes favoris', icon: Heart },
+  { key: 'reviews', label: 'Mes avis', icon: Star },
+  { key: 'addresses', label: 'Mes adresses', icon: MapPin },
+  { key: 'messages', label: 'Messages', icon: MessageCircle, href: '/account/messages' },
+  { key: 'settings', label: 'Paramètres du compte', icon: Settings },
+  { key: 'help', label: 'Aide', icon: HelpCircle }
+]
+
 export default function Account() {
   const router = useRouter()
   const { user, loading: authLoading, isLoggedIn, logout } = useAuth()
-  const [activeSection, setActiveSection] = useState<string>('profile')
+  const [activeSection, setActiveSection] = useState<string>('dashboard')
+  const [unreadMessages, setUnreadMessages] = useState(0)
+  const [favorites, setFavorites] = useState<FavoriteProduct[]>([])
 
   const [profile, setProfile] = useState<Profile>({ phone: '', address: '', city: '' })
   const [savingProfile, setSavingProfile] = useState(false)
@@ -88,7 +102,6 @@ export default function Account() {
   const [loadingOrders, setLoadingOrders] = useState(true)
 
   const [reviews, setReviews] = useState<Review[]>([])
-  const [favoritesCount, setFavoritesCount] = useState(0)
 
   useEffect(() => {
     if (!authLoading && !isLoggedIn) {
@@ -129,13 +142,13 @@ export default function Account() {
           const orderIds = ordersData.map((o: any) => o.id)
           const { data: itemsData, error: itemsError } = await supabase
             .from('order_items')
-            .select('id, order_id, product_name, quantity, unit_price_fcfa, subtotal_fcfa')
+            .select('id, order_id, product_name, quantity, unit_price_fcfa, subtotal_fcfa, products(slug, image_urls)')
             .in('order_id', orderIds)
 
           if (itemsError) throw itemsError
 
           const grouped: Record<string, OrderItem[]> = {}
-          for (const item of (itemsData as OrderItem[]) || []) {
+          for (const item of (itemsData as unknown as OrderItem[]) || []) {
             if (!grouped[item.order_id]) grouped[item.order_id] = []
             grouped[item.order_id].push(item)
           }
@@ -149,11 +162,22 @@ export default function Account() {
           .order('created_at', { ascending: false })
         setReviews((reviewsData as unknown as Review[]) || [])
 
-        const { count } = await supabase
+        const { data: favoritesData } = await supabase
           .from('favorites')
-          .select('id', { count: 'exact', head: true })
+          .select('product_id, products(id, name, slug, price_fcfa, image_urls)')
           .eq('user_id', user.id)
-        setFavoritesCount(count || 0)
+          .order('created_at', { ascending: false })
+        const favProducts = ((favoritesData as unknown as { products: FavoriteProduct | null }[]) || [])
+          .map(row => row.products)
+          .filter((p): p is FavoriteProduct => !!p)
+        setFavorites(favProducts)
+
+        const { count: unreadCount } = await supabase
+          .from('messages')
+          .select('id', { count: 'exact', head: true })
+          .eq('sender', 'admin')
+          .eq('read_by_customer', false)
+        setUnreadMessages(unreadCount || 0)
       } catch (err) {
         console.error('Erreur chargement compte:', err)
       } finally {
@@ -199,41 +223,41 @@ export default function Account() {
   const displayName = firstName || lastName ? `${firstName || ''} ${lastName || ''}`.trim() : 'Bienvenue'
   const avatarLetter = (firstName || user?.email || '?').charAt(0).toUpperCase()
 
+  const pendingCount = orders.filter(o => ['pending', 'confirmed', 'preparing', 'shipped'].includes(o.status)).length
+  const deliveredCount = orders.filter(o => o.status === 'delivered').length
+
   return (
     <main className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
       <div className="flex-1 max-w-6xl mx-auto px-10 py-16 w-full">
+        <div className="text-sm text-[#8A8579] mb-6">
+          <Link href="/" className="hover:text-[#FF6600]">Accueil</Link>
+          {' / '}
+          <span className="text-[#1A1A1A]">Mon compte</span>
+        </div>
+
         {/* En-tête */}
-        <div className="flex items-center gap-4 mb-10">
-          <div className="w-14 h-14 rounded-full bg-[#1A1A1A] text-white text-xl font-semibold flex items-center justify-center flex-shrink-0">
-            {avatarLetter}
-          </div>
+        <div className="flex items-center justify-between mb-10 flex-wrap gap-4">
           <div>
-            <h1 className="font-serif font-semibold text-2xl text-[#1A1A1A]">{displayName}</h1>
-            <p className="text-sm text-[#8A8579]">{user?.email}</p>
+            <h1 className="font-serif font-semibold text-2xl text-[#1A1A1A]">Bonjour, {displayName !== 'Bienvenue' ? displayName.split(' ')[0] : ''} 👋</h1>
+            <p className="text-sm text-[#8A8579]">Bienvenue sur votre espace personnel</p>
           </div>
         </div>
 
-        {/* Cartes statistiques */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
-          {[
-            { label: 'Commandes', value: orders.length, icon: ShoppingBag },
-            { label: 'En attente', value: orders.filter(o => ['pending', 'confirmed', 'preparing', 'shipped'].includes(o.status)).length, icon: Clock },
-            { label: 'Livrées', value: orders.filter(o => o.status === 'delivered').length, icon: CheckCircle2 },
-            { label: 'Favoris', value: favoritesCount, icon: Heart }
-          ].map(stat => (
-            <div key={stat.label} className="bg-white border border-[#E4DDCF] rounded-2xl p-5">
-              <stat.icon size={18} className="text-[#FF6600] mb-2" strokeWidth={1.5} />
-              <p className="text-2xl font-semibold text-[#1A1A1A]">{loadingOrders ? '—' : stat.value}</p>
-              <p className="text-xs text-[#8A8579]">{stat.label}</p>
+        <div className="grid grid-cols-1 md:grid-cols-[240px,1fr] gap-10">
+          {/* Carte profil + navigation latérale */}
+          <div>
+            <div className="bg-white border border-[#E4DDCF] rounded-2xl p-5 mb-3 text-center">
+              <div className="w-16 h-16 rounded-full bg-[#1A1A1A] text-white text-xl font-semibold flex items-center justify-center mx-auto mb-3">
+                {avatarLetter}
+              </div>
+              <p className="font-semibold text-[#1A1A1A]">{displayName}</p>
+              <p className="text-xs text-[#8A8579] truncate">{user?.email}</p>
+              {profile.phone && <p className="text-xs text-[#8A8579]">{profile.phone}</p>}
             </div>
-          ))}
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-[220px,1fr] gap-10">
-          {/* Navigation latérale (desktop) / sections (mobile) */}
-          <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible pb-2 md:pb-0">
+            <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible pb-2 md:pb-0">
             {sections.map(section => {
               const Icon = section.icon
               if (section.href) {
@@ -244,6 +268,11 @@ export default function Account() {
                     className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-[#56534C] hover:bg-[#FBF6EE] transition-colors whitespace-nowrap"
                   >
                     <Icon size={16} /> {section.label}
+                    {section.key === 'messages' && unreadMessages > 0 && (
+                      <span className="ml-auto bg-[#FF6600] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                        {unreadMessages}
+                      </span>
+                    )}
                   </Link>
                 )
               }
@@ -263,28 +292,189 @@ export default function Account() {
             })}
             <button
               onClick={logout}
-              className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-[#56534C] hover:bg-[#FBF6EE] transition-colors whitespace-nowrap mt-2 md:border-t md:border-[#E4DDCF] md:pt-4"
+              className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors whitespace-nowrap mt-2 md:border-t md:border-[#E4DDCF] md:pt-4"
             >
-              Déconnexion
+              <LogOut size={16} /> Déconnexion
             </button>
-          </nav>
+            </nav>
+          </div>
 
           {/* Contenu */}
           <div>
-            {activeSection === 'profile' && (
-              <div className="bg-white rounded-2xl border border-[#E4DDCF] p-8">
-                <h2 className="font-serif font-semibold text-xl text-[#1A1A1A] mb-1">Profil</h2>
-                <p className="text-sm text-[#8A8579] mb-6">Vos informations personnelles.</p>
-                <div className="space-y-4 max-w-md">
-                  <div>
-                    <p className="text-xs font-semibold text-[#8A8579] uppercase mb-1">Nom</p>
-                    <p className="text-[#1A1A1A]">{displayName !== 'Bienvenue' ? displayName : '—'}</p>
+            {activeSection === 'dashboard' && (
+              <div className="space-y-8">
+                {/* Cartes statistiques */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {[
+                    { label: 'Commandes', value: orders.length, icon: ShoppingBag, section: 'orders' },
+                    { label: 'En attente', value: pendingCount, icon: Clock, section: 'orders' },
+                    { label: 'Livrées', value: deliveredCount, icon: CheckCircle2, section: 'orders' },
+                    { label: 'Favoris', value: favorites.length, icon: Heart, section: 'favorites' }
+                  ].map(stat => (
+                    <button
+                      key={stat.label}
+                      onClick={() => setActiveSection(stat.section)}
+                      className="bg-white border border-[#E4DDCF] rounded-2xl p-5 text-left hover:border-[#FF6600] transition-colors"
+                    >
+                      <stat.icon size={18} className="text-[#FF6600] mb-2" strokeWidth={1.5} />
+                      <p className="text-2xl font-semibold text-[#1A1A1A]">{loadingOrders ? '—' : stat.value}</p>
+                      <p className="text-xs text-[#8A8579]">{stat.label}</p>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Commandes récentes */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="font-serif font-semibold text-xl text-[#1A1A1A]">Mes commandes récentes</h2>
+                    {orders.length > 0 && (
+                      <button onClick={() => setActiveSection('orders')} className="text-sm text-[#FF6600] font-semibold hover:underline">
+                        Voir toutes mes commandes →
+                      </button>
+                    )}
                   </div>
+                  {loadingOrders ? (
+                    <div className="space-y-3">
+                      {[1, 2].map(i => (
+                        <div key={i} className="bg-white rounded-2xl border border-[#E4DDCF] p-4 h-16 animate-pulse" />
+                      ))}
+                    </div>
+                  ) : orders.length === 0 ? (
+                    <div className="bg-white rounded-2xl border-2 border-dashed border-[#E4DDCF] p-10 text-center">
+                      <ShoppingBag size={26} className="text-[#FF6600] mx-auto mb-3" strokeWidth={1.5} />
+                      <p className="text-[#56534C] mb-4">Vous n&apos;avez pas encore passé de commande.</p>
+                      <Link href="/products"><Button variant="primary">Découvrir les produits</Button></Link>
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-2xl border border-[#E4DDCF] divide-y divide-[#E4DDCF]">
+                      {orders.slice(0, 4).map(order => {
+                        const status = statusLabels[order.status] || statusLabels.pending
+                        const items = itemsByOrder[order.id] || []
+                        const firstItem = items[0]
+                        const thumb = firstItem?.products?.image_urls?.[0]
+                        return (
+                          <div key={order.id} className="flex items-center gap-4 px-5 py-4">
+                            <div className="w-12 h-12 rounded-lg bg-[#FBF6EE] border border-[#E4DDCF] overflow-hidden flex-shrink-0 flex items-center justify-center">
+                              {thumb ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={thumb} alt="" className="w-full h-full object-cover" />
+                              ) : (
+                                <ShoppingBag size={16} className="text-[#FF6600]" />
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium text-[#1A1A1A] truncate">
+                                {firstItem?.product_name || order.order_number}
+                                {items.length > 1 ? ` +${items.length - 1}` : ''}
+                              </p>
+                              <p className="text-xs text-[#8A8579]">
+                                {order.total_fcfa.toLocaleString('fr-CI')} FCFA · x{firstItem?.quantity || 1}
+                              </p>
+                            </div>
+                            <span className={`hidden sm:flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0 ${status.color}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`}></span>
+                              {status.label}
+                            </span>
+                            <div className="text-right flex-shrink-0 hidden md:block">
+                              <p className="text-xs text-[#8A8579]">Commande #{order.order_number}</p>
+                              <p className="text-xs text-[#8A8579]">
+                                {new Date(order.created_at).toLocaleDateString('fr-CI', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </p>
+                            </div>
+                            <button onClick={() => setActiveSection('orders')} className="text-xs text-[#FF6600] font-semibold hover:underline flex-shrink-0">
+                              Voir les détails →
+                            </button>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr,280px] gap-8">
+                  {/* Favoris */}
                   <div>
-                    <p className="text-xs font-semibold text-[#8A8579] uppercase mb-1">E-mail</p>
-                    <p className="text-[#1A1A1A]">{user?.email}</p>
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="font-serif font-semibold text-xl text-[#1A1A1A]">Mes produits favoris</h2>
+                      {favorites.length > 0 && (
+                        <button onClick={() => setActiveSection('favorites')} className="text-sm text-[#FF6600] font-semibold hover:underline">
+                          Voir tous mes favoris →
+                        </button>
+                      )}
+                    </div>
+                    {favorites.length === 0 ? (
+                      <div className="bg-white rounded-2xl border-2 border-dashed border-[#E4DDCF] p-10 text-center">
+                        <Heart size={26} className="text-[#FF6600] mx-auto mb-3" strokeWidth={1.5} />
+                        <p className="text-[#56534C]">Aucun favori pour le moment.</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        {favorites.slice(0, 4).map(p => (
+                          <Link key={p.id} href={`/products/${p.slug}`} className="group">
+                            <div className="aspect-square rounded-xl bg-[#FBF6EE] border border-[#E4DDCF] overflow-hidden mb-2">
+                              {p.image_urls?.[0] && (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={p.image_urls[0]} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                              )}
+                            </div>
+                            <p className="text-sm text-[#1A1A1A] truncate">{p.name}</p>
+                            <p className="text-xs text-[#56534C]">{p.price_fcfa.toLocaleString('fr-CI')} FCFA</p>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Informations du compte */}
+                  <div className="bg-white border border-[#E4DDCF] rounded-2xl p-6 h-fit">
+                    <h3 className="font-serif font-semibold text-lg text-[#1A1A1A] mb-4">Informations du compte</h3>
+                    <div className="space-y-3 text-sm">
+                      <div>
+                        <p className="text-[#8A8579] text-xs uppercase">Nom complet</p>
+                        <p className="text-[#1A1A1A]">{displayName !== 'Bienvenue' ? displayName : '—'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[#8A8579] text-xs uppercase">E-mail</p>
+                        <p className="text-[#1A1A1A] truncate">{user?.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-[#8A8579] text-xs uppercase">Téléphone</p>
+                        <p className="text-[#1A1A1A]">{profile.phone || '—'}</p>
+                      </div>
+                    </div>
+                    <Button variant="primary" className="w-full mt-5" onClick={() => setActiveSection('addresses')}>
+                      Modifier mes informations
+                    </Button>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {activeSection === 'favorites' && (
+              <div>
+                <h2 className="font-serif font-semibold text-xl text-[#1A1A1A] mb-6">Mes favoris</h2>
+                {favorites.length === 0 ? (
+                  <div className="bg-white rounded-2xl border-2 border-dashed border-[#E4DDCF] p-12 text-center">
+                    <Heart size={28} className="text-[#FF6600] mx-auto mb-3" strokeWidth={1.5} />
+                    <p className="text-[#56534C] mb-4">Aucun favori pour le moment.</p>
+                    <Link href="/products"><Button variant="primary">Découvrir les produits</Button></Link>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-5 gap-y-8">
+                    {favorites.map(p => (
+                      <Link key={p.id} href={`/products/${p.slug}`} className="group">
+                        <div className="aspect-square rounded-xl bg-[#FBF6EE] border border-[#E4DDCF] overflow-hidden mb-2">
+                          {p.image_urls?.[0] && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={p.image_urls[0]} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                          )}
+                        </div>
+                        <p className="text-sm text-[#1A1A1A] truncate">{p.name}</p>
+                        <p className="text-xs text-[#56534C]">{p.price_fcfa.toLocaleString('fr-CI')} FCFA</p>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

@@ -25,6 +25,10 @@ export default function AdminSettings() {
   const [passwordError, setPasswordError] = useState('')
   const [passwordSuccess, setPasswordSuccess] = useState(false)
 
+  const [socialLinks, setSocialLinks] = useState({ facebook: '', instagram: '', tiktok: '', youtube: '' })
+  const [savingSocial, setSavingSocial] = useState(false)
+  const [socialSuccess, setSocialSuccess] = useState(false)
+
   useEffect(() => {
     if (user?.email) setEmail(user.email)
   }, [user])
@@ -41,7 +45,48 @@ export default function AdminSettings() {
       setBannerUrl(data?.value || null)
     }
     fetchBanner()
+
+    const fetchSocial = async () => {
+      const supabase = getSupabaseClient()
+      const { data } = await supabase
+        .from('site_settings')
+        .select('key, value')
+        .in('key', ['social_facebook', 'social_instagram', 'social_tiktok', 'social_youtube'])
+
+      const map = Object.fromEntries((data || []).map(row => [row.key, row.value || '']))
+      setSocialLinks({
+        facebook: map.social_facebook || '',
+        instagram: map.social_instagram || '',
+        tiktok: map.social_tiktok || '',
+        youtube: map.social_youtube || ''
+      })
+    }
+    fetchSocial()
   }, [])
+
+  const handleSaveSocial = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSavingSocial(true)
+    setSocialSuccess(false)
+    try {
+      const supabase = getSupabaseClient()
+      const rows = [
+        { key: 'social_facebook', value: socialLinks.facebook.trim() || null },
+        { key: 'social_instagram', value: socialLinks.instagram.trim() || null },
+        { key: 'social_tiktok', value: socialLinks.tiktok.trim() || null },
+        { key: 'social_youtube', value: socialLinks.youtube.trim() || null }
+      ].map(r => ({ ...r, updated_at: new Date().toISOString() }))
+
+      const { error } = await supabase.from('site_settings').upsert(rows)
+      if (error) throw error
+      setSocialSuccess(true)
+      setTimeout(() => setSocialSuccess(false), 2000)
+    } catch (err) {
+      console.error('Erreur enregistrement réseaux sociaux:', err)
+    } finally {
+      setSavingSocial(false)
+    }
+  }
 
   const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -199,6 +244,43 @@ export default function AdminSettings() {
           )}
         </div>
         <input ref={fileInputRef} type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
+      </div>
+
+      {/* Réseaux sociaux */}
+      <div className="bg-white rounded-lg border border-[#E4DDCF] p-6">
+        <h2 className="font-serif font-semibold text-xl text-[#1A1A1A] mb-1">Réseaux sociaux</h2>
+        <p className="text-sm text-[#8A8579] mb-4">
+          Ces liens s&apos;affichent dans le pied de page du site. Laissez vide pour ne pas afficher l&apos;icône correspondante.
+        </p>
+
+        {socialSuccess && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4 text-sm font-semibold">
+            ✓ Liens mis à jour
+          </div>
+        )}
+
+        <form onSubmit={handleSaveSocial} className="space-y-3 max-w-md">
+          {([
+            ['facebook', 'Facebook', 'https://facebook.com/...'],
+            ['instagram', 'Instagram', 'https://instagram.com/...'],
+            ['tiktok', 'TikTok', 'https://tiktok.com/@...'],
+            ['youtube', 'YouTube', 'https://youtube.com/@...']
+          ] as const).map(([key, label, placeholder]) => (
+            <div key={key}>
+              <label className="block text-sm font-semibold text-[#1A1A1A] mb-1">{label}</label>
+              <input
+                type="url"
+                value={socialLinks[key]}
+                onChange={(e) => setSocialLinks(s => ({ ...s, [key]: e.target.value }))}
+                placeholder={placeholder}
+                className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
+              />
+            </div>
+          ))}
+          <Button type="submit" variant="primary" disabled={savingSocial}>
+            {savingSocial ? 'Enregistrement...' : 'Enregistrer'}
+          </Button>
+        </form>
       </div>
 
       {/* Compte admin */}

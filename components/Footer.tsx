@@ -1,30 +1,43 @@
-import React from 'react'
+'use client'
+
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { createClient } from '@supabase/supabase-js'
 import { Facebook, Instagram, Youtube } from 'lucide-react'
+import { getSupabaseClient } from '@/lib/supabase'
 import { CATEGORIES } from '@/lib/categories'
 
-async function getSocialLinks() {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-  )
-  const { data } = await supabase
-    .from('site_settings')
-    .select('key, value')
-    .in('key', ['social_facebook', 'social_instagram', 'social_tiktok', 'social_youtube'])
-
-  const map = Object.fromEntries((data || []).map(row => [row.key, row.value]))
-  return {
-    facebook: map.social_facebook as string | undefined,
-    instagram: map.social_instagram as string | undefined,
-    tiktok: map.social_tiktok as string | undefined,
-    youtube: map.social_youtube as string | undefined
-  }
+interface SocialLinks {
+  facebook?: string
+  instagram?: string
+  tiktok?: string
+  youtube?: string
 }
 
-export async function Footer() {
-  const social = await getSocialLinks()
+export function Footer() {
+  const [social, setSocial] = useState<SocialLinks>({})
+
+  useEffect(() => {
+    const fetchSocial = async () => {
+      try {
+        const supabase = getSupabaseClient()
+        const { data } = await supabase
+          .from('site_settings')
+          .select('key, value')
+          .in('key', ['social_facebook', 'social_instagram', 'social_tiktok', 'social_youtube'])
+
+        const map = Object.fromEntries((data || []).map(row => [row.key, row.value]))
+        setSocial({
+          facebook: map.social_facebook || undefined,
+          instagram: map.social_instagram || undefined,
+          tiktok: map.social_tiktok || undefined,
+          youtube: map.social_youtube || undefined
+        })
+      } catch (err) {
+        console.error('Erreur chargement réseaux sociaux:', err)
+      }
+    }
+    fetchSocial()
+  }, [])
 
   return (
     <footer className="bg-white border-t border-[#E4DDCF] mt-20">

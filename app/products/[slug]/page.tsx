@@ -34,7 +34,8 @@ interface Product {
   image_urls: string[]
   video_url: string | null
   variant_options?: VariantOption[]
-  sellers?: { name: string } | null
+  seller_id?: string | null
+  sellers?: { name: string; created_at?: string } | null
   created_at?: string
 }
 
@@ -84,6 +85,8 @@ export default function ProductDetail() {
   const [myComment, setMyComment] = useState('')
   const [submittingReview, setSubmittingReview] = useState(false)
 
+  const [sellerStats, setSellerStats] = useState<{ avgRating: number; reviewCount: number; productCount: number } | null>(null)
+
   useEffect(() => {
     const fetchProduct = async () => {
       setLoading(true)
@@ -92,7 +95,7 @@ export default function ProductDetail() {
         const supabase = getSupabaseClient()
         let { data, error } = await supabase
           .from('products')
-          .select('id, name, slug, description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url, variant_options, sellers(name)')
+          .select('id, name, slug, description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url, variant_options, seller_id, sellers(name, created_at)')
           .eq('slug', slug)
           .eq('status', 'active')
           .maybeSingle()
@@ -132,6 +135,34 @@ export default function ProductDetail() {
           .eq('product_id', typedProduct.id)
           .order('created_at', { ascending: false })
         setReviews((reviewsData as unknown as Review[]) || [])
+
+        if (typedProduct.seller_id) {
+          const { data: sellerProducts } = await supabase
+            .from('products')
+            .select('id')
+            .eq('seller_id', typedProduct.seller_id)
+          const sellerProductIds = (sellerProducts || []).map((p: any) => p.id)
+
+          if (sellerProductIds.length > 0) {
+            const { data: ratingsData } = await supabase
+              .from('product_ratings')
+              .select('avg_rating, review_count')
+              .in('product_id', sellerProductIds)
+
+            const rows = ratingsData || []
+            const totalReviews = rows.reduce((sum: number, r: any) => sum + (r.review_count || 0), 0)
+            const weightedSum = rows.reduce((sum: number, r: any) => sum + (r.avg_rating || 0) * (r.review_count || 0), 0)
+            setSellerStats({
+              avgRating: totalReviews > 0 ? weightedSum / totalReviews : 0,
+              reviewCount: totalReviews,
+              productCount: sellerProductIds.length
+            })
+          } else {
+            setSellerStats({ avgRating: 0, reviewCount: 0, productCount: 0 })
+          }
+        } else {
+          setSellerStats(null)
+        }
 
         if (typedProduct.variant_options && typedProduct.variant_options.length > 0) {
           const { data: variantsData } = await supabase
@@ -411,7 +442,12 @@ export default function ProductDetail() {
               )}
             </div>
 
-            <SoldByBlock sellerName={product.sellers?.name || 'CACAO'} />
+            <SoldByBlock
+              sellerName={product.sellers?.name || 'CACAO'}
+              avgRating={sellerStats?.avgRating}
+              reviewCount={sellerStats?.reviewCount}
+              productCount={sellerStats?.productCount}
+            />
 
             {/* Caractéristiques clés (aperçu rapide) */}
             {specEntries.length > 0 && (

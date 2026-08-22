@@ -1,12 +1,17 @@
-import { ShieldCheck } from 'lucide-react'
+import { ShieldCheck, Star } from 'lucide-react'
 
 interface SoldByBlockProps {
   sellerName?: string
+  avgRating?: number
+  reviewCount?: number
+  productCount?: number
 }
 
 // Lit le vrai vendeur (table `sellers`, un seul aujourd'hui : CACAO) au lieu d'un
 // texte en dur — prêt à afficher un vendeur tiers plus tard sans changer ce composant.
-export function SoldByBlock({ sellerName = 'CACAO' }: SoldByBlockProps) {
+// La note/nombre d'avis sont calculés à partir des vrais avis du vendeur (aucune
+// valeur affichée si aucun avis n'existe encore).
+export function SoldByBlock({ sellerName = 'CACAO', avgRating = 0, reviewCount = 0, productCount = 0 }: SoldByBlockProps) {
   return (
     <div className="flex items-center gap-3 p-4 my-4 bg-white border border-[#E4DDCF] rounded-xl">
       <div className="w-10 h-10 rounded-full bg-[#1A1A1A] text-white font-semibold flex items-center justify-center flex-shrink-0">
@@ -17,7 +22,19 @@ export function SoldByBlock({ sellerName = 'CACAO' }: SoldByBlockProps) {
           <span className="font-semibold truncate">{sellerName}</span>
           <ShieldCheck size={14} className="text-[#FF6600] flex-shrink-0" />
         </p>
-        <p className="text-xs text-[#8A8579]">Vendu et expédié par {sellerName} · Produit vérifié</p>
+        <p className="text-xs text-[#8A8579]">
+          Vendu et expédié par {sellerName}
+          {reviewCount > 0 && (
+            <>
+              {' · '}
+              <span className="inline-flex items-center gap-0.5 align-middle">
+                <Star size={11} className="fill-[#FF6600] text-[#FF6600]" />
+                {avgRating.toFixed(1)} ({reviewCount} avis)
+              </span>
+            </>
+          )}
+          {productCount > 0 && ` · ${productCount} produit${productCount > 1 ? 's' : ''}`}
+        </p>
       </div>
     </div>
   )

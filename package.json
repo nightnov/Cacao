@@ -11,6 +11,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.38.0",
     "autoprefixer": "^10.4.16",
+    "cheerio": "^1.2.0",
     "clsx": "^2.0.0",
     "framer-motion": "^10.16.0",
     "lucide-react": "^0.292.0",

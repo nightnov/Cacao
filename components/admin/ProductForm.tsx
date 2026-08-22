@@ -149,6 +149,44 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     }))
   }
 
+  const [importing, setImporting] = useState(false)
+  const [importError, setImportError] = useState('')
+  const [importSuccess, setImportSuccess] = useState(false)
+
+  const handleImportFromUrl = async () => {
+    if (!formData.supplier_url.trim()) {
+      setImportError('Collez d\'abord une URL dans le champ ci-dessus.')
+      return
+    }
+    setImporting(true)
+    setImportError('')
+    setImportSuccess(false)
+    try {
+      const res = await fetch('/api/admin/scrape-product', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: formData.supplier_url.trim() })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Erreur lors de l\'import')
+
+      setFormData(prev => ({
+        ...prev,
+        name: data.name || prev.name,
+        description: data.description || prev.description,
+        price_fcfa: data.price_fcfa || prev.price_fcfa,
+        image_urls: data.image_urls?.length ? data.image_urls : prev.image_urls,
+        supplier_name: data.supplier_name || prev.supplier_name
+      }))
+      setImportSuccess(true)
+      setTimeout(() => setImportSuccess(false), 3000)
+    } catch (err: any) {
+      setImportError(err.message || 'Impossible d\'importer depuis cette URL. Remplissez le formulaire manuellement.')
+    } finally {
+      setImporting(false)
+    }
+  }
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
@@ -388,9 +426,35 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
           <div className="border border-[#E4DDCF] rounded-lg p-4 bg-gray-50">
             <h3 className="font-semibold text-[#1A1A1A] mb-1">Fournisseur (optionnel)</h3>
             <p className="text-xs text-[#8A8579] mb-3">
-              Si ce produit vient d&apos;une plateforme comme Jumia : collez son URL et remplissez le reste du formulaire à la main avec les infos de la page fournisseur.
+              Si ce produit vient d&apos;une plateforme comme Jumia : collez son URL puis cliquez sur « Importer » pour pré-remplir automatiquement le nom, la description, le prix et les photos. Vérifiez toujours les informations importées avant d&apos;enregistrer.
             </p>
+
+            {importError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-xs mb-3">{importError}</div>
+            )}
+            {importSuccess && (
+              <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded text-xs mb-3 font-semibold">
+                ✓ Informations importées — vérifiez-les avant d&apos;enregistrer.
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2">
+                <label className="block text-xs font-semibold text-[#1A1A1A] mb-1">URL du produit fournisseur</label>
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    name="supplier_url"
+                    value={formData.supplier_url}
+                    onChange={handleChange}
+                    placeholder="https://www.jumia.ci/..."
+                    className="flex-1 px-3 py-2 text-sm border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] bg-white"
+                  />
+                  <Button type="button" variant="outline" onClick={handleImportFromUrl} disabled={importing}>
+                    {importing ? 'Import...' : 'Importer'}
+                  </Button>
+                </div>
+              </div>
               <div>
                 <label className="block text-xs font-semibold text-[#1A1A1A] mb-1">Nom du fournisseur</label>
                 <input
@@ -410,17 +474,6 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                   value={formData.supplier_product_id}
                   onChange={handleChange}
                   placeholder="Ex: référence produit"
-                  className="w-full px-3 py-2 text-sm border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] bg-white"
-                />
-              </div>
-              <div className="col-span-2">
-                <label className="block text-xs font-semibold text-[#1A1A1A] mb-1">URL du produit fournisseur</label>
-                <input
-                  type="url"
-                  name="supplier_url"
-                  value={formData.supplier_url}
-                  onChange={handleChange}
-                  placeholder="https://www.jumia.ci/..."
                   className="w-full px-3 py-2 text-sm border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] bg-white"
                 />
               </div>

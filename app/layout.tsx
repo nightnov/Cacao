@@ -1,11 +1,12 @@
 import type { Metadata, Viewport } from 'next'
-import { Fraunces, Inter } from 'next/font/google'
+import { Plus_Jakarta_Sans, Inter } from 'next/font/google'
 import './globals.css'
 
-const fraunces = Fraunces({
+const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-fraunces',
+  variable: '--font-jakarta',
+  weight: ['500', '600', '700', '800'],
 })
 
 const inter = Inter({
@@ -34,7 +35,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body className={`${inter.variable} ${fraunces.variable} font-sans`}>{children}</body>
+      <body className={`${inter.variable} ${jakarta.variable} font-sans`}>{children}</body>
     </html>
   )
 }

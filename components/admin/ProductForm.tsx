@@ -5,6 +5,7 @@ import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/Button'
 import { Product, ProductVariant, VariantOption } from '@/types/admin'
 import { generateVariantCombinations, variantLabel } from '@/lib/variants'
+import { CATEGORIES } from '@/lib/categories'
 
 interface ProductFormProps {
   product?: Product | null
@@ -547,9 +548,9 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
               >
-                <option value="portable">Portable</option>
-                <option value="bureau">Bureau</option>
-                <option value="accessoire">Accessoire</option>
+                {CATEGORIES.map(cat => (
+                  <option key={cat.value} value={cat.value}>{cat.label}</option>
+                ))}
               </select>
             </div>
 

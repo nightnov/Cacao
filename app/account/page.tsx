@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { User, ShoppingBag, MapPin, Heart, Settings, HelpCircle } from 'lucide-react'
+import { User, ShoppingBag, MapPin, Heart, Settings, HelpCircle, Star, Clock, CheckCircle2 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/Button'
@@ -57,11 +57,21 @@ interface AccountSection {
 const sections: AccountSection[] = [
   { key: 'profile', label: 'Profil', icon: User },
   { key: 'orders', label: 'Commandes', icon: ShoppingBag },
+  { key: 'reviews', label: 'Mes avis', icon: Star },
   { key: 'addresses', label: 'Adresses', icon: MapPin },
   { key: 'favorites', label: 'Favoris', icon: Heart, href: '/account/favorites' },
   { key: 'settings', label: 'Paramètres', icon: Settings },
   { key: 'help', label: 'Aide', icon: HelpCircle }
 ]
+
+interface Review {
+  id: string
+  product_id: string
+  rating: number
+  comment: string | null
+  created_at: string
+  products: { name: string; slug: string } | null
+}
 
 export default function Account() {
   const router = useRouter()
@@ -76,6 +86,9 @@ export default function Account() {
   const [itemsByOrder, setItemsByOrder] = useState<Record<string, OrderItem[]>>({})
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
   const [loadingOrders, setLoadingOrders] = useState(true)
+
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [favoritesCount, setFavoritesCount] = useState(0)
 
   useEffect(() => {
     if (!authLoading && !isLoggedIn) {
@@ -128,6 +141,19 @@ export default function Account() {
           }
           setItemsByOrder(grouped)
         }
+
+        const { data: reviewsData } = await supabase
+          .from('reviews')
+          .select('id, product_id, rating, comment, created_at, products(name, slug)')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+        setReviews((reviewsData as unknown as Review[]) || [])
+
+        const { count } = await supabase
+          .from('favorites')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+        setFavoritesCount(count || 0)
       } catch (err) {
         console.error('Erreur chargement compte:', err)
       } finally {
@@ -187,6 +213,22 @@ export default function Account() {
             <h1 className="font-serif font-semibold text-2xl text-[#1A1A1A]">{displayName}</h1>
             <p className="text-sm text-[#8A8579]">{user?.email}</p>
           </div>
+        </div>
+
+        {/* Cartes statistiques */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
+          {[
+            { label: 'Commandes', value: orders.length, icon: ShoppingBag },
+            { label: 'En attente', value: orders.filter(o => ['pending', 'confirmed', 'preparing', 'shipped'].includes(o.status)).length, icon: Clock },
+            { label: 'Livrées', value: orders.filter(o => o.status === 'delivered').length, icon: CheckCircle2 },
+            { label: 'Favoris', value: favoritesCount, icon: Heart }
+          ].map(stat => (
+            <div key={stat.label} className="bg-white border border-[#E4DDCF] rounded-2xl p-5">
+              <stat.icon size={18} className="text-[#FF6600] mb-2" strokeWidth={1.5} />
+              <p className="text-2xl font-semibold text-[#1A1A1A]">{loadingOrders ? '—' : stat.value}</p>
+              <p className="text-xs text-[#8A8579]">{stat.label}</p>
+            </div>
+          ))}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-[220px,1fr] gap-10">
@@ -353,6 +395,44 @@ export default function Account() {
                         </div>
                       )
                     })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeSection === 'reviews' && (
+              <div>
+                <h2 className="font-serif font-semibold text-xl text-[#1A1A1A] mb-6">Mes avis</h2>
+
+                {reviews.length === 0 ? (
+                  <div className="bg-white rounded-2xl border-2 border-dashed border-[#E4DDCF] p-12 text-center">
+                    <Star size={28} className="text-[#FF6600] mx-auto mb-3" strokeWidth={1.5} />
+                    <p className="text-[#56534C]">Vous n&apos;avez encore laissé aucun avis.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {reviews.map(review => (
+                      <div key={review.id} className="bg-white rounded-2xl border border-[#E4DDCF] p-6">
+                        <div className="flex items-center justify-between mb-2 gap-4">
+                          {review.products?.slug ? (
+                            <Link href={`/products/${review.products.slug}`} className="font-semibold text-[#1A1A1A] hover:underline">
+                              {review.products.name}
+                            </Link>
+                          ) : (
+                            <span className="font-semibold text-[#1A1A1A]">{review.products?.name || 'Produit'}</span>
+                          )}
+                          <span className="text-xs text-[#8A8579] whitespace-nowrap">
+                            {new Date(review.created_at).toLocaleDateString('fr-CI', { day: 'numeric', month: 'long', year: 'numeric' })}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-0.5 mb-2">
+                          {[1, 2, 3, 4, 5].map(i => (
+                            <Star key={i} size={14} className={i <= review.rating ? 'fill-[#FF6600] text-[#FF6600]' : 'text-[#E4DDCF]'} />
+                          ))}
+                        </div>
+                        {review.comment && <p className="text-sm text-[#56534C]">{review.comment}</p>}
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

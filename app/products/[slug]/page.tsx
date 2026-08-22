@@ -15,16 +15,17 @@ import { getVideoEmbedUrl } from '@/lib/video'
 import { addToCart } from '@/lib/cart'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { Star } from 'lucide-react'
+import { Star, ShieldCheck, RotateCcw, Truck } from 'lucide-react'
 import { VariantOption, ProductVariant } from '@/types/admin'
 import { findMatchingVariant, variantLabel } from '@/lib/variants'
+import { categoryLabel } from '@/lib/categories'
 
 interface Product {
   id: string
   name: string
   slug: string
   description: string
-  category: 'portable' | 'bureau' | 'accessoire'
+  category: string
   price_fcfa: number
   compare_at_price_fcfa: number | null
   availability: 'in_stock' | 'on_order' | 'discontinued'
@@ -44,12 +45,6 @@ interface Review {
   comment: string | null
   created_at: string
   profiles?: { first_name: string | null } | null
-}
-
-const categoryLabel: Record<string, string> = {
-  portable: 'Portable',
-  bureau: 'Ordinateur de bureau',
-  accessoire: 'Accessoire'
 }
 
 const specLabels: Record<string, string> = {
@@ -496,6 +491,18 @@ export default function ProductDetail() {
               >
                 Acheter maintenant
               </Button>
+            </div>
+
+            <div className="flex items-center justify-center gap-5 mt-4 flex-wrap text-xs text-[#56534C]">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck size={14} className="text-[#1E7A46]" /> Paiement sécurisé
+              </span>
+              <span className="flex items-center gap-1.5">
+                <RotateCcw size={14} className="text-[#1E7A46]" /> Retour sous 14 jours
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Truck size={14} className="text-[#1E7A46]" /> Livraison suivie
+              </span>
             </div>
 
             <div className="flex items-center justify-center gap-4 mt-3">

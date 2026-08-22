@@ -1,5 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
+import { CATEGORIES } from '@/lib/categories'
 
 export function Footer() {
   return (
@@ -20,21 +21,13 @@ export function Footer() {
         <div>
           <h3 className="font-semibold text-[#1A1A1A] mb-5">Produits</h3>
           <ul className="space-y-3">
-            <li>
-              <Link href="/products?category=portable" className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors">
-                Portables
-              </Link>
-            </li>
-            <li>
-              <Link href="/products?category=bureau" className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors">
-                Ordinateurs de bureau
-              </Link>
-            </li>
-            <li>
-              <Link href="/products?category=accessoire" className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors">
-                Accessoires
-              </Link>
-            </li>
+            {CATEGORIES.map(cat => (
+              <li key={cat.value}>
+                <Link href={`/products?category=${cat.value}`} className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors">
+                  {cat.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -82,7 +75,7 @@ export function Footer() {
       <div className="border-t border-[#E4DDCF] px-10 py-6">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-[#8A8579]">
           <p>© 2026 Cacao. Tous droits réservés.</p>
-          <p>Abidjan, Côte d&apos;Ivoire · Paiement sécurisé via MoneyFusion</p>
+          <p>Abidjan, Côte d&apos;Ivoire · Wave · Orange Money · MTN Money · Moov Money · Carte bancaire</p>
         </div>
       </div>
     </footer>

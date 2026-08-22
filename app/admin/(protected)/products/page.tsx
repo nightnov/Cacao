@@ -10,12 +10,7 @@ import { StatusBadge, StatusTone } from '@/components/admin/StatusBadge'
 import { IconButton } from '@/components/admin/IconButton'
 import { Pagination } from '@/components/admin/Pagination'
 import { Product } from '@/types/admin'
-
-const categoryLabels: Record<string, string> = {
-  portable: 'Portable',
-  bureau: 'Bureau',
-  accessoire: 'Accessoire'
-}
+import { categoryLabel as categoryLabels } from '@/lib/categories'
 
 const availabilityLabels: Record<string, { label: string; tone: StatusTone }> = {
   in_stock: { label: 'En stock', tone: 'success' },

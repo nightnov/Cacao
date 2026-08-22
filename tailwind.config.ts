@@ -20,7 +20,7 @@ const config: Config = {
         'cacao-brown': '#2B1810',
       },
       fontFamily: {
-        serif: ['var(--font-fraunces)', 'Fraunces', 'serif'],
+        serif: ['var(--font-jakarta)', 'sans-serif'],
         sans: ['var(--font-inter)', 'Inter', 'sans-serif'],
       },
       fontSize: {

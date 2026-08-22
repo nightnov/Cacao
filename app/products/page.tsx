@@ -7,13 +7,14 @@ import { Footer } from '@/components/Footer'
 import { ProductCard } from '@/components/ProductCard'
 import Link from 'next/link'
 import { SlidersHorizontal } from 'lucide-react'
+import { CATEGORIES, categoryLabel } from '@/lib/categories'
 
 interface Product {
   id: string
   name: string
   slug: string
   description: string
-  category: 'portable' | 'bureau' | 'accessoire'
+  category: string
   price_fcfa: number
   compare_at_price_fcfa?: number | null
   availability: 'in_stock' | 'on_order' | 'discontinued'
@@ -34,8 +35,6 @@ const sortOptions = [
   { value: 'rating', label: 'Mieux notés' },
   { value: 'popular', label: 'Plus populaires' }
 ]
-
-const INFORMATIQUE_CATEGORIES = ['portable', 'bureau', 'accessoire']
 
 function ProductGrid({ products }: { products: Product[] }) {
   return (
@@ -98,19 +97,10 @@ function ProductsContent() {
     fetchPopular()
   }, [loading, products, search])
 
-  const categoryLabel: Record<string, string> = {
-    portable: 'Portables',
-    bureau: 'Ordinateurs de bureau',
-    accessoire: 'Accessoires'
-  }
-
-  const isInformatique = !category || INFORMATIQUE_CATEGORIES.includes(category)
-
   const cpuOptions = useMemo(() => {
-    if (!isInformatique) return []
     const cpus = products.map(p => p.specs?.cpu).filter((c): c is string => typeof c === 'string' && c.trim() !== '')
     return Array.from(new Set(cpus))
-  }, [products, isInformatique])
+  }, [products])
 
   const filteredProducts = useMemo(() => {
     return products.filter(p => {
@@ -146,7 +136,7 @@ function ProductsContent() {
         </div>
       </div>
 
-      {isInformatique && cpuOptions.length > 0 && (
+      {cpuOptions.length > 0 && (
         <div>
           <p className="text-sm font-semibold text-[#1A1A1A] mb-3">Processeur</p>
           <div className="flex flex-wrap gap-2">
@@ -210,14 +200,14 @@ function ProductsContent() {
               </button>
             </Link>
 
-            {['portable', 'bureau', 'accessoire'].map(cat => (
-              <Link key={cat} href={`/products?category=${cat}`}>
+            {CATEGORIES.map(cat => (
+              <Link key={cat.value} href={`/products?category=${cat.value}`}>
                 <button className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
-                  category === cat
+                  category === cat.value
                     ? 'bg-[#1A1A1A] text-[#FBF6EE]'
                     : 'border-2 border-[#1A1A1A] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-[#FBF6EE]'
                 }`}>
-                  {categoryLabel[cat]}
+                  {cat.label}
                 </button>
               </Link>
             ))}

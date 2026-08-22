@@ -8,6 +8,7 @@ import { getCartCount, CART_EVENT } from '@/lib/cart'
 import { useAuth } from '@/hooks/useAuth'
 import { getSupabaseClient } from '@/lib/supabase'
 import { TrustBar } from '@/components/TrustBar'
+import { CATEGORIES } from '@/lib/categories'
 
 const FALLBACK_SEARCH_SUGGESTIONS = ['Portables', 'Ordinateurs de bureau', 'Accessoires']
 
@@ -29,11 +30,7 @@ const categoryLinks = [
   { label: 'Services', href: null }
 ]
 
-const informatiqueSubcategories = [
-  { label: 'Portables', href: '/products?category=portable' },
-  { label: 'Ordinateurs de bureau', href: '/products?category=bureau' },
-  { label: 'Accessoires', href: '/products?category=accessoire' }
-]
+const informatiqueSubcategories = CATEGORIES.map(c => ({ label: c.label, href: `/products?category=${c.value}` }))
 
 export function Navbar() {
   const router = useRouter()

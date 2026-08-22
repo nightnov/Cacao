@@ -505,16 +505,18 @@ export default function ProductDetail() {
               </Button>
             </div>
 
-            <div className="flex items-center justify-center gap-5 mt-4 flex-wrap text-xs text-[#56534C]">
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck size={14} className="text-[#1E7A46]" /> Paiement sécurisé
-              </span>
-              <span className="flex items-center gap-1.5">
-                <RotateCcw size={14} className="text-[#1E7A46]" /> Retour sous 14 jours
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Truck size={14} className="text-[#1E7A46]" /> Livraison suivie
-              </span>
+            <div className="grid grid-cols-3 gap-2 mt-4 text-center">
+              {[
+                { icon: ShieldCheck, label: 'Paiement sécurisé', sub: 'Wave, Orange, MTN, Moov, carte' },
+                { icon: RotateCcw, label: 'Retour sous 14 jours', sub: 'Si le produit ne convient pas' },
+                { icon: Truck, label: 'Livraison suivie', sub: 'Code remis à la réception' }
+              ].map(item => (
+                <div key={item.label} className="flex flex-col items-center gap-1 px-1">
+                  <item.icon size={16} className="text-[#1E7A46]" />
+                  <span className="text-[11px] font-semibold text-[#1A1A1A] leading-tight">{item.label}</span>
+                  <span className="text-[10px] text-[#8A8579] leading-tight">{item.sub}</span>
+                </div>
+              ))}
             </div>
 
             <div className="flex items-center justify-center gap-4 mt-3">

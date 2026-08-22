@@ -16,10 +16,12 @@ const config: Config = {
         'ink-dimmer': '#8A8579',
         border: '#E4DDCF',
         green: '#1E7A46',
+        cream: '#FBF3E7',
+        'cacao-brown': '#2B1810',
       },
       fontFamily: {
-        serif: ['Fraunces', 'serif'],
-        sans: ['Inter', 'sans-serif'],
+        serif: ['var(--font-fraunces)', 'Fraunces', 'serif'],
+        sans: ['var(--font-inter)', 'Inter', 'sans-serif'],
       },
       fontSize: {
         xs: '12px',

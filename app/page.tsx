@@ -8,6 +8,7 @@ import { TrustSection } from '@/components/TrustSection'
 import { Badge } from '@/components/Badge'
 import { ProductCard } from '@/components/ProductCard'
 import { getSupabaseClient } from '@/lib/supabase'
+import { Laptop, Monitor, Gamepad2, Cpu, HardDrive, Headphones, Grid3x3 } from 'lucide-react'
 
 interface Product {
   id: string
@@ -26,12 +27,13 @@ interface Product {
 }
 
 const categoryShortcuts = [
-  { label: 'Informatique', href: '/products', active: true },
-  { label: 'Maison & déco', href: null, active: false },
-  { label: 'Mode', href: null, active: false },
-  { label: 'Beauté', href: null, active: false },
-  { label: 'Loisirs', href: null, active: false },
-  { label: 'Services', href: null, active: false }
+  { label: 'Portables', href: '/products?category=portable', icon: Laptop, active: true },
+  { label: 'Bureau', href: '/products?category=bureau', icon: Monitor, active: true },
+  { label: 'Accessoires', href: '/products?category=accessoire', icon: Headphones, active: true },
+  { label: 'Gaming', href: null, icon: Gamepad2, active: false },
+  { label: 'Composants', href: null, icon: Cpu, active: false },
+  { label: 'Stockage', href: null, icon: HardDrive, active: false },
+  { label: 'Voir tout', href: '/products', icon: Grid3x3, active: true }
 ]
 
 const editorialCards = [
@@ -148,47 +150,60 @@ export default function Home() {
     <main className="min-h-screen bg-white">
       <Navbar />
 
-      {/* Hero — compact, la découverte prime */}
-      <section className="max-w-7xl mx-auto px-10 pt-8 pb-6">
-        <Badge>DÉCOUVREZ LA SÉLECTION CACAO</Badge>
-        <h1 className="font-serif font-semibold text-4xl leading-tight mb-3 max-w-2xl mt-4">
-          Trouvez ce qui vous <em className="italic text-[#FF6600]">plaît.</em>
-        </h1>
-        <p className="text-[#56534C] text-base max-w-md leading-relaxed mb-5">
-          Des produits choisis avec soin, livrés chez vous en toute confiance en Côte d&apos;Ivoire.
-        </p>
-        <div className="flex items-center gap-4 flex-wrap">
-          <Link href="/products" className="px-6 py-2.5 bg-[#FF6600] hover:bg-[#E65C00] text-white rounded-full font-semibold text-sm transition-colors">
-            Découvrir les produits
-          </Link>
-          <a href="#categories" className="px-6 py-2.5 border-2 border-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white rounded-full font-semibold text-sm transition-colors">
-            Explorer les catégories
-          </a>
+      {/* Hero — deux colonnes sur fond crème */}
+      <section className="bg-cream border-b border-[#E4DDCF]">
+        <div className="max-w-7xl mx-auto px-10 py-14 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+          <div>
+            <Badge>DÉCOUVREZ LA SÉLECTION CACAO</Badge>
+            <h1 className="font-serif font-semibold text-4xl leading-tight mb-3 mt-4">
+              Trouvez le PC qui vous <em className="italic text-[#FF6600]">correspond.</em>
+            </h1>
+            <p className="text-[#56534C] text-base max-w-md leading-relaxed mb-6">
+              Des produits choisis avec soin, livrés chez vous en toute confiance en Côte d&apos;Ivoire.
+            </p>
+            <div className="flex items-center gap-4 flex-wrap">
+              <Link href="/products?sort=popular" className="px-6 py-2.5 bg-[#2B1810] hover:bg-[#1A0F0A] text-white rounded-full font-semibold text-sm transition-colors">
+                Voir les PC populaires
+              </Link>
+              <Link href="/products?sort=newest" className="px-6 py-2.5 border-2 border-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white rounded-full font-semibold text-sm transition-colors">
+                Découvrir les offres
+              </Link>
+            </div>
+          </div>
+          <div className="hidden md:flex items-center justify-center">
+            <div className="w-full aspect-[4/3] rounded-2xl bg-gradient-to-br from-[#1A1A1A] via-[#2B1810] to-[#FF6600]/40 flex items-center justify-center">
+              <Laptop size={96} className="text-white/90" strokeWidth={1} />
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Category shortcuts */}
-      <section id="categories" className="max-w-7xl mx-auto px-10 pb-4">
-        <div className="flex gap-3 flex-wrap">
-          {categoryShortcuts.map(cat =>
-            cat.active && cat.href ? (
+      <section id="categories" className="max-w-7xl mx-auto px-10 py-6 border-b border-[#E4DDCF]">
+        <div className="flex gap-6 flex-wrap justify-center sm:justify-between">
+          {categoryShortcuts.map(cat => {
+            const Icon = cat.icon
+            return cat.active && cat.href ? (
               <Link
                 key={cat.label}
                 href={cat.href}
-                className="px-5 py-2.5 rounded-full border-2 border-[#1A1A1A] text-sm font-semibold text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white transition-colors"
+                className="flex flex-col items-center gap-2 text-[#1A1A1A] hover:text-[#FF6600] transition-colors w-20"
               >
-                {cat.label}
+                <div className="w-12 h-12 rounded-full bg-[#FBF6EE] flex items-center justify-center">
+                  <Icon size={20} strokeWidth={1.5} />
+                </div>
+                <span className="text-xs font-medium text-center">{cat.label}</span>
               </Link>
             ) : (
-              <span
-                key={cat.label}
-                className="px-5 py-2.5 rounded-full border border-[#E4DDCF] text-sm text-[#C4BDAF] flex items-center gap-2 cursor-default"
-              >
-                {cat.label}
-                <span className="text-[10px] bg-gray-50 px-2 py-0.5 rounded-full">Bientôt</span>
-              </span>
+              <div key={cat.label} className="flex flex-col items-center gap-1 text-[#C4BDAF] w-20 cursor-default">
+                <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center">
+                  <Icon size={20} strokeWidth={1.5} />
+                </div>
+                <span className="text-xs font-medium text-center">{cat.label}</span>
+                <span className="text-[9px] bg-gray-50 px-1.5 py-0.5 rounded-full">Bientôt</span>
+              </div>
             )
-          )}
+          })}
         </div>
       </section>
 

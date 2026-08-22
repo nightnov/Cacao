@@ -34,3 +34,7 @@ yarn-error.log*
 *.swp
 *.swo
 *~
+
+# graphify (artefact local d'analyse de code, pas du code applicatif)
+graphify-out
+scratch

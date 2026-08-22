@@ -5,11 +5,13 @@ import './globals.css'
 const fraunces = Fraunces({
   subsets: ['latin'],
   display: 'swap',
+  variable: '--font-fraunces',
 })
 
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
+  variable: '--font-inter',
 })
 
 export const metadata: Metadata = {
@@ -32,7 +34,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body className={inter.className}>{children}</body>
+      <body className={`${inter.variable} ${fraunces.variable} font-sans`}>{children}</body>
     </html>
   )
 }

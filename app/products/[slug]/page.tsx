@@ -33,6 +33,7 @@ interface Product {
   image_urls: string[]
   video_url: string | null
   variant_options?: VariantOption[]
+  sellers?: { name: string } | null
   created_at?: string
 }
 
@@ -96,7 +97,7 @@ export default function ProductDetail() {
         const supabase = getSupabaseClient()
         const { data, error } = await supabase
           .from('products')
-          .select('id, name, slug, description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url, variant_options')
+          .select('id, name, slug, description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url, variant_options, sellers(name)')
           .eq('slug', slug)
           .eq('status', 'active')
           .maybeSingle()
@@ -403,7 +404,7 @@ export default function ProductDetail() {
               )}
             </div>
 
-            <SoldByBlock />
+            <SoldByBlock sellerName={product.sellers?.name || 'CACAO'} />
 
             {/* Caractéristiques clés (aperçu rapide) */}
             {specEntries.length > 0 && (
@@ -472,7 +473,7 @@ export default function ProductDetail() {
 
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                variant="outline"
+                variant="secondary"
                 size="lg"
                 className="flex-1"
                 disabled={!canAddToCart}

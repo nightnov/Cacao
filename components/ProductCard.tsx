@@ -1,7 +1,16 @@
+'use client'
+
+import { useState } from 'react'
 import Link from 'next/link'
 import { FavoriteButton } from '@/components/FavoriteButton'
 import { StarRating } from '@/components/StarRating'
 import { formatAmount } from '@/lib/format'
+import { colorToHex } from '@/lib/colorNames'
+
+interface ColorVariant {
+  value: string
+  image_url: string | null
+}
 
 interface ProductCardProps {
   id: string
@@ -16,6 +25,7 @@ interface ProductCardProps {
   avg_rating?: number | null
   review_count?: number
   specs?: Record<string, unknown>
+  colors?: ColorVariant[]
 }
 
 const NEW_THRESHOLD_DAYS = 14
@@ -36,7 +46,8 @@ export function ProductCard({
   created_at,
   avg_rating,
   review_count,
-  specs
+  specs,
+  colors = []
 }: ProductCardProps) {
   const hasPromo = !!compare_at_price_fcfa && compare_at_price_fcfa > price_fcfa
   const discount = hasPromo
@@ -45,16 +56,22 @@ export function ProductCard({
   const isNew = !!created_at && Date.now() - new Date(created_at).getTime() < NEW_THRESHOLD_DAYS * 24 * 60 * 60 * 1000
   const summary = specsSummary(specs)
 
+  // Couleur choisie sur la carte : ne change QUE la photo affichée ici,
+  // sans naviguer. Le vrai choix (avec effet sur le prix) se fait sur la
+  // fiche produit, où les variantes existent réellement.
+  const [selectedColor, setSelectedColor] = useState<ColorVariant | null>(null)
+  const displayImage = selectedColor?.image_url || image_urls?.[0]
+
   return (
     <Link
       href={`/products/${slug}`}
       className="group flex flex-col bg-[#1C2021] border border-[#35383C] rounded-xl overflow-hidden transition-all duration-200 hover:border-[#4E5257] hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FDC700] focus-visible:ring-offset-2 focus-visible:ring-offset-[#222427]"
     >
       <div className="relative h-[132px] sm:h-[158px] bg-[#171A1C] flex items-center justify-center overflow-hidden flex-shrink-0">
-        {image_urls && image_urls.length > 0 ? (
+        {displayImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={image_urls[0]}
+            src={displayImage}
             alt={name}
             loading="lazy"
             className="w-full h-full object-contain p-3 transition-transform duration-500 ease-out group-hover:scale-[1.05]"
@@ -98,6 +115,32 @@ export function ProductCard({
         {!!review_count && avg_rating != null && (
           <div className="mt-2">
             <StarRating rating={avg_rating} reviewCount={review_count} size={11} compact />
+          </div>
+        )}
+
+        {/* Pastilles de couleur : aperçu rapide sans quitter la grille.
+            Le vrai choix (et son effet sur le prix) se fait sur la fiche
+            produit, où les variantes ont un prix réel. */}
+        {colors.length > 1 && (
+          <div className="flex items-center gap-1.5 mt-2.5" onClick={e => e.preventDefault()}>
+            {colors.slice(0, 5).map(c => {
+              const hex = colorToHex(c.value)
+              const active = selectedColor?.value === c.value
+              return (
+                <button
+                  key={c.value}
+                  type="button"
+                  title={c.value}
+                  aria-label={`Voir en ${c.value}`}
+                  aria-pressed={active}
+                  onClick={() => setSelectedColor(active ? null : c)}
+                  className={`w-5 h-5 rounded-full border-2 flex-shrink-0 transition-transform ${
+                    active ? 'border-[#FDC700] scale-110' : 'border-[#35383C] hover:border-[#4E5257]'
+                  }`}
+                  style={{ backgroundColor: hex || '#45484C' }}
+                />
+              )
+            })}
           </div>
         )}
 

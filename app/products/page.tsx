@@ -26,6 +26,7 @@ interface Product {
   avg_rating?: number | null
   review_count?: number
   view_count?: number
+  colors?: { value: string; image_url: string | null }[]
 }
 
 const sortOptions = [

@@ -48,9 +48,10 @@ export async function GET(request: Request) {
     const productIds = products.map((p: any) => p.id)
 
     if (productIds.length > 0) {
-      const [ratingsRes, viewsRes] = await Promise.all([
+      const [ratingsRes, viewsRes, variantsRes] = await Promise.all([
         supabase.from('product_ratings').select('product_id, avg_rating, review_count').in('product_id', productIds),
-        supabase.from('product_views').select('product_id').in('product_id', productIds)
+        supabase.from('product_views').select('product_id').in('product_id', productIds),
+        supabase.from('product_variants').select('product_id, option_values, image_url').in('product_id', productIds)
       ])
 
       const ratingsById = new Map((ratingsRes.data || []).map((r: any) => [r.product_id, r]))
@@ -59,11 +60,29 @@ export async function GET(request: Request) {
         viewCounts.set(v.product_id, (viewCounts.get(v.product_id) || 0) + 1)
       }
 
+      // Couleurs disponibles par produit, pour l'affichage des pastilles sur
+      // la carte catalogue. Ne retient que l'option nommée « Couleur » (ou
+      // variante d'accents/casse) : les autres options (Mémoire, Stockage...)
+      // ne sont pertinentes que sur la fiche produit.
+      const colorsByProduct = new Map<string, { value: string; image_url: string | null }[]>()
+      for (const v of variantsRes.data || []) {
+        const entry = Object.entries(v.option_values || {}).find(([k]) =>
+          /^couleurs?$/i.test(k.normalize('NFD').replace(/[̀-ͯ]/g, ''))
+        )
+        if (!entry) continue
+        const list = colorsByProduct.get(v.product_id) || []
+        if (!list.some(c => c.value === entry[1])) {
+          list.push({ value: entry[1] as string, image_url: v.image_url })
+          colorsByProduct.set(v.product_id, list)
+        }
+      }
+
       products = products.map((p: any) => ({
         ...p,
         avg_rating: ratingsById.get(p.id)?.avg_rating ?? null,
         review_count: ratingsById.get(p.id)?.review_count ?? 0,
-        view_count: viewCounts.get(p.id) || 0
+        view_count: viewCounts.get(p.id) || 0,
+        colors: colorsByProduct.get(p.id) || []
       }))
 
       if (sort === 'rating') {

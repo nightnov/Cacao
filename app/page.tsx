@@ -28,6 +28,7 @@ interface Product {
   review_count?: number
   view_count?: number
   specs?: Record<string, unknown>
+  colors?: { value: string; image_url: string | null }[]
 }
 
 /** Gammes mises en avant. Le prix « à partir de » est calculé sur les vrais produits. */

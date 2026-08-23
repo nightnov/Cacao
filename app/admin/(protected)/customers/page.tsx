@@ -6,6 +6,7 @@ import { TableShell, Column } from '@/components/admin/TableShell'
 import { Pagination } from '@/components/admin/Pagination'
 import { Avatar } from '@/components/admin/Avatar'
 import { StatusBadge } from '@/components/admin/StatusBadge'
+import { formatAmount } from '@/lib/format'
 
 interface Customer {
   id: string
@@ -101,7 +102,7 @@ export default function AdminCustomers() {
     { key: 'email', header: 'Email', render: c => <span className="text-[#5B4B41]">{c.email}</span> },
     { key: 'phone', header: 'Téléphone', render: c => <span className="text-[#5B4B41]">{c.phone}</span> },
     { key: 'orders', header: 'Commandes', align: 'center', render: c => <StatusBadge label={String(c.order_count)} tone="info" /> },
-    { key: 'total', header: 'Total dépensé', align: 'right', render: c => `${c.total_spent_fcfa.toLocaleString('fr-CI')} FCFA` }
+    { key: 'total', header: 'Total dépensé', align: 'right', render: c => `${formatAmount(c.total_spent_fcfa)} FCFA` }
   ]
 
   return (

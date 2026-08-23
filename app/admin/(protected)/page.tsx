@@ -10,6 +10,7 @@ import { TableShell, Column } from '@/components/admin/TableShell'
 import { StatusBadge, StatusTone } from '@/components/admin/StatusBadge'
 import { Avatar } from '@/components/admin/Avatar'
 import { Order } from '@/types/admin'
+import { formatAmount } from '@/lib/format'
 
 const MONTH_LABELS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
 
@@ -263,7 +264,7 @@ export default function AdminDashboard() {
     },
     {
       label: 'Revenus ce mois (FCFA)',
-      value: stats.revenue.toLocaleString('fr-CI'),
+      value: formatAmount(stats.revenue),
       icon: Wallet,
       iconBg: 'bg-green-50',
       iconColor: 'text-green-700',
@@ -347,7 +348,7 @@ export default function AdminDashboard() {
                   )
                 }
               },
-              { key: 'total', header: 'Total', render: (o: Order) => `${o.total_fcfa.toLocaleString('fr-CI')} FCFA` },
+              { key: 'total', header: 'Total', render: (o: Order) => `${formatAmount(o.total_fcfa)} FCFA` },
               {
                 key: 'status',
                 header: 'Statut',

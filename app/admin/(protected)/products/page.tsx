@@ -11,6 +11,7 @@ import { IconButton } from '@/components/admin/IconButton'
 import { Pagination } from '@/components/admin/Pagination'
 import { Product } from '@/types/admin'
 import { categoryLabel as categoryLabels } from '@/lib/categories'
+import { formatAmount } from '@/lib/format'
 
 const availabilityLabels: Record<string, { label: string; tone: StatusTone }> = {
   in_stock: { label: 'En stock', tone: 'success' },
@@ -107,7 +108,7 @@ export default function AdminProducts() {
       )
     },
     { key: 'category', header: 'Catégorie', render: p => <span className="text-[#5B4B41]">{categoryLabels[p.category] || p.category}</span> },
-    { key: 'price', header: 'Prix', render: p => `${p.price_fcfa.toLocaleString('fr-CI')} FCFA` },
+    { key: 'price', header: 'Prix', render: p => `${formatAmount(p.price_fcfa)} FCFA` },
     {
       key: 'availability',
       header: 'Disponibilité',

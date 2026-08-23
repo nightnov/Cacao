@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Order, OrderItem } from '@/types/admin'
+import { formatAmount } from '@/lib/format'
 
 const nextStatus: Record<string, string> = {
   pending: 'confirmed',
@@ -152,10 +153,10 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
                   </div>
                   <div className="text-right">
                     <p className="font-semibold text-[#241A14]">
-                      {item.subtotal_fcfa.toLocaleString('fr-CI')} FCFA
+                      {formatAmount(item.subtotal_fcfa)} FCFA
                     </p>
                     <p className="text-sm text-[#5B4B41]">
-                      {item.unit_price_fcfa.toLocaleString('fr-CI')} FCFA x {item.quantity}
+                      {formatAmount(item.unit_price_fcfa)} FCFA x {item.quantity}
                     </p>
                   </div>
                 </div>
@@ -168,15 +169,15 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
             <div className="space-y-2">
               <div className="flex justify-between text-[#5B4B41]">
                 <span>Produits</span>
-                <span>{order.total_products_fcfa.toLocaleString('fr-CI')} FCFA</span>
+                <span>{formatAmount(order.total_products_fcfa)} FCFA</span>
               </div>
               <div className="flex justify-between text-[#5B4B41]">
                 <span>Livraison</span>
-                <span>{order.shipping_cost_fcfa.toLocaleString('fr-CI')} FCFA</span>
+                <span>{formatAmount(order.shipping_cost_fcfa)} FCFA</span>
               </div>
               <div className="flex justify-between text-lg font-bold text-[#241A14] pt-2 border-t border-[#E8E0D8]">
                 <span>Total</span>
-                <span className="text-[#C2410C]">{order.total_fcfa.toLocaleString('fr-CI')} FCFA</span>
+                <span className="text-[#C2410C]">{formatAmount(order.total_fcfa)} FCFA</span>
               </div>
             </div>
           </div>

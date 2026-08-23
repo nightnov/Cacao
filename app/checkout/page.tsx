@@ -9,6 +9,7 @@ import { Button } from '@/components/Button'
 import { useAuth } from '@/hooks/useAuth'
 import { getSupabaseClient } from '@/lib/supabase'
 import { getCart, clearCart, CartItem } from '@/lib/cart'
+import { formatAmount } from '@/lib/format'
 
 interface ShippingFee {
   id: string
@@ -288,7 +289,7 @@ export default function Checkout() {
                   <div key={item.id} className="flex justify-between text-sm">
                     <span className="text-[#5B4B41]">{item.name} × {item.quantity}</span>
                     <span className="text-[#241A14] font-medium">
-                      {(item.price_fcfa * item.quantity).toLocaleString('fr-CI')} FCFA
+                      {(formatAmount(item.price_fcfa * item.quantity))} FCFA
                     </span>
                   </div>
                 ))}
@@ -297,15 +298,15 @@ export default function Checkout() {
               <div className="border-t border-[#E8E0D8] pt-4 space-y-2">
                 <div className="flex justify-between text-sm text-[#5B4B41]">
                   <span>Produits</span>
-                  <span>{productsTotal.toLocaleString('fr-CI')} FCFA</span>
+                  <span>{formatAmount(productsTotal)} FCFA</span>
                 </div>
                 <div className="flex justify-between text-sm text-[#5B4B41]">
                   <span>Livraison</span>
-                  <span>{shippingCost.toLocaleString('fr-CI')} FCFA</span>
+                  <span>{formatAmount(shippingCost)} FCFA</span>
                 </div>
                 <div className="flex justify-between text-lg font-bold text-[#241A14] pt-2 border-t border-[#E8E0D8]">
                   <span>Total</span>
-                  <span className="text-[#C2410C]">{total.toLocaleString('fr-CI')} FCFA</span>
+                  <span className="text-[#C2410C]">{formatAmount(total)} FCFA</span>
                 </div>
               </div>
 

@@ -1,6 +1,8 @@
 import Link from 'next/link'
+import { Truck } from 'lucide-react'
 import { FavoriteButton } from '@/components/FavoriteButton'
 import { StarRating } from '@/components/StarRating'
+import { formatAmount } from '@/lib/format'
 
 interface ProductCardProps {
   id: string
@@ -48,74 +50,79 @@ export function ProductCard({
   return (
     <Link
       href={`/products/${slug}`}
-      className="group block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2410C] focus-visible:ring-offset-2"
+      className="group flex flex-col bg-white border border-[#E8E0D8] rounded-2xl overflow-hidden transition-all duration-200 hover:border-[#D6C8BC] hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C2410C] focus-visible:ring-offset-2"
     >
       {/* Visuel */}
-      <div className="relative bg-white border border-[#E8E0D8] aspect-square rounded-2xl overflow-hidden flex items-center justify-center transition-shadow duration-200 group-hover:shadow-card-hover">
+      <div className="relative aspect-square bg-[#FAF7F4] flex items-center justify-center overflow-hidden">
         {image_urls && image_urls.length > 0 ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={image_urls[0]}
             alt={name}
             loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+            className="w-full h-full object-contain p-3 transition-transform duration-500 ease-out group-hover:scale-[1.05]"
           />
         ) : (
-          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#C2410C" strokeWidth="1" aria-hidden="true">
+          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#C9B8A8" strokeWidth="1.2" aria-hidden="true">
             <rect x="2" y="3" width="20" height="14" rx="2" />
             <line x1="8" y1="21" x2="16" y2="21" />
             <line x1="12" y1="17" x2="12" y2="21" />
           </svg>
         )}
 
-        {/* Un seul badge à la fois : la remise chiffrée prime sur la nouveauté */}
+        {/* Un seul badge : la remise chiffrée prime sur la nouveauté */}
         {hasPromo ? (
-          <span className="absolute top-2.5 left-2.5 text-[11px] font-bold px-2 py-1 rounded-lg text-white bg-[#1E7A46] tabular-nums">
+          <span className="absolute top-2.5 left-2.5 text-[10.5px] font-extrabold px-2 py-1 rounded-md text-white bg-[#1E7A46] tabular-nums">
             -{discount}%
           </span>
         ) : isNew ? (
-          <span className="absolute top-2.5 left-2.5 text-[11px] font-bold px-2 py-1 rounded-lg text-white bg-[#C2410C]">
+          <span className="absolute top-2.5 left-2.5 text-[10.5px] font-extrabold px-2 py-1 rounded-md text-white bg-[#C2410C]">
             Nouveau
           </span>
         ) : null}
 
-        {availability === 'on_order' && (
-          <span className="absolute bottom-2.5 left-2.5 text-[11px] font-semibold px-2 py-1 rounded-lg bg-white/95 text-[#5B4B41] border border-[#E8E0D8]">
-            Sur commande
-          </span>
-        )}
-
         <FavoriteButton
           productId={id}
-          size={15}
-          className="absolute top-2.5 right-2.5 w-8 h-8 bg-white/95 shadow-sm"
+          size={14}
+          className="absolute top-2 right-2 w-7 h-7 bg-white border border-[#E8E0D8] shadow-sm"
         />
       </div>
 
       {/* Informations */}
-      <div className="pt-3">
-        {/* Deux lignes : les references PC sont longues, une seule ligne les rendait illisibles */}
-        <h3 className="text-sm leading-snug text-[#241A14] line-clamp-2 min-h-[2.5rem] group-hover:text-[#C2410C] transition-colors">
+      <div className="flex flex-col flex-1 px-3 pt-2.5 pb-3">
+        {/* Deux lignes : les références PC dépassent 100 caractères, une
+            troncature sur une seule ligne les rendait illisibles. */}
+        <h3 className="text-[12.5px] leading-[1.35] text-[#241A14] line-clamp-2 min-h-[2.15rem] group-hover:text-[#C2410C] transition-colors">
           {name}
         </h3>
 
-        {summary && <p className="text-xs text-[#7D6A5D] truncate mt-1">{summary}</p>}
+        {summary && <p className="text-[11px] text-[#7D6A5D] truncate mt-1">{summary}</p>}
 
         {!!review_count && avg_rating != null && (
           <div className="mt-1.5">
-            <StarRating rating={avg_rating} reviewCount={review_count} size={12} />
+            <StarRating rating={avg_rating} reviewCount={review_count} size={11} />
           </div>
         )}
 
-        <div className="flex items-baseline gap-2 mt-2 flex-wrap">
-          <span className="text-base font-bold text-[#241A14] tabular-nums">
-            {price_fcfa.toLocaleString('fr-CI')} FCFA
-          </span>
-          {hasPromo && (
-            <span className="text-xs text-[#7D6A5D] line-through tabular-nums">
-              {compare_at_price_fcfa!.toLocaleString('fr-CI')}
+        <div className="mt-auto pt-2">
+          <div className="flex items-baseline gap-1.5 flex-wrap">
+            <span className="text-[15.5px] font-extrabold text-[#241A14] tabular-nums">
+              {formatAmount(price_fcfa)} FCFA
             </span>
-          )}
+            {hasPromo && (
+              <span className="text-[11px] text-[#9E8C7E] line-through tabular-nums">
+                {formatAmount(compare_at_price_fcfa!)}
+              </span>
+            )}
+          </div>
+
+          {/* Disponibilité réelle du produit, pas un délai inventé */}
+          <p className={`flex items-center gap-1 text-[10.5px] font-semibold mt-1.5 ${
+            availability === 'in_stock' ? 'text-[#1E7A46]' : 'text-[#7D6A5D]'
+          }`}>
+            <Truck size={12} strokeWidth={2} />
+            {availability === 'in_stock' ? 'En stock, livrable' : availability === 'on_order' ? 'Sur commande' : 'Indisponible'}
+          </p>
         </div>
       </div>
     </Link>

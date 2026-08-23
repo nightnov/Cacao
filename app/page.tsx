@@ -4,12 +4,11 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
-import { TrustSection } from '@/components/TrustSection'
-import { Badge } from '@/components/Badge'
 import { ProductCard } from '@/components/ProductCard'
 import { getSupabaseClient } from '@/lib/supabase'
-import { Laptop } from 'lucide-react'
+import { Laptop, LayoutGrid } from 'lucide-react'
 import { CATEGORIES } from '@/lib/categories'
+import { formatAmount } from '@/lib/format'
 
 interface Product {
   id: string
@@ -133,64 +132,83 @@ export default function Home() {
     <main className="min-h-screen bg-white">
       <Navbar />
 
-      {/* Hero. La colonne visuelle montre un vrai produit du catalogue (vraie photo,
-          vrai prix, lien réel) plutôt qu'un dégradé décoratif : c'est le premier
-          argument de vente, et ça donne immédiatement un point d'entrée à l'achat. */}
-      <section className="bg-cream border-b border-[#E8E0D8]">
-        <div className="max-w-7xl mx-auto px-5 sm:px-10 py-12 lg:py-16 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-          <div>
-            <Badge>DÉCOUVREZ LA SÉLECTION CACAO</Badge>
-            <h1 className="font-serif font-semibold text-3xl sm:text-4xl lg:text-5xl leading-[1.1] mb-4 mt-4">
-              Trouvez le PC qui vous <em className="italic text-[#C2410C] leading-[1.1]">correspond.</em>
+      {/* Bandeau d'accueil compact. Volontairement court pour que les produits
+          restent visibles sans faire défiler. La vignette de droite est un vrai
+          produit du catalogue : vraie photo, vrai prix, lien réel. */}
+      <section className="max-w-7xl mx-auto px-5 sm:px-10 pt-5">
+        <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-[#241A14] via-[#4A2F20] to-[#8A3F13] px-6 sm:px-9 py-7 lg:py-8 flex items-center gap-8">
+          <div className="flex-1 min-w-0">
+            <span className="inline-block bg-[#C2410C] text-white text-[10px] font-extrabold tracking-[0.7px] px-2.5 py-1 rounded-full mb-3">
+              SÉLECTION CACAO
+            </span>
+            <h1 className="font-serif font-extrabold text-white text-2xl sm:text-3xl lg:text-[34px] leading-[1.12] tracking-tight mb-2.5">
+              Le PC qu&apos;il vous faut,<br className="hidden sm:block" /> au juste prix.
             </h1>
-            <p className="text-[#5B4B41] text-base max-w-md leading-relaxed mb-7">
-              Des ordinateurs performants pour le travail, les études et le gaming. Livraison partout en Côte d&apos;Ivoire.
+            <p className="text-[#E4D3C6] text-[13.5px] leading-relaxed max-w-md mb-5">
+              Portables, bureau et gaming. Payez en mobile money, recevez chez vous partout en Côte d&apos;Ivoire.
             </p>
-            <div className="flex items-center gap-3 flex-wrap">
-              <Link href="/products" className="px-7 py-3 bg-[#C2410C] hover:bg-[#9A3412] text-white rounded-full font-semibold text-sm transition-colors active:scale-[0.98]">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <Link href="/products" className="px-6 py-2.5 bg-[#C2410C] hover:bg-[#9A3412] text-white rounded-full font-bold text-[13px] transition-colors active:scale-[0.98]">
                 Voir le catalogue
               </Link>
               {deals.length > 0 && (
-                <Link href="/products?sort=newest" className="px-7 py-3 border-2 border-[#241A14] hover:bg-[#241A14] hover:text-white rounded-full font-semibold text-sm transition-colors active:scale-[0.98]">
+                <Link href="/products?sort=newest" className="px-6 py-2.5 bg-white hover:bg-[#F3EDE6] text-[#241A14] rounded-full font-bold text-[13px] transition-colors active:scale-[0.98]">
                   Les promotions
                 </Link>
               )}
             </div>
           </div>
 
-          {heroProduct ? (
-            <Link href={`/products/${heroProduct.slug}`} className="group hidden lg:block">
-              <div className="relative bg-white rounded-2xl border border-[#E8E0D8] p-6 shadow-card transition-shadow duration-200 group-hover:shadow-card-hover">
-                <div className="aspect-[4/3] flex items-center justify-center overflow-hidden rounded-xl">
+          {heroProduct && (
+            <Link href={`/products/${heroProduct.slug}`} className="group hidden lg:block w-[275px] flex-shrink-0">
+              <div className="bg-white rounded-xl p-3.5">
+                <div className="h-[150px] flex items-center justify-center overflow-hidden">
                   {heroProduct.image_urls?.[0] ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={heroProduct.image_urls[0]}
                       alt={heroProduct.name}
-                      className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+                      className="w-full h-full object-contain transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                     />
                   ) : (
-                    <Laptop size={88} className="text-[#C2410C]" strokeWidth={1} />
+                    <Laptop size={72} className="text-[#C2410C]" strokeWidth={1} />
                   )}
                 </div>
-                <div className="mt-5 flex items-end justify-between gap-4 border-t border-[#E8E0D8] pt-4">
-                  <div className="min-w-0">
-                    <p className="text-sm text-[#241A14] line-clamp-2 leading-snug">{heroProduct.name}</p>
-                    <p className="text-lg font-bold text-[#241A14] mt-1 tabular-nums">
-                      {heroProduct.price_fcfa.toLocaleString('fr-CI')} FCFA
-                    </p>
-                  </div>
-                  <span className="text-sm font-semibold text-[#C2410C] whitespace-nowrap group-hover:underline">
-                    Voir →
-                  </span>
-                </div>
+                <p className="text-[11px] text-[#5B4B41] leading-[1.35] line-clamp-2 mt-2">{heroProduct.name}</p>
+                <p className="text-[17px] font-extrabold text-[#241A14] mt-1 tabular-nums">
+                  {formatAmount(heroProduct.price_fcfa)} FCFA
+                </p>
               </div>
             </Link>
-          ) : null}
+          )}
         </div>
       </section>
 
-      <TrustSection />
+      {/* Rangée de rayons : tuiles carrées, une icône distincte par catégorie */}
+      <section className="max-w-7xl mx-auto px-5 sm:px-10 pt-5 pb-2">
+        <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2.5">
+          {CATEGORIES.map(cat => {
+            const Icon = cat.icon
+            return (
+              <Link
+                key={cat.value}
+                href={`/products?category=${cat.value}`}
+                className="group flex flex-col items-center justify-center gap-2 py-3.5 px-1 rounded-xl border border-[#E8E0D8] bg-white hover:border-[#C2410C] hover:bg-[#FFF8F4] transition-colors"
+              >
+                <Icon size={21} strokeWidth={1.6} className="text-[#C2410C]" />
+                <span className="text-[10.5px] font-semibold text-[#3D2A20] text-center leading-tight">{cat.short}</span>
+              </Link>
+            )
+          })}
+          <Link
+            href="/products"
+            className="flex flex-col items-center justify-center gap-2 py-3.5 px-1 rounded-xl bg-[#241A14] hover:bg-[#3D2A20] transition-colors"
+          >
+            <LayoutGrid size={21} strokeWidth={1.6} className="text-white" />
+            <span className="text-[10.5px] font-semibold text-white text-center leading-tight">Voir tout</span>
+          </Link>
+        </div>
+      </section>
 
       {/* Bannière promotionnelle */}
       {bannerUrl && (
@@ -231,38 +249,6 @@ export default function Home() {
           </div>
         </section>
       )}
-
-      {/* Rangée de catégories */}
-      <section className="max-w-7xl mx-auto px-5 sm:px-10 pb-14">
-        <div className="flex gap-6 flex-wrap justify-center sm:justify-between">
-          {CATEGORIES.map(cat => {
-            const Icon = cat.icon
-            return (
-              <Link
-                key={cat.value}
-                href={`/products?category=${cat.value}`}
-                className="flex flex-col items-center gap-2 text-[#241A14] hover:text-[#C2410C] transition-colors w-20"
-              >
-                <div className="w-12 h-12 rounded-full bg-[#FAF7F4] flex items-center justify-center">
-                  <Icon size={20} strokeWidth={1.5} />
-                </div>
-                <span className="text-xs font-medium text-center">{cat.label}</span>
-              </Link>
-            )
-          })}
-          <Link href="/products" className="flex flex-col items-center gap-2 text-[#241A14] hover:text-[#C2410C] transition-colors w-20">
-            <div className="w-12 h-12 rounded-full bg-[#241A14] flex items-center justify-center">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                <rect x="3" y="3" width="7" height="7" />
-                <rect x="14" y="3" width="7" height="7" />
-                <rect x="3" y="14" width="7" height="7" />
-                <rect x="14" y="14" width="7" height="7" />
-              </svg>
-            </div>
-            <span className="text-xs font-medium text-center">Voir tout</span>
-          </Link>
-        </div>
-      </section>
 
       {/* PC Gaming — n'apparaît que si des produits gaming existent réellement */}
       {gaming.length > 0 && (

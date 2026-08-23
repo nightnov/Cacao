@@ -10,6 +10,7 @@ import { IconButton } from '@/components/admin/IconButton'
 import { Pagination } from '@/components/admin/Pagination'
 import { Avatar } from '@/components/admin/Avatar'
 import { Order, OrderItem } from '@/types/admin'
+import { formatAmount } from '@/lib/format'
 
 const statusLabels: Record<string, { label: string; tone: StatusTone }> = {
   pending: { label: 'En attente', tone: 'neutral' },
@@ -114,7 +115,7 @@ export default function AdminOrders() {
         )
       }
     },
-    { key: 'total', header: 'Total', render: o => `${o.total_fcfa.toLocaleString('fr-CI')} FCFA` },
+    { key: 'total', header: 'Total', render: o => `${formatAmount(o.total_fcfa)} FCFA` },
     {
       key: 'status',
       header: 'Statut',

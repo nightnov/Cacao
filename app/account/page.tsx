@@ -9,6 +9,7 @@ import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/Button'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
+import { formatAmount } from '@/lib/format'
 
 interface Profile {
   phone: string | null
@@ -368,7 +369,7 @@ export default function Account() {
                                 {items.length > 1 ? ` +${items.length - 1}` : ''}
                               </p>
                               <p className="text-xs text-[#7D6A5D]">
-                                {order.total_fcfa.toLocaleString('fr-CI')} FCFA · x{firstItem?.quantity || 1}
+                                {formatAmount(order.total_fcfa)} FCFA · x{firstItem?.quantity || 1}
                               </p>
                             </div>
                             <span className={`hidden sm:flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0 ${status.color}`}>
@@ -418,7 +419,7 @@ export default function Account() {
                               )}
                             </div>
                             <p className="text-sm text-[#241A14] truncate">{p.name}</p>
-                            <p className="text-xs text-[#5B4B41]">{p.price_fcfa.toLocaleString('fr-CI')} FCFA</p>
+                            <p className="text-xs text-[#5B4B41]">{formatAmount(p.price_fcfa)} FCFA</p>
                           </Link>
                         ))}
                       </div>
@@ -470,7 +471,7 @@ export default function Account() {
                           )}
                         </div>
                         <p className="text-sm text-[#241A14] truncate">{p.name}</p>
-                        <p className="text-xs text-[#5B4B41]">{p.price_fcfa.toLocaleString('fr-CI')} FCFA</p>
+                        <p className="text-xs text-[#5B4B41]">{formatAmount(p.price_fcfa)} FCFA</p>
                       </Link>
                     ))}
                   </div>
@@ -530,7 +531,7 @@ export default function Account() {
                                 {status.label}
                               </span>
                               <span className="font-semibold text-[#241A14] whitespace-nowrap">
-                                {order.total_fcfa.toLocaleString('fr-CI')} FCFA
+                                {formatAmount(order.total_fcfa)} FCFA
                               </span>
                               <svg
                                 width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
@@ -548,7 +549,7 @@ export default function Account() {
                                   <div key={item.id} className="flex justify-between text-sm">
                                     <span className="text-[#5B4B41]">{item.product_name} × {item.quantity}</span>
                                     <span className="text-[#241A14] font-medium">
-                                      {item.subtotal_fcfa.toLocaleString('fr-CI')} FCFA
+                                      {formatAmount(item.subtotal_fcfa)} FCFA
                                     </span>
                                   </div>
                                 ))}
@@ -573,11 +574,11 @@ export default function Account() {
                               <div className="border-t border-[#E8E0D8] pt-3 space-y-1">
                                 <div className="flex justify-between text-xs text-[#5B4B41]">
                                   <span>Produits</span>
-                                  <span>{order.total_products_fcfa.toLocaleString('fr-CI')} FCFA</span>
+                                  <span>{formatAmount(order.total_products_fcfa)} FCFA</span>
                                 </div>
                                 <div className="flex justify-between text-xs text-[#5B4B41]">
                                   <span>Livraison</span>
-                                  <span>{order.shipping_cost_fcfa.toLocaleString('fr-CI')} FCFA</span>
+                                  <span>{formatAmount(order.shipping_cost_fcfa)} FCFA</span>
                                 </div>
                               </div>
                             </div>

@@ -8,6 +8,7 @@ import { Footer } from '@/components/Footer'
 import { Button } from '@/components/Button'
 import { useAuth } from '@/hooks/useAuth'
 import { getSupabaseClient } from '@/lib/supabase'
+import { formatAmount } from '@/lib/format'
 
 interface OrderItem {
   id: string
@@ -144,7 +145,7 @@ export default function CheckoutSuccess() {
                   {item.product_name}{item.variant_label ? ` (${item.variant_label})` : ''} × {item.quantity}
                 </span>
                 <span className="text-[#241A14] font-medium">
-                  {item.subtotal_fcfa.toLocaleString('fr-CI')} FCFA
+                  {formatAmount(item.subtotal_fcfa)} FCFA
                 </span>
               </div>
             ))}
@@ -153,15 +154,15 @@ export default function CheckoutSuccess() {
           <div className="border-t border-[#E8E0D8] pt-4 space-y-2">
             <div className="flex justify-between text-sm text-[#5B4B41]">
               <span>Produits</span>
-              <span>{order.total_products_fcfa.toLocaleString('fr-CI')} FCFA</span>
+              <span>{formatAmount(order.total_products_fcfa)} FCFA</span>
             </div>
             <div className="flex justify-between text-sm text-[#5B4B41]">
               <span>Livraison</span>
-              <span>{order.shipping_cost_fcfa.toLocaleString('fr-CI')} FCFA</span>
+              <span>{formatAmount(order.shipping_cost_fcfa)} FCFA</span>
             </div>
             <div className="flex justify-between text-lg font-bold text-[#241A14] pt-2 border-t border-[#E8E0D8]">
               <span>Total</span>
-              <span className="text-[#C2410C]">{order.total_fcfa.toLocaleString('fr-CI')} FCFA</span>
+              <span className="text-[#C2410C]">{formatAmount(order.total_fcfa)} FCFA</span>
             </div>
           </div>
 

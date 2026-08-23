@@ -6,6 +6,7 @@ import { Footer } from '@/components/Footer'
 import { Button } from '@/components/Button'
 import Link from 'next/link'
 import { getCart, updateCartItemQuantity, removeFromCart, CartItem, CART_EVENT } from '@/lib/cart'
+import { formatAmount } from '@/lib/format'
 
 export default function Cart() {
   const [items, setItems] = useState<CartItem[]>([])
@@ -92,7 +93,7 @@ export default function Cart() {
                   {item.variant_label && (
                     <p className="text-xs text-[#7D6A5D] mt-0.5">{item.variant_label}</p>
                   )}
-                  <p className="text-sm text-[#7D6A5D] mt-1">{item.price_fcfa.toLocaleString('fr-CI')} FCFA</p>
+                  <p className="text-sm text-[#7D6A5D] mt-1">{formatAmount(item.price_fcfa)} FCFA</p>
                 </div>
 
                 <div className="flex items-center border-2 border-[#241A14] rounded-full flex-shrink-0">
@@ -112,7 +113,7 @@ export default function Cart() {
                 </div>
 
                 <div className="w-24 text-right font-semibold text-[#241A14] flex-shrink-0">
-                  {(item.price_fcfa * item.quantity).toLocaleString('fr-CI')} FCFA
+                  {(formatAmount(item.price_fcfa * item.quantity))} FCFA
                 </div>
 
                 <button
@@ -135,14 +136,14 @@ export default function Cart() {
               <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-6">Résumé</h2>
               <div className="flex justify-between text-[#5B4B41] mb-2">
                 <span>Produits</span>
-                <span>{total.toLocaleString('fr-CI')} FCFA</span>
+                <span>{formatAmount(total)} FCFA</span>
               </div>
               <p className="text-xs text-[#7D6A5D] mb-6">
                 Frais de livraison calculés à l&apos;étape suivante selon votre ville.
               </p>
               <div className="flex justify-between text-lg font-bold text-[#241A14] pt-4 border-t border-[#E8E0D8] mb-6">
                 <span>Total</span>
-                <span className="text-[#C2410C]">{total.toLocaleString('fr-CI')} FCFA</span>
+                <span className="text-[#C2410C]">{formatAmount(total)} FCFA</span>
               </div>
               <Link href="/checkout">
                 <Button variant="primary" className="w-full">

@@ -1,6 +1,7 @@
 'use client'
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { formatAmount } from '@/lib/format'
 
 interface MonthlyRevenuePoint {
   month: string
@@ -20,7 +21,7 @@ function CustomTooltip({ active, payload, label }: any) {
   return (
     <div className="bg-white rounded-lg border border-[#E8E0D8] shadow-lg px-4 py-3">
       <p className="text-xs text-[#7D6A5D] mb-1">{label}</p>
-      <p className="font-semibold text-[#241A14]">{value.toLocaleString('fr-CI')} FCFA</p>
+      <p className="font-semibold text-[#241A14]">{formatAmount(value)} FCFA</p>
     </div>
   )
 }

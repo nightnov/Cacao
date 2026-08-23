@@ -3,34 +3,33 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Heart } from 'lucide-react'
+import {
+  Search,
+  Heart,
+  ShoppingCart,
+  User,
+  LogOut,
+  MessageSquare,
+  Package,
+  LayoutDashboard,
+  Menu,
+  X
+} from 'lucide-react'
 import { getCartCount, CART_EVENT } from '@/lib/cart'
 import { useAuth } from '@/hooks/useAuth'
 import { getSupabaseClient } from '@/lib/supabase'
-import { TrustBar } from '@/components/TrustBar'
 import { CATEGORIES } from '@/lib/categories'
+import { TrustBar } from '@/components/TrustBar'
 
-const FALLBACK_SEARCH_SUGGESTIONS = ['Portables', 'Ordinateurs de bureau', 'Accessoires']
+const FALLBACK_SEARCH_SUGGESTIONS = ['PC portable', 'Écran', 'Clavier']
 
 const ADMIN_UUID = 'f4e9e8fd-8e85-4045-a6e5-c2c62204c5ff'
 
-const navLinks = [
-  { label: 'Catalogue', href: '/products' },
+const helpLinks = [
   { label: 'À propos', href: '/about' },
   { label: 'FAQ', href: '/faq' },
   { label: 'Contact', href: '/contact' }
 ]
-
-const categoryLinks = [
-  { label: 'Informatique', href: '/products' },
-  { label: 'Maison & déco', href: null },
-  { label: 'Mode', href: null },
-  { label: 'Beauté', href: null },
-  { label: 'Loisirs', href: null },
-  { label: 'Services', href: null }
-]
-
-const informatiqueSubcategories = CATEGORIES.map(c => ({ label: c.label, href: `/products?category=${c.value}` }))
 
 export function Navbar() {
   const router = useRouter()
@@ -41,9 +40,9 @@ export function Navbar() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [popularSearches, setPopularSearches] = useState<string[]>([])
+  const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const { user, loading: authLoading, isLoggedIn, logout } = useAuth()
   const accountMenuRef = useRef<HTMLDivElement>(null)
-  const menuRef = useRef<HTMLDivElement>(null)
 
   const suggestions = popularSearches.length > 0 ? popularSearches : FALLBACK_SEARCH_SUGGESTIONS
 
@@ -54,6 +53,19 @@ export function Navbar() {
     setIsMenuOpen(false)
     router.push(`/products?search=${encodeURIComponent(q)}`)
   }
+
+  // Catégorie active lue depuis l'URL côté client. On évite `useSearchParams`
+  // ici : ce hook rendrait dynamiques toutes les pages statiques qui affichent
+  // la navbar, ou imposerait un Suspense autour d'elle.
+  useEffect(() => {
+    const read = () => {
+      const p = new URLSearchParams(window.location.search)
+      setActiveCategory(window.location.pathname === '/products' ? p.get('category') : null)
+    }
+    read()
+    window.addEventListener('popstate', read)
+    return () => window.removeEventListener('popstate', read)
+  }, [])
 
   useEffect(() => {
     const fetchPopularSearches = async () => {
@@ -83,7 +95,6 @@ export function Navbar() {
 
   useEffect(() => {
     if (!isLoggedIn || !user) return
-
     const fetchUnread = async () => {
       try {
         const supabase = getSupabaseClient()
@@ -93,13 +104,11 @@ export function Navbar() {
           .eq('user_id', user.id)
           .eq('sender', 'admin')
           .eq('read_by_customer', false)
-
         setUnreadCount(count || 0)
       } catch {
         // silencieux: le badge n'est pas critique
       }
     }
-
     fetchUnread()
   }, [isLoggedIn, user])
 
@@ -107,9 +116,6 @@ export function Navbar() {
     const handleClickOutside = (e: MouseEvent) => {
       if (accountMenuRef.current && !accountMenuRef.current.contains(e.target as Node)) {
         setIsAccountMenuOpen(false)
-      }
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setIsMenuOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -122,118 +128,67 @@ export function Navbar() {
   const avatarLetter = (firstName || user?.email || '?').charAt(0).toUpperCase()
   const isAdmin = user?.id === ADMIN_UUID
 
+  const actionItem = 'flex flex-col items-center gap-0.5 text-[10px] font-medium text-[#5B4B41] hover:text-[#C2410C] transition-colors'
+
   return (
     <>
-    <nav className="bg-white border-b border-[#E8E0D8]">
-      <div className="max-w-7xl mx-auto px-5 sm:px-10 py-4 flex items-center justify-between">
-        {/* Logo + Menu Button */}
-        <div className="relative flex items-center gap-3 flex-shrink-0" ref={menuRef}>
+      {/* Bandeau utilitaire : les moyens de paiement acceptés sont la première
+          question d'un acheteur qui n'a jamais commandé en ligne. */}
+      <div className="bg-[#241A14] text-[#E9DCD2]">
+        <div className="max-w-7xl mx-auto px-5 sm:px-10 py-1.5 flex items-center justify-between gap-4 text-[11px]">
+          <span className="truncate">Livraison suivie à Abidjan et en région</span>
+          <span className="hidden sm:block truncate">
+            Paiement <strong className="text-[#F0A578] font-semibold">Wave · Orange Money · MTN · Moov · Carte</strong>
+          </span>
+        </div>
+      </div>
+
+      <nav className="bg-white border-b border-[#E8E0D8]">
+        <div className="max-w-7xl mx-auto px-5 sm:px-10 py-3 flex items-center gap-4 sm:gap-6">
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="flex flex-col gap-1.5"
-            aria-label="Ouvrir le menu"
+            className="lg:hidden text-[#241A14] flex-shrink-0"
+            aria-label={isMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+            aria-expanded={isMenuOpen}
           >
-            <span className={`w-6 h-0.5 bg-[#241A14] transition-all ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-            <span className={`w-6 h-0.5 bg-[#241A14] transition-all ${isMenuOpen ? 'opacity-0' : ''}`}></span>
-            <span className={`w-6 h-0.5 bg-[#241A14] transition-all ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+            {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
-          <Link href="/" className="font-serif font-bold text-3xl text-[#241A14] hover:opacity-80">
+
+          <Link href="/" className="font-serif font-extrabold text-2xl sm:text-3xl text-[#241A14] hover:opacity-80 flex-shrink-0 tracking-tight">
             Cacao
           </Link>
 
-          {/* Desktop dropdown */}
-          {isMenuOpen && (
-            <div className="hidden md:block absolute left-0 top-12 w-72 bg-white rounded-lg border border-[#E8E0D8] shadow-lg overflow-hidden z-50">
-              <Link
-                href="/products"
-                onClick={() => setIsMenuOpen(false)}
-                className="block px-4 py-3 text-sm font-semibold text-[#241A14] hover:bg-[#FAF7F4] transition-colors"
-              >
-                Catalogue
-              </Link>
-              <div className="border-t border-[#E8E0D8]"></div>
-              <p className="px-4 pt-3 pb-1 text-[10px] font-semibold text-[#7D6A5D] uppercase tracking-wide">Catégories</p>
-              {categoryLinks.map(cat =>
-                cat.href ? (
-                  <Link
-                    key={cat.label}
-                    href={cat.href}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="block px-4 py-2 text-sm text-[#5B4B41] hover:bg-[#FAF7F4] hover:text-[#C2410C] transition-colors"
-                  >
-                    {cat.label}
-                  </Link>
-                ) : (
-                  <div key={cat.label} className="flex items-center justify-between px-4 py-2 text-sm text-[#C4BDAF] cursor-default">
-                    <span>{cat.label}</span>
-                    <span className="text-[10px] bg-gray-50 px-2 py-0.5 rounded-full">Bientôt</span>
-                  </div>
-                )
-              )}
-              {informatiqueSubcategories.map(link => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="block pl-8 pr-4 py-1.5 text-xs text-[#7D6A5D] hover:text-[#C2410C] transition-colors"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <div className="border-t border-[#E8E0D8]"></div>
-              {navLinks.filter(l => l.href !== '/products').map(link => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="block px-4 py-2.5 text-sm text-[#5B4B41] hover:bg-[#FAF7F4] hover:text-[#C2410C] transition-colors"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Desktop spacer (keeps search/cart pinned right, dropdown menu replaces the old inline links) */}
-        <div className="hidden md:block flex-1"></div>
-
-        {/* Search + Cart */}
-        <div className="flex items-center gap-4 flex-shrink-0">
-          <div className="hidden sm:block relative">
-            <div className="flex bg-white border-2 border-[#241A14] rounded-full px-4 py-2 items-center gap-2">
+          {/* Recherche : élément central de la barre, comme sur les marketplaces */}
+          <div className="hidden sm:block relative flex-1 max-w-2xl">
+            <div className="flex bg-white border-2 border-[#241A14] rounded-full pl-4 pr-1 py-1 items-center gap-2">
               <input
                 type="text"
-                placeholder="Rechercher un produit, une idée, une catégorie…"
+                placeholder="Rechercher un PC portable, un écran, un accessoire…"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 onFocus={() => setShowSuggestions(true)}
                 onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') handleSearchSubmit()
-                }}
-                className="text-sm bg-transparent outline-none text-[#241A14] placeholder-[#7D6A5D] w-56 md:w-96"
+                onKeyDown={e => { if (e.key === 'Enter') handleSearchSubmit() }}
+                className="text-sm bg-transparent outline-none text-[#241A14] placeholder-[#7D6A5D] flex-1 min-w-0 py-1.5"
               />
               <button
                 onClick={() => handleSearchSubmit()}
-                className="bg-[#C2410C] w-8 h-8 rounded-full flex items-center justify-center text-white hover:bg-[#9A3412] flex-shrink-0"
+                aria-label="Lancer la recherche"
+                className="bg-[#C2410C] w-9 h-9 rounded-full flex items-center justify-center text-white hover:bg-[#9A3412] flex-shrink-0 transition-colors"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
+                <Search size={16} strokeWidth={2.4} />
               </button>
             </div>
 
             {showSuggestions && (
-              <div className="absolute left-0 top-12 w-80 bg-white rounded-lg border border-[#E8E0D8] shadow-lg p-4 z-50">
-                <p className="text-xs font-semibold text-[#7D6A5D] uppercase mb-3">Recherches populaires</p>
+              <div className="absolute left-0 top-14 w-80 bg-white rounded-xl border border-[#E8E0D8] shadow-card-hover p-4 z-50">
+                <p className="text-xs font-semibold text-[#7D6A5D] mb-3">Recherches fréquentes</p>
                 <div className="flex flex-wrap gap-2">
                   {suggestions.map(s => (
                     <button
                       key={s}
                       onClick={() => handleSearchSubmit(s)}
-                      className="px-3 py-1.5 bg-gray-100 hover:bg-orange-50 hover:text-[#C2410C] rounded-full text-sm text-[#5B4B41] transition-colors"
+                      className="px-3 py-1.5 bg-[#FAF7F4] hover:bg-orange-50 hover:text-[#C2410C] rounded-full text-sm text-[#5B4B41] transition-colors"
                     >
                       {s}
                     </button>
@@ -243,301 +198,208 @@ export function Navbar() {
             )}
           </div>
 
-          {/* Account */}
-          {!authLoading && (
-            isLoggedIn ? (
-              <div className="hidden sm:block relative" ref={accountMenuRef}>
-                <button
-                  onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-                  className="w-9 h-9 rounded-full bg-[#241A14] text-white font-semibold flex items-center justify-center hover:opacity-80 transition-opacity"
-                >
-                  {avatarLetter}
-                </button>
+          {/* Actions avec libellés : une icône seule laisse le client deviner */}
+          <div className="flex items-center gap-4 sm:gap-6 ml-auto flex-shrink-0">
+            <Link href="/account/favorites" className={`hidden sm:flex ${actionItem}`}>
+              <Heart size={19} strokeWidth={1.7} />
+              Favoris
+            </Link>
 
-                {isAccountMenuOpen && (
-                  <div className="absolute right-0 top-12 w-64 bg-white rounded-lg border border-[#E8E0D8] shadow-lg overflow-hidden z-50">
-                    <div className="px-4 py-3 border-b border-[#E8E0D8] flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-[#241A14] text-white font-semibold flex items-center justify-center flex-shrink-0">
-                        {avatarLetter}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-[#241A14] truncate">{displayName}</p>
-                        <Link
-                          href="/account"
-                          className="text-xs text-[#C2410C] hover:underline"
-                          onClick={() => setIsAccountMenuOpen(false)}
-                        >
-                          Voir mon profil
-                        </Link>
-                      </div>
-                    </div>
-
-                    {isAdmin && (
-                      <>
-                        <Link
-                          href="/admin"
-                          className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#C2410C] hover:bg-[#FAF7F4] transition-colors"
-                          onClick={() => setIsAccountMenuOpen(false)}
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                            <rect x="3" y="3" width="7" height="9" />
-                            <rect x="14" y="3" width="7" height="5" />
-                            <rect x="14" y="12" width="7" height="9" />
-                            <rect x="3" y="16" width="7" height="5" />
-                          </svg>
-                          Dashboard Admin
-                        </Link>
-                        <div className="border-t border-[#E8E0D8]"></div>
-                      </>
-                    )}
-
-                    <Link
-                      href="/account"
-                      className="flex items-center gap-3 px-4 py-3 text-sm text-[#241A14] hover:bg-[#FAF7F4] transition-colors"
-                      onClick={() => setIsAccountMenuOpen(false)}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                        <path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z" />
-                        <path d="M14 2v5h5" />
-                      </svg>
-                      Mes commandes
-                    </Link>
-
-                    <Link
-                      href="/account/messages"
-                      className="flex items-center gap-3 px-4 py-3 text-sm text-[#241A14] hover:bg-[#FAF7F4] transition-colors"
-                      onClick={() => setIsAccountMenuOpen(false)}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                      </svg>
-                      Messages
-                      {unreadCount > 0 && (
-                        <span className="ml-auto bg-[#C2410C] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                          {unreadCount}
-                        </span>
-                      )}
-                    </Link>
-
-                    <Link
-                      href="/cart"
-                      className="flex items-center gap-3 px-4 py-3 text-sm text-[#241A14] hover:bg-[#FAF7F4] transition-colors"
-                      onClick={() => setIsAccountMenuOpen(false)}
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                        <circle cx="9" cy="21" r="1" />
-                        <circle cx="20" cy="21" r="1" />
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                      </svg>
-                      Mon panier
-                    </Link>
-
-                    <div className="border-t border-[#E8E0D8]"></div>
-
-                    <button
-                      onClick={() => {
-                        setIsAccountMenuOpen(false)
-                        logout()
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#241A14] hover:bg-[#FAF7F4] transition-colors text-left"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                        <polyline points="16 17 21 12 16 7" />
-                        <line x1="21" y1="12" x2="9" y2="12" />
-                      </svg>
-                      Se déconnecter
-                    </button>
-                  </div>
+            {!authLoading && isLoggedIn && (
+              <Link href="/account" className={`hidden md:flex ${actionItem} relative`}>
+                <Package size={19} strokeWidth={1.7} />
+                Commandes
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 right-1 bg-[#C2410C] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                    {unreadCount}
+                  </span>
                 )}
-              </div>
-            ) : (
-              <Link
-                href="/account/login"
-                className="hidden sm:block text-sm font-semibold text-[#241A14] hover:text-[#C2410C] transition-colors"
-              >
-                Connexion
               </Link>
-            )
-          )}
-
-          {/* Favorites Icon */}
-          <Link href="/account/favorites" className="hidden sm:block hover:opacity-70 transition-opacity" aria-label="Mes favoris">
-            <Heart size={20} strokeWidth={1.8} className="text-[#241A14]" />
-          </Link>
-
-          {/* Cart Icon */}
-          <Link href="/cart" className="relative hover:opacity-70 transition-opacity">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <circle cx="9" cy="21" r="1" />
-              <circle cx="20" cy="21" r="1" />
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-            </svg>
-            {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-[#C2410C] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                {cartCount}
-              </span>
             )}
-          </Link>
-        </div>
-      </div>
 
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden border-t border-[#E8E0D8] bg-white">
-          <div className="max-w-7xl mx-auto px-5 sm:px-10 py-4 flex flex-col gap-2">
-            {/* Main navigation */}
-            {navLinks.map(link => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="text-sm font-semibold text-[#241A14] hover:text-[#C2410C] transition-colors py-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
+            <Link href="/cart" className={`${actionItem} relative`}>
+              <ShoppingCart size={19} strokeWidth={1.7} />
+              Panier
+              {cartCount > 0 && (
+                <span className="absolute -top-1 right-0 bg-[#C2410C] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
 
-            {/* Divider */}
-            <div className="border-t border-[#E8E0D8] my-2"></div>
-
-            {/* Account */}
             {!authLoading && (
               isLoggedIn ? (
-                <>
-                  <div className="flex items-center gap-3 py-2">
-                    <div className="w-8 h-8 rounded-full bg-[#241A14] text-white text-sm font-semibold flex items-center justify-center flex-shrink-0">
+                <div className="relative" ref={accountMenuRef}>
+                  <button onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)} className={actionItem}>
+                    <span className="w-[19px] h-[19px] rounded-full bg-[#241A14] text-white text-[10px] font-bold flex items-center justify-center">
                       {avatarLetter}
-                    </div>
-                    <span className="text-sm font-semibold text-[#241A14] truncate">{displayName}</span>
-                  </div>
-                  {isAdmin && (
-                    <Link
-                      href="/admin"
-                      className="text-sm font-semibold text-[#C2410C] hover:underline py-1.5 pl-4"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Dashboard Admin
-                    </Link>
-                  )}
-                  <Link
-                    href="/account"
-                    className="text-sm text-[#5B4B41] hover:text-[#C2410C] transition-colors py-1.5 pl-4"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Mes commandes
-                  </Link>
-                  <Link
-                    href="/account/messages"
-                    className="flex items-center gap-2 text-sm text-[#5B4B41] hover:text-[#C2410C] transition-colors py-1.5 pl-4"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Messages
-                    {unreadCount > 0 && (
-                      <span className="bg-[#C2410C] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                        {unreadCount}
-                      </span>
-                    )}
-                  </Link>
-                  <button
-                    onClick={() => { setIsMenuOpen(false); logout() }}
-                    className="text-sm text-[#5B4B41] hover:text-[#C2410C] transition-colors py-1.5 pl-4 text-left"
-                  >
-                    Se déconnecter
+                    </span>
+                    Compte
                   </button>
-                </>
+
+                  {isAccountMenuOpen && (
+                    <div className="absolute right-0 top-14 w-64 bg-white rounded-xl border border-[#E8E0D8] shadow-card-hover overflow-hidden z-50">
+                      <div className="px-4 py-3 border-b border-[#E8E0D8] flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-[#241A14] text-white font-semibold flex items-center justify-center flex-shrink-0">
+                          {avatarLetter}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-[#241A14] truncate">{displayName}</p>
+                          <Link href="/account" className="text-xs text-[#C2410C] hover:underline" onClick={() => setIsAccountMenuOpen(false)}>
+                            Voir mon profil
+                          </Link>
+                        </div>
+                      </div>
+
+                      {isAdmin && (
+                        <>
+                          <Link href="/admin" onClick={() => setIsAccountMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#C2410C] hover:bg-[#FAF7F4] transition-colors">
+                            <LayoutDashboard size={16} strokeWidth={1.8} /> Tableau de bord admin
+                          </Link>
+                          <div className="border-t border-[#E8E0D8]" />
+                        </>
+                      )}
+
+                      <Link href="/account" onClick={() => setIsAccountMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-[#241A14] hover:bg-[#FAF7F4] transition-colors">
+                        <Package size={16} strokeWidth={1.8} /> Mes commandes
+                      </Link>
+                      <Link href="/account/messages" onClick={() => setIsAccountMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-[#241A14] hover:bg-[#FAF7F4] transition-colors">
+                        <MessageSquare size={16} strokeWidth={1.8} /> Messages
+                        {unreadCount > 0 && (
+                          <span className="ml-auto bg-[#C2410C] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </Link>
+                      <Link href="/account/favorites" onClick={() => setIsAccountMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-[#241A14] hover:bg-[#FAF7F4] transition-colors">
+                        <Heart size={16} strokeWidth={1.8} /> Mes favoris
+                      </Link>
+
+                      <div className="border-t border-[#E8E0D8]" />
+                      <button
+                        onClick={() => { setIsAccountMenuOpen(false); logout() }}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#241A14] hover:bg-[#FAF7F4] transition-colors text-left"
+                      >
+                        <LogOut size={16} strokeWidth={1.8} /> Se déconnecter
+                      </button>
+                    </div>
+                  )}
+                </div>
               ) : (
-                <Link
-                  href="/account/login"
-                  className="text-sm font-semibold text-[#241A14] hover:text-[#C2410C] transition-colors py-2"
-                  onClick={() => setIsMenuOpen(false)}
-                >
+                <Link href="/account/login" className={actionItem}>
+                  <User size={19} strokeWidth={1.7} />
                   Connexion
                 </Link>
               )
             )}
+          </div>
+        </div>
 
-            {/* Divider */}
-            <div className="border-t border-[#E8E0D8] my-2"></div>
-
-            {/* Category filters */}
-            <div className="text-xs font-semibold text-[#7D6A5D] py-2 uppercase">Catégories</div>
-            {categoryLinks.map(cat =>
-              cat.href ? (
-                <Link
-                  key={cat.label}
-                  href={cat.href}
-                  className="text-sm text-[#5B4B41] hover:text-[#C2410C] transition-colors py-1.5 pl-4"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {cat.label}
-                </Link>
-              ) : (
-                <div key={cat.label} className="flex items-center justify-between text-sm text-[#C4BDAF] py-1.5 pl-4 pr-2">
-                  <span>{cat.label}</span>
-                  <span className="text-[10px] bg-gray-50 px-2 py-0.5 rounded-full">Bientôt</span>
-                </div>
-              )
-            )}
-            {informatiqueSubcategories.map(link => (
+        {/* Barre de catégories : accès direct aux rayons réels, sans détour par un menu */}
+        <div className="hidden lg:block border-t border-[#F0E9E2]">
+          <div className="max-w-7xl mx-auto px-5 sm:px-10 flex items-center gap-1 overflow-x-auto no-scrollbar">
+            <Link
+              href="/products"
+              className={`px-3 py-2.5 text-[13px] font-medium whitespace-nowrap border-b-2 transition-colors ${
+                !activeCategory ? 'text-[#C2410C] border-[#C2410C] font-bold' : 'text-[#5B4B41] border-transparent hover:text-[#241A14]'
+              }`}
+            >
+              Tous les produits
+            </Link>
+            {CATEGORIES.map(cat => (
               <Link
-                key={link.href}
-                href={link.href}
-                className="text-xs text-[#7D6A5D] hover:text-[#C2410C] transition-colors py-1 pl-8"
-                onClick={() => setIsMenuOpen(false)}
+                key={cat.value}
+                href={`/products?category=${cat.value}`}
+                className={`px-3 py-2.5 text-[13px] font-medium whitespace-nowrap border-b-2 transition-colors ${
+                  activeCategory === cat.value
+                    ? 'text-[#C2410C] border-[#C2410C] font-bold'
+                    : 'text-[#5B4B41] border-transparent hover:text-[#241A14]'
+                }`}
               >
-                {link.label}
+                {cat.label}
               </Link>
             ))}
+          </div>
+        </div>
 
-            <Link
-              href="/account/favorites"
-              className="text-sm text-[#5B4B41] hover:text-[#C2410C] transition-colors py-1.5 pl-4"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Mes favoris
-            </Link>
-
-            {/* Mobile Search */}
-            <div className="flex bg-white border-2 border-[#241A14] rounded-lg px-3 py-2 items-center gap-2 mt-4">
-              <input
-                type="text"
-                placeholder="Rechercher un produit..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') handleSearchSubmit()
-                }}
-                className="text-sm bg-transparent outline-none text-[#241A14] placeholder-[#7D6A5D] flex-1"
-              />
-              <button
-                onClick={() => handleSearchSubmit()}
-                className="bg-[#C2410C] w-8 h-8 rounded flex items-center justify-center text-white hover:bg-[#9A3412] flex-shrink-0"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              </button>
-            </div>
-
-            {/* Mobile popular searches */}
-            <div className="flex flex-wrap gap-2 mt-3">
-              {suggestions.map(s => (
+        {/* Menu mobile */}
+        {isMenuOpen && (
+          <div className="lg:hidden border-t border-[#E8E0D8] bg-white">
+            <div className="max-w-7xl mx-auto px-5 py-4 flex flex-col">
+              <div className="flex bg-white border-2 border-[#241A14] rounded-full pl-4 pr-1 py-1 items-center gap-2 mb-4">
+                <input
+                  type="text"
+                  placeholder="Rechercher un produit…"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') handleSearchSubmit() }}
+                  className="text-sm bg-transparent outline-none text-[#241A14] placeholder-[#7D6A5D] flex-1 min-w-0 py-1.5"
+                />
                 <button
-                  key={s}
-                  onClick={() => handleSearchSubmit(s)}
-                  className="px-3 py-1.5 bg-gray-100 hover:bg-orange-50 hover:text-[#C2410C] rounded-full text-xs text-[#5B4B41] transition-colors"
+                  onClick={() => handleSearchSubmit()}
+                  aria-label="Lancer la recherche"
+                  className="bg-[#C2410C] w-9 h-9 rounded-full flex items-center justify-center text-white flex-shrink-0"
                 >
-                  {s}
+                  <Search size={16} strokeWidth={2.4} />
                 </button>
+              </div>
+
+              <p className="text-[11px] font-semibold text-[#7D6A5D] mb-1">RAYONS</p>
+              <Link href="/products" className="py-2 text-sm font-semibold text-[#241A14]" onClick={() => setIsMenuOpen(false)}>
+                Tous les produits
+              </Link>
+              {CATEGORIES.map(cat => {
+                const Icon = cat.icon
+                return (
+                  <Link
+                    key={cat.value}
+                    href={`/products?category=${cat.value}`}
+                    className="flex items-center gap-3 py-2 text-sm text-[#5B4B41] hover:text-[#C2410C] transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Icon size={17} strokeWidth={1.7} className="text-[#C2410C]" />
+                    {cat.label}
+                  </Link>
+                )
+              })}
+
+              <div className="border-t border-[#E8E0D8] my-3" />
+
+              {!authLoading && (isLoggedIn ? (
+                <>
+                  <Link href="/account" className="py-2 text-sm text-[#5B4B41]" onClick={() => setIsMenuOpen(false)}>Mon compte</Link>
+                  <Link href="/account/favorites" className="py-2 text-sm text-[#5B4B41]" onClick={() => setIsMenuOpen(false)}>Mes favoris</Link>
+                  {isAdmin && (
+                    <Link href="/admin" className="py-2 text-sm font-semibold text-[#C2410C]" onClick={() => setIsMenuOpen(false)}>
+                      Tableau de bord admin
+                    </Link>
+                  )}
+                  <button onClick={() => { setIsMenuOpen(false); logout() }} className="py-2 text-sm text-[#5B4B41] text-left">
+                    Se déconnecter
+                  </button>
+                </>
+              ) : (
+                <Link href="/account/login" className="py-2 text-sm font-semibold text-[#241A14]" onClick={() => setIsMenuOpen(false)}>
+                  Connexion
+                </Link>
+              ))}
+
+              <div className="border-t border-[#E8E0D8] my-3" />
+              {helpLinks.map(l => (
+                <Link key={l.href} href={l.href} className="py-2 text-sm text-[#5B4B41]" onClick={() => setIsMenuOpen(false)}>
+                  {l.label}
+                </Link>
               ))}
             </div>
           </div>
-        </div>
-      )}
-    </nav>
-    <TrustBar />
+        )}
+      </nav>
+
+      <TrustBar />
     </>
   )
 }

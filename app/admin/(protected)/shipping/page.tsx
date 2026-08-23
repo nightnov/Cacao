@@ -8,6 +8,7 @@ import ShippingForm from '@/components/admin/ShippingForm'
 import { TableShell, Column } from '@/components/admin/TableShell'
 import { IconButton } from '@/components/admin/IconButton'
 import { Pagination } from '@/components/admin/Pagination'
+import { formatAmount } from '@/lib/format'
 
 interface ShippingFee {
   id: string
@@ -76,7 +77,7 @@ export default function AdminShipping() {
 
   const columns: Column<ShippingFee>[] = [
     { key: 'city', header: 'Ville', render: f => <span className="font-medium text-[#241A14]">{f.city}</span> },
-    { key: 'price', header: 'Tarif', render: f => `${f.price_fcfa.toLocaleString('fr-CI')} FCFA` },
+    { key: 'price', header: 'Tarif', render: f => `${formatAmount(f.price_fcfa)} FCFA` },
     {
       key: 'actions',
       header: 'Actions',

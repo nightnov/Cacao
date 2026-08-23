@@ -19,6 +19,7 @@ import { Star, ShieldCheck, RotateCcw, Truck } from 'lucide-react'
 import { VariantOption, ProductVariant } from '@/types/admin'
 import { findMatchingVariant, variantLabel } from '@/lib/variants'
 import { categoryLabel } from '@/lib/categories'
+import { formatAmount } from '@/lib/format'
 
 interface Product {
   id: string
@@ -469,18 +470,18 @@ export default function ProductDetail() {
             <div className="flex items-baseline gap-2.5 mb-1 flex-wrap">
               <span className={`text-3xl font-bold tabular-nums ${hasPromo ? 'text-[#1E7A46]' : 'text-[#241A14]'}`}>
                 {hasVariants && !matchedVariant && <span className="text-base font-semibold">À partir de </span>}
-                {displayPrice.toLocaleString('fr-CI')} FCFA
+                {formatAmount(displayPrice)} FCFA
               </span>
               {hasPromo && (
                 <span className="text-base text-[#7D6A5D] line-through tabular-nums">
-                  {product.compare_at_price_fcfa!.toLocaleString('fr-CI')}
+                  {formatAmount(product.compare_at_price_fcfa!)}
                 </span>
               )}
             </div>
 
             {hasPromo && (
               <p className="text-sm font-semibold text-[#1E7A46] mb-3 tabular-nums">
-                Vous économisez {(product.compare_at_price_fcfa! - displayPrice).toLocaleString('fr-CI')} FCFA
+                Vous économisez {formatAmount(product.compare_at_price_fcfa! - displayPrice)} FCFA
                 {' '}({Math.round(((product.compare_at_price_fcfa! - displayPrice) / product.compare_at_price_fcfa!) * 100)}%)
               </p>
             )}

@@ -11,7 +11,7 @@ export default function Contact() {
   }
 
   return (
-    <main className="min-h-screen bg-white flex flex-col">
+    <main className="min-h-screen bg-[#1C2021] flex flex-col">
       <Navbar />
 
       <div className="flex-1 max-w-4xl mx-auto px-5 sm:px-10 py-16 w-full">
@@ -24,24 +24,24 @@ export default function Contact() {
 
             <div className="space-y-6">
               <div>
-                <h3 className="font-semibold text-[#241A14] mb-2">Email</h3>
-                <p className="text-[#5B4B41]">contact@cacao.ci</p>
+                <h3 className="font-semibold text-[#EEF2F7] mb-2">Email</h3>
+                <p className="text-[#B3B8BE]">contact@cacao.ci</p>
               </div>
 
               <div>
-                <h3 className="font-semibold text-[#241A14] mb-2">Téléphone</h3>
-                <p className="text-[#5B4B41]">+225 07 XX XX XX XX</p>
+                <h3 className="font-semibold text-[#EEF2F7] mb-2">Téléphone</h3>
+                <p className="text-[#B3B8BE]">+225 07 XX XX XX XX</p>
               </div>
 
               <div>
-                <h3 className="font-semibold text-[#241A14] mb-2">Siège social</h3>
-                <p className="text-[#5B4B41]">Abidjan, Côte d&apos;Ivoire</p>
+                <h3 className="font-semibold text-[#EEF2F7] mb-2">Siège social</h3>
+                <p className="text-[#B3B8BE]">Abidjan, Côte d&apos;Ivoire</p>
               </div>
 
               <div>
-                <h3 className="font-semibold text-[#241A14] mb-2">Horaires</h3>
-                <p className="text-[#5B4B41]">Lundi - Samedi : 9h - 18h</p>
-                <p className="text-[#5B4B41]">Dimanche : Fermé</p>
+                <h3 className="font-semibold text-[#EEF2F7] mb-2">Horaires</h3>
+                <p className="text-[#B3B8BE]">Lundi - Samedi : 9h - 18h</p>
+                <p className="text-[#B3B8BE]">Dimanche : Fermé</p>
               </div>
             </div>
           </div>
@@ -52,41 +52,41 @@ export default function Contact() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-[#241A14] mb-2">Nom</label>
+                <label className="block text-sm font-semibold text-[#EEF2F7] mb-2">Nom</label>
                 <input
                   type="text"
                   required
-                  className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                  className="w-full px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
                   placeholder="Votre nom"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-[#241A14] mb-2">Email</label>
+                <label className="block text-sm font-semibold text-[#EEF2F7] mb-2">Email</label>
                 <input
                   type="email"
                   required
-                  className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                  className="w-full px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
                   placeholder="votre@email.com"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-[#241A14] mb-2">Sujet</label>
+                <label className="block text-sm font-semibold text-[#EEF2F7] mb-2">Sujet</label>
                 <input
                   type="text"
                   required
-                  className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                  className="w-full px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
                   placeholder="Sujet du message"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-[#241A14] mb-2">Message</label>
+                <label className="block text-sm font-semibold text-[#EEF2F7] mb-2">Message</label>
                 <textarea
                   required
                   rows={5}
-                  className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                  className="w-full px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
                   placeholder="Votre message..."
                 />
               </div>

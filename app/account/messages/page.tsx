@@ -105,40 +105,40 @@ function MessagesContent() {
 
   if (authLoading || !isLoggedIn) {
     return (
-      <main className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#C2410C] border-t-transparent rounded-full animate-spin"></div>
+      <main className="min-h-screen bg-[#1C2021] flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-[#FDC700] border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-white flex flex-col">
+    <main className="min-h-screen bg-[#1C2021] flex flex-col">
       <Navbar />
 
       <div className="flex-1 max-w-2xl mx-auto px-5 sm:px-10 py-16 w-full flex flex-col">
         <h1 className="font-serif font-semibold text-4xl mb-8">Messages</h1>
 
-        <div className="bg-white rounded-lg border border-[#E8E0D8] flex flex-col flex-1 min-h-[400px]">
+        <div className="bg-[#1C2021] rounded-lg border border-[#35383C] flex flex-col flex-1 min-h-[400px]">
           <div className="flex-1 overflow-y-auto p-6 space-y-4 max-h-[50vh]">
             {loading ? (
-              <p className="text-sm text-[#7D6A5D] text-center">Chargement...</p>
+              <p className="text-sm text-[#8E959D] text-center">Chargement...</p>
             ) : messages.length === 0 ? (
-              <p className="text-sm text-[#7D6A5D] text-center py-8">
+              <p className="text-sm text-[#8E959D] text-center py-8">
                 Aucun message pour l&apos;instant. Écrivez-nous si vous avez une question !
               </p>
             ) : (
               messages.map(msg => (
                 <div key={msg.id} className={`flex ${msg.sender === 'customer' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] rounded-lg px-4 py-3 ${
-                    msg.sender === 'customer' ? 'bg-[#C2410C] text-white' : 'bg-[#FAF7F4] text-[#241A14]'
+                    msg.sender === 'customer' ? 'bg-[#FDC700] text-[#1A1A1A]' : 'bg-[#171A1C] text-[#EEF2F7]'
                   }`}>
                     {msg.product_name && (
-                      <p className={`text-xs mb-1 font-semibold ${msg.sender === 'customer' ? 'text-white/80' : 'text-[#7D6A5D]'}`}>
+                      <p className={`text-xs mb-1 font-semibold ${msg.sender === 'customer' ? 'text-white/80' : 'text-[#8E959D]'}`}>
                         📦 {msg.product_name}
                       </p>
                     )}
                     <p className="text-sm whitespace-pre-wrap">{msg.body}</p>
-                    <p className={`text-xs mt-1 ${msg.sender === 'customer' ? 'text-white/70' : 'text-[#7D6A5D]'}`}>
+                    <p className={`text-xs mt-1 ${msg.sender === 'customer' ? 'text-white/70' : 'text-[#8E959D]'}`}>
                       {new Date(msg.created_at).toLocaleString('fr-CI', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
@@ -148,13 +148,13 @@ function MessagesContent() {
             <div ref={bottomRef}></div>
           </div>
 
-          <form onSubmit={handleSend} className="border-t border-[#E8E0D8] p-4 flex gap-3">
+          <form onSubmit={handleSend} className="border-t border-[#35383C] p-4 flex gap-3">
             <textarea
               value={body}
               onChange={(e) => setBody(e.target.value)}
               rows={2}
               placeholder="Écrivez votre message..."
-              className="flex-1 px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C] resize-none text-sm"
+              className="flex-1 px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700] resize-none text-sm"
             />
             <Button type="submit" variant="primary" disabled={sending || !body.trim()}>
               Envoyer
@@ -170,7 +170,7 @@ function MessagesContent() {
 
 export default function Messages() {
   return (
-    <Suspense fallback={<main className="min-h-screen bg-white" />}>
+    <Suspense fallback={<main className="min-h-screen bg-[#1C2021]" />}>
       <MessagesContent />
     </Suspense>
   )

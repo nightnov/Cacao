@@ -69,28 +69,28 @@ function ReturnContent() {
   }, [orderNumber]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <main className="min-h-screen bg-white flex flex-col">
+    <main className="min-h-screen bg-[#1C2021] flex flex-col">
       <Navbar />
 
       <div className="flex-1 max-w-2xl mx-auto w-full px-5 sm:px-10 py-24 text-center">
-        <div className="bg-white rounded-lg border border-[#E8E0D8] p-8">
+        <div className="bg-[#1C2021] rounded-lg border border-[#35383C] p-8">
           {state === 'checking' && (
             <>
-              <div className="w-10 h-10 border-4 border-[#C2410C] border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-              <h1 className="font-serif font-semibold text-2xl text-[#241A14] mb-2">Vérification du paiement...</h1>
-              <p className="text-[#5B4B41]">Merci de patienter quelques instants.</p>
+              <div className="w-10 h-10 border-4 border-[#FDC700] border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+              <h1 className="font-serif font-semibold text-2xl text-[#EEF2F7] mb-2">Vérification du paiement...</h1>
+              <p className="text-[#B3B8BE]">Merci de patienter quelques instants.</p>
             </>
           )}
 
           {state === 'paid' && (
             <>
               <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E7A46" strokeWidth="2.5">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3FCE7A" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </div>
-              <h1 className="font-serif font-semibold text-2xl text-[#241A14] mb-2">Paiement confirmé !</h1>
-              <p className="text-[#5B4B41] mb-8">
+              <h1 className="font-serif font-semibold text-2xl text-[#EEF2F7] mb-2">Paiement confirmé !</h1>
+              <p className="text-[#B3B8BE] mb-8">
                 Votre commande <strong>{orderNumber}</strong> est confirmée. Vous recevrez bientôt des nouvelles de la livraison.
               </p>
               <Link href="/account">
@@ -107,8 +107,8 @@ function ReturnContent() {
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
               </div>
-              <h1 className="font-serif font-semibold text-2xl text-[#241A14] mb-2">Paiement en cours de traitement</h1>
-              <p className="text-[#5B4B41] mb-8">
+              <h1 className="font-serif font-semibold text-2xl text-[#EEF2F7] mb-2">Paiement en cours de traitement</h1>
+              <p className="text-[#B3B8BE] mb-8">
                 Votre commande <strong>{orderNumber}</strong> est enregistrée. La confirmation du paiement peut prendre quelques minutes. Vous pouvez suivre son statut dans votre compte.
               </p>
               <Link href="/account">
@@ -125,8 +125,8 @@ function ReturnContent() {
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </div>
-              <h1 className="font-serif font-semibold text-2xl text-[#241A14] mb-2">Paiement annulé</h1>
-              <p className="text-[#5B4B41] mb-8">
+              <h1 className="font-serif font-semibold text-2xl text-[#EEF2F7] mb-2">Paiement annulé</h1>
+              <p className="text-[#B3B8BE] mb-8">
                 Le paiement de la commande <strong>{orderNumber}</strong> n&apos;a pas abouti. Vous pouvez réessayer depuis votre panier.
               </p>
               <Link href="/cart">
@@ -137,8 +137,8 @@ function ReturnContent() {
 
           {state === 'not_found' && (
             <>
-              <h1 className="font-serif font-semibold text-2xl text-[#241A14] mb-2">Commande introuvable</h1>
-              <p className="text-[#5B4B41] mb-8">Nous n&apos;avons pas pu retrouver cette commande.</p>
+              <h1 className="font-serif font-semibold text-2xl text-[#EEF2F7] mb-2">Commande introuvable</h1>
+              <p className="text-[#B3B8BE] mb-8">Nous n&apos;avons pas pu retrouver cette commande.</p>
               <Link href="/account">
                 <Button variant="outline">Voir mes commandes</Button>
               </Link>
@@ -154,7 +154,7 @@ function ReturnContent() {
 
 export default function CheckoutReturn() {
   return (
-    <Suspense fallback={<main className="min-h-screen bg-white" />}>
+    <Suspense fallback={<main className="min-h-screen bg-[#1C2021]" />}>
       <ReturnContent />
     </Suspense>
   )

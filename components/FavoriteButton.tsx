@@ -67,11 +67,11 @@ export function FavoriteButton({ productId, size = 18, className = '' }: Favorit
       onClick={handleClick}
       disabled={loading}
       aria-label={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
-      className={`inline-flex items-center justify-center rounded-full bg-white/90 backdrop-blur-sm hover:bg-white transition-colors disabled:opacity-50 ${className}`}
+      className={`inline-flex items-center justify-center rounded-full bg-[#1C2021]/90 backdrop-blur-sm hover:bg-[#1C2021] transition-colors disabled:opacity-50 ${className}`}
     >
       <Heart
         size={size}
-        className={isFavorite ? 'fill-[#C2410C] text-[#C2410C]' : 'text-[#241A14]'}
+        className={isFavorite ? 'fill-[#FDC700] text-[#FDC700]' : 'text-[#EEF2F7]'}
         strokeWidth={1.8}
       />
     </button>

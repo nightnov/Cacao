@@ -291,16 +291,16 @@ export default function ProductDetail() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-white flex flex-col">
+      <main className="min-h-screen bg-[#1C2021] flex flex-col">
         <Navbar />
         <div className="flex-1 max-w-7xl mx-auto w-full px-5 sm:px-10 py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 animate-pulse">
-            <div className="aspect-square bg-[#E8E0D8] rounded-lg"></div>
+            <div className="aspect-square bg-[#2A2D31] rounded-lg"></div>
             <div className="space-y-4">
-              <div className="h-4 bg-[#E8E0D8] rounded w-1/4"></div>
-              <div className="h-8 bg-[#E8E0D8] rounded w-3/4"></div>
-              <div className="h-6 bg-[#E8E0D8] rounded w-1/3"></div>
-              <div className="h-12 bg-[#E8E0D8] rounded w-full"></div>
+              <div className="h-4 bg-[#2A2D31] rounded w-1/4"></div>
+              <div className="h-8 bg-[#2A2D31] rounded w-3/4"></div>
+              <div className="h-6 bg-[#2A2D31] rounded w-1/3"></div>
+              <div className="h-12 bg-[#2A2D31] rounded w-full"></div>
             </div>
           </div>
         </div>
@@ -311,11 +311,11 @@ export default function ProductDetail() {
 
   if (notFound || !product) {
     return (
-      <main className="min-h-screen bg-white flex flex-col">
+      <main className="min-h-screen bg-[#1C2021] flex flex-col">
         <Navbar />
         <div className="flex-1 max-w-2xl mx-auto w-full px-5 sm:px-10 py-24 text-center">
-          <h1 className="font-serif font-semibold text-3xl text-[#241A14] mb-3">Produit introuvable</h1>
-          <p className="text-[#5B4B41] mb-8">Ce produit n&apos;existe pas ou n&apos;est plus disponible.</p>
+          <h1 className="font-serif font-semibold text-3xl text-[#EEF2F7] mb-3">Produit introuvable</h1>
+          <p className="text-[#B3B8BE] mb-8">Ce produit n&apos;existe pas ou n&apos;est plus disponible.</p>
           <Link href="/products">
             <Button variant="primary">Retour au catalogue</Button>
           </Link>
@@ -338,22 +338,22 @@ export default function ProductDetail() {
   const myExistingReview = isLoggedIn && user ? reviews.find(r => r.user_id === user.id) : undefined
 
   return (
-    <main className="min-h-screen bg-white flex flex-col">
+    <main className="min-h-screen bg-[#1C2021] flex flex-col">
       <Navbar />
 
       <div className="flex-1 max-w-6xl mx-auto w-full px-5 sm:px-10 py-8">
         {/* Fil d'Ariane. Le nom produit est tronqué : les références PC dépassent
             100 caractères et faisaient passer le fil d'Ariane sur deux lignes. */}
-        <nav aria-label="Fil d'Ariane" className="flex items-center gap-1.5 text-sm text-[#7D6A5D] mb-6 min-w-0">
-          <Link href="/" className="hover:text-[#C2410C] whitespace-nowrap">Accueil</Link>
+        <nav aria-label="Fil d'Ariane" className="flex items-center gap-1.5 text-sm text-[#8E959D] mb-6 min-w-0">
+          <Link href="/" className="hover:text-[#FDC700] whitespace-nowrap">Accueil</Link>
           <span aria-hidden="true">/</span>
-          <Link href="/products" className="hover:text-[#C2410C] whitespace-nowrap">Catalogue</Link>
+          <Link href="/products" className="hover:text-[#FDC700] whitespace-nowrap">Catalogue</Link>
           <span aria-hidden="true">/</span>
-          <Link href={`/products?category=${product.category}`} className="hover:text-[#C2410C] whitespace-nowrap">
+          <Link href={`/products?category=${product.category}`} className="hover:text-[#FDC700] whitespace-nowrap">
             {categoryLabel[product.category] || product.category}
           </Link>
           <span aria-hidden="true" className="hidden sm:inline">/</span>
-          <span className="text-[#241A14] truncate hidden sm:inline" title={product.name}>{product.name}</span>
+          <span className="text-[#EEF2F7] truncate hidden sm:inline" title={product.name}>{product.name}</span>
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.05fr,1fr] gap-8 lg:gap-12 mb-12 items-start">
@@ -364,8 +364,8 @@ export default function ProductDetail() {
                 {embedUrl && (
                   <button
                     onClick={() => setSelectedMedia({ type: 'video', value: product.video_url! })}
-                    className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 flex items-center justify-center bg-[#241A14] ${
-                      selectedMedia?.type === 'video' ? 'border-[#C2410C]' : 'border-transparent'
+                    className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 flex items-center justify-center bg-[#2A2D31] ${
+                      selectedMedia?.type === 'video' ? 'border-[#FDC700]' : 'border-transparent'
                     }`}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
@@ -378,10 +378,10 @@ export default function ProductDetail() {
                     key={url}
                     onClick={() => setSelectedMedia({ type: 'image', value: url })}
                     aria-label={`Voir la photo ${i + 1}`}
-                    className={`w-14 h-14 rounded-lg overflow-hidden border-2 bg-white transition-colors ${
+                    className={`w-14 h-14 rounded-lg overflow-hidden border-2 bg-[#1C2021] transition-colors ${
                       selectedMedia?.type === 'image' && selectedMedia.value === url
-                        ? 'border-[#C2410C]'
-                        : 'border-[#E8E0D8] hover:border-[#7D6A5D]'
+                        ? 'border-[#FDC700]'
+                        : 'border-[#35383C] hover:border-[#6F767E]'
                     }`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -391,7 +391,7 @@ export default function ProductDetail() {
               </div>
             )}
 
-            <div className="relative aspect-square bg-white rounded-2xl border border-[#E8E0D8] overflow-hidden flex items-center justify-center flex-1 min-w-0">
+            <div className="relative aspect-square bg-[#1C2021] rounded-2xl border border-[#35383C] overflow-hidden flex items-center justify-center flex-1 min-w-0">
               {selectedMedia?.type === 'video' && embedUrl ? (
                 <iframe
                   src={embedUrl}
@@ -406,7 +406,7 @@ export default function ProductDetail() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={selectedMedia.value} alt={product.name} className="w-full h-full object-contain p-4" />
               ) : (
-                <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#C2410C" strokeWidth="1">
+                <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#FDC700" strokeWidth="1">
                   <rect x="2" y="3" width="20" height="14" rx="2" />
                   <line x1="8" y1="21" x2="16" y2="21" />
                   <line x1="12" y1="17" x2="12" y2="21" />
@@ -424,8 +424,8 @@ export default function ProductDetail() {
                 <button
                   onClick={() => setSelectedMedia({ type: 'video', value: product.video_url! })}
                   aria-label="Voir la vidéo"
-                  className={`w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border-2 flex items-center justify-center bg-[#241A14] ${
-                    selectedMedia?.type === 'video' ? 'border-[#C2410C]' : 'border-[#E8E0D8]'
+                  className={`w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border-2 flex items-center justify-center bg-[#2A2D31] ${
+                    selectedMedia?.type === 'video' ? 'border-[#FDC700]' : 'border-[#35383C]'
                   }`}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true">
@@ -438,10 +438,10 @@ export default function ProductDetail() {
                   key={url}
                   onClick={() => setSelectedMedia({ type: 'image', value: url })}
                   aria-label={`Voir la photo ${i + 1}`}
-                  className={`w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border-2 bg-white ${
+                  className={`w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border-2 bg-[#1C2021] ${
                     selectedMedia?.type === 'image' && selectedMedia.value === url
-                      ? 'border-[#C2410C]'
-                      : 'border-[#E8E0D8]'
+                      ? 'border-[#FDC700]'
+                      : 'border-[#35383C]'
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -455,7 +455,7 @@ export default function ProductDetail() {
               le bouton sous les yeux pendant qu'il parcourt la galerie et les specs. */}
           <div className="lg:sticky lg:top-6">
             {/* Le libellé de catégorie a été retiré ici : il doublonnait avec le fil d'Ariane. */}
-            <h1 className="font-serif font-semibold text-xl sm:text-2xl leading-snug text-[#241A14] mb-2">{product.name}</h1>
+            <h1 className="font-serif font-semibold text-xl sm:text-2xl leading-snug text-[#EEF2F7] mb-2">{product.name}</h1>
 
             {reviewCount > 0 && (
               <button
@@ -468,26 +468,26 @@ export default function ProductDetail() {
             )}
 
             <div className="flex items-baseline gap-2.5 mb-1 flex-wrap">
-              <span className={`text-3xl font-bold tabular-nums ${hasPromo ? 'text-[#1E7A46]' : 'text-[#241A14]'}`}>
+              <span className={`text-3xl font-bold tabular-nums ${hasPromo ? 'text-[#3FCE7A]' : 'text-[#EEF2F7]'}`}>
                 {hasVariants && !matchedVariant && <span className="text-base font-semibold">À partir de </span>}
                 {formatAmount(displayPrice)} FCFA
               </span>
               {hasPromo && (
-                <span className="text-base text-[#7D6A5D] line-through tabular-nums">
+                <span className="text-base text-[#8E959D] line-through tabular-nums">
                   {formatAmount(product.compare_at_price_fcfa!)}
                 </span>
               )}
             </div>
 
             {hasPromo && (
-              <p className="text-sm font-semibold text-[#1E7A46] mb-3 tabular-nums">
+              <p className="text-sm font-semibold text-[#3FCE7A] mb-3 tabular-nums">
                 Vous économisez {formatAmount(product.compare_at_price_fcfa! - displayPrice)} FCFA
                 {' '}({Math.round(((product.compare_at_price_fcfa! - displayPrice) / product.compare_at_price_fcfa!) * 100)}%)
               </p>
             )}
 
             {hasVariants && matchedVariant && matchedVariant.stock === 0 && (
-              <span className="inline-block mb-3 text-xs font-semibold px-3 py-1.5 rounded-full bg-[#7D6A5D] text-white">
+              <span className="inline-block mb-3 text-xs font-semibold px-3 py-1.5 rounded-full bg-[#4E5257] text-[#EEF2F7]">
                 Rupture pour cette variante
               </span>
             )}
@@ -501,10 +501,10 @@ export default function ProductDetail() {
 
             {/* Caractéristiques clés (aperçu rapide) */}
             {specEntries.length > 0 && (
-              <ul className="flex flex-wrap gap-x-4 gap-y-1.5 my-4 text-sm text-[#5B4B41]">
+              <ul className="flex flex-wrap gap-x-4 gap-y-1.5 my-4 text-sm text-[#B3B8BE]">
                 {specEntries.slice(0, 4).map(([key, value]) => (
                   <li key={key} className="flex items-center gap-1.5">
-                    <span className="w-1 h-1 rounded-full bg-[#C2410C]"></span>
+                    <span className="w-1 h-1 rounded-full bg-[#FDC700]"></span>
                     {String(value)}
                   </li>
                 ))}
@@ -516,7 +516,7 @@ export default function ProductDetail() {
               <div className="mb-4 space-y-3">
                 {product.variant_options!.map(option => (
                   <div key={option.name}>
-                    <p className="text-sm font-semibold text-[#241A14] mb-2">{option.name}</p>
+                    <p className="text-sm font-semibold text-[#EEF2F7] mb-2">{option.name}</p>
                     <div className="flex flex-wrap gap-2">
                       {option.values.map(value => (
                         <button
@@ -525,8 +525,8 @@ export default function ProductDetail() {
                           onClick={() => handleSelectOption(option.name, value)}
                           className={`px-4 py-2 rounded-full text-sm border-2 transition-colors ${
                             selectedOptions[option.name] === value
-                              ? 'border-[#C2410C] bg-orange-50 text-[#C2410C] font-semibold'
-                              : 'border-[#E8E0D8] text-[#5B4B41] hover:border-[#241A14]'
+                              ? 'border-[#FDC700] bg-[#2A2418] text-[#FDC700] font-semibold'
+                              : 'border-[#35383C] text-[#B3B8BE] hover:border-[#4E5257]'
                           }`}
                         >
                           {value}
@@ -536,7 +536,7 @@ export default function ProductDetail() {
                   </div>
                 ))}
                 {!allOptionsSelected && (
-                  <p className="text-xs text-[#7D6A5D]">Choisissez une option pour chaque caractéristique ci-dessus.</p>
+                  <p className="text-xs text-[#8E959D]">Choisissez une option pour chaque caractéristique ci-dessus.</p>
                 )}
                 {allOptionsSelected && !matchedVariant && (
                   <p className="text-xs text-red-600">Cette combinaison n&apos;est pas disponible.</p>
@@ -546,17 +546,17 @@ export default function ProductDetail() {
 
             {product.availability !== 'discontinued' && (
               <div className="flex items-center gap-4 mb-4">
-                <div className="flex items-center border-2 border-[#241A14] rounded-full">
+                <div className="flex items-center border-2 border-[#4E5257] rounded-full">
                   <button
                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                    className="w-10 h-10 flex items-center justify-center text-[#241A14] hover:text-[#C2410C]"
+                    className="w-10 h-10 flex items-center justify-center text-[#EEF2F7] hover:text-[#FDC700]"
                   >
                     −
                   </button>
                   <span className="w-8 text-center font-semibold">{quantity}</span>
                   <button
                     onClick={() => setQuantity(q => q + 1)}
-                    className="w-10 h-10 flex items-center justify-center text-[#241A14] hover:text-[#C2410C]"
+                    className="w-10 h-10 flex items-center justify-center text-[#EEF2F7] hover:text-[#FDC700]"
                   >
                     +
                   </button>
@@ -598,9 +598,9 @@ export default function ProductDetail() {
                 { icon: Truck, label: 'Livraison suivie', sub: 'Code remis à la réception' }
               ].map(item => (
                 <div key={item.label} className="flex flex-col items-center gap-1 px-1">
-                  <item.icon size={16} className="text-[#1E7A46]" />
-                  <span className="text-[11px] font-semibold text-[#241A14] leading-tight">{item.label}</span>
-                  <span className="text-[10px] text-[#7D6A5D] leading-tight">{item.sub}</span>
+                  <item.icon size={16} className="text-[#3FCE7A]" />
+                  <span className="text-[11px] font-semibold text-[#EEF2F7] leading-tight">{item.label}</span>
+                  <span className="text-[10px] text-[#8E959D] leading-tight">{item.sub}</span>
                 </div>
               ))}
             </div>
@@ -608,15 +608,15 @@ export default function ProductDetail() {
             <div className="flex items-center justify-center gap-4 mt-3">
               <Link
                 href={`/account/messages?productId=${product.id}&productName=${encodeURIComponent(product.name)}`}
-                className="text-sm text-[#C2410C] hover:underline"
+                className="text-sm text-[#FDC700] hover:underline"
               >
                 Une question sur ce produit ?
               </Link>
-              <span className="text-[#E8E0D8]">·</span>
+              <span className="text-[#4E5257]">·</span>
               <button
                 type="button"
                 onClick={handleShare}
-                className="text-sm text-[#5B4B41] hover:text-[#C2410C] transition-colors"
+                className="text-sm text-[#B3B8BE] hover:text-[#FDC700] transition-colors"
               >
                 {shared ? 'Lien copié ✓' : 'Partager'}
               </button>
@@ -626,7 +626,7 @@ export default function ProductDetail() {
             {product.tags?.length > 0 && (
               <div className="mt-4 flex gap-2 flex-wrap">
                 {product.tags.map(tag => (
-                  <span key={tag} className="text-xs px-3 py-1.5 bg-white border border-[#E8E0D8] rounded-full text-[#5B4B41]">
+                  <span key={tag} className="text-xs px-3 py-1.5 bg-[#1C2021] border border-[#35383C] rounded-full text-[#B3B8BE]">
                     {tag}
                   </span>
                 ))}
@@ -637,15 +637,15 @@ export default function ProductDetail() {
 
         {/* Tabs */}
         <div className="mb-16">
-          <div className="flex gap-6 border-b border-[#E8E0D8] mb-6 overflow-x-auto">
+          <div className="flex gap-6 border-b border-[#35383C] mb-6 overflow-x-auto">
             {tabs.map(tab => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`pb-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab.key
-                    ? 'border-[#C2410C] text-[#241A14]'
-                    : 'border-transparent text-[#7D6A5D] hover:text-[#241A14]'
+                    ? 'border-[#FDC700] text-[#EEF2F7]'
+                    : 'border-transparent text-[#8E959D] hover:text-[#EEF2F7]'
                 }`}
               >
                 {tab.label}
@@ -655,7 +655,7 @@ export default function ProductDetail() {
           </div>
 
           {activeTab === 'description' && (
-            <p className="text-sm text-[#5B4B41] leading-relaxed max-w-2xl">
+            <p className="text-sm text-[#B3B8BE] leading-relaxed max-w-2xl">
               {product.description || 'Aucune description disponible pour ce produit.'}
             </p>
           )}
@@ -664,27 +664,27 @@ export default function ProductDetail() {
             <div className="max-w-xl">
               {specEntries.length > 0 ? (
                 <table className="w-full text-sm">
-                  <tbody className="divide-y divide-[#E8E0D8]">
+                  <tbody className="divide-y divide-[#35383C]">
                     {specEntries.map(([key, value]) => (
                       <tr key={key}>
-                        <td className="py-2.5 pr-4 text-[#7D6A5D] w-1/3">{specLabels[key] || key}</td>
-                        <td className="py-2.5 text-[#241A14] font-medium">{String(value)}</td>
+                        <td className="py-2.5 pr-4 text-[#8E959D] w-1/3">{specLabels[key] || key}</td>
+                        <td className="py-2.5 text-[#EEF2F7] font-medium">{String(value)}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               ) : (
-                <p className="text-sm text-[#7D6A5D]">Aucune caractéristique renseignée pour ce produit.</p>
+                <p className="text-sm text-[#8E959D]">Aucune caractéristique renseignée pour ce produit.</p>
               )}
             </div>
           )}
 
           {activeTab === 'shipping' && (
-            <div className="max-w-xl space-y-3 text-sm text-[#5B4B41] leading-relaxed">
+            <div className="max-w-xl space-y-3 text-sm text-[#B3B8BE] leading-relaxed">
               <p>Livraison via Yango partout à Abidjan. Les délais sont estimatifs et peuvent varier selon la zone.</p>
               <p>Paiement sécurisé via MoneyFusion (Wave, Orange Money, MTN Money, Moov Money, carte bancaire).</p>
               <p>Retour possible sous 14 jours après réception pour un produit non utilisé ; remboursement traité sous 7 à 10 jours ouvrables.</p>
-              <Link href="/legal/terms" className="inline-block text-[#C2410C] font-semibold hover:underline">
+              <Link href="/legal/terms" className="inline-block text-[#FDC700] font-semibold hover:underline">
                 Voir les conditions complètes →
               </Link>
             </div>
@@ -693,8 +693,8 @@ export default function ProductDetail() {
           {activeTab === 'reviews' && (
             <div className="max-w-2xl space-y-8">
               {isLoggedIn && (
-                <form onSubmit={handleSubmitReview} className="bg-[#FAF7F4] rounded-xl p-5 border border-[#E8E0D8]">
-                  <p className="text-sm font-semibold text-[#241A14] mb-3">
+                <form onSubmit={handleSubmitReview} className="bg-[#171A1C] rounded-xl p-5 border border-[#35383C]">
+                  <p className="text-sm font-semibold text-[#EEF2F7] mb-3">
                     {myExistingReview ? 'Modifier votre avis' : 'Laisser un avis'}
                   </p>
                   <div className="flex items-center gap-1 mb-3">
@@ -707,7 +707,7 @@ export default function ProductDetail() {
                       >
                         <Star
                           size={24}
-                          className={star <= (myRating || myExistingReview?.rating || 0) ? 'fill-[#C2410C] text-[#C2410C]' : 'text-[#E8E0D8]'}
+                          className={star <= (myRating || myExistingReview?.rating || 0) ? 'fill-[#FDC700] text-[#FDC700]' : 'text-[#4E5257]'}
                         />
                       </button>
                     ))}
@@ -717,7 +717,7 @@ export default function ProductDetail() {
                     onChange={e => setMyComment(e.target.value)}
                     placeholder="Votre avis (optionnel)"
                     rows={2}
-                    className="w-full px-3 py-2 text-sm border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C] mb-3 bg-white"
+                    className="w-full px-3 py-2 text-sm border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700] mb-3 bg-[#1C2021]"
                   />
                   <Button type="submit" variant="primary" disabled={submittingReview || myRating === 0}>
                     {submittingReview ? 'Envoi...' : 'Publier'}
@@ -726,18 +726,18 @@ export default function ProductDetail() {
               )}
 
               {reviews.length === 0 ? (
-                <p className="text-sm text-[#7D6A5D]">Aucun avis pour le moment. Soyez le premier à donner votre avis sur ce produit.</p>
+                <p className="text-sm text-[#8E959D]">Aucun avis pour le moment. Soyez le premier à donner votre avis sur ce produit.</p>
               ) : (
                 <div className="space-y-5">
                   {reviews.map(review => (
-                    <div key={review.id} className="pb-5 border-b border-[#E8E0D8] last:border-b-0">
+                    <div key={review.id} className="pb-5 border-b border-[#35383C] last:border-b-0">
                       <div className="flex items-center gap-2 mb-1">
                         <StarRating rating={review.rating} showCount={false} size={13} />
-                        <span className="text-xs text-[#7D6A5D]">
+                        <span className="text-xs text-[#8E959D]">
                           {review.profiles?.first_name || 'Client'} · {new Date(review.created_at).toLocaleDateString('fr-CI')}
                         </span>
                       </div>
-                      {review.comment && <p className="text-sm text-[#5B4B41]">{review.comment}</p>}
+                      {review.comment && <p className="text-sm text-[#B3B8BE]">{review.comment}</p>}
                     </div>
                   ))}
                 </div>
@@ -749,7 +749,7 @@ export default function ProductDetail() {
         {/* Related products */}
         {related.length > 0 && (
           <div>
-            <h2 className="font-serif font-semibold text-2xl text-[#241A14] mb-6">Vous aimerez aussi</h2>
+            <h2 className="font-serif font-semibold text-2xl text-[#EEF2F7] mb-6">Vous aimerez aussi</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-5 gap-y-8">
               {related.map(p => (
                 <ProductCard key={p.id} {...p} />

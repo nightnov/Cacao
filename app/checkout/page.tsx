@@ -179,14 +179,14 @@ export default function Checkout() {
 
   if (authLoading || cartItems.length === 0) {
     return (
-      <main className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#C2410C] border-t-transparent rounded-full animate-spin"></div>
+      <main className="min-h-screen bg-[#1C2021] flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-[#FDC700] border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-white flex flex-col">
+    <main className="min-h-screen bg-[#1C2021] flex flex-col">
       <Navbar />
 
       <div className="flex-1 max-w-5xl mx-auto px-5 sm:px-10 py-16 w-full">
@@ -195,43 +195,43 @@ export default function Checkout() {
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Shipping form */}
           <div className="md:col-span-2 space-y-6">
-            <div className="bg-white rounded-lg border border-[#E8E0D8] p-6">
-              <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-6">Livraison</h2>
+            <div className="bg-[#1C2021] rounded-lg border border-[#35383C] p-6">
+              <h2 className="font-serif font-semibold text-xl text-[#EEF2F7] mb-6">Livraison</h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-[#241A14] mb-2">Nom complet *</label>
+                  <label className="block text-sm font-semibold text-[#EEF2F7] mb-2">Nom complet *</label>
                   <input
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
-                    className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                    className="w-full px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-[#241A14] mb-2">Téléphone *</label>
+                  <label className="block text-sm font-semibold text-[#EEF2F7] mb-2">Téléphone *</label>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     required
                     placeholder="07 00 00 00 00"
-                    className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                    className="w-full px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-[#241A14] mb-2">Ville *</label>
+                  <label className="block text-sm font-semibold text-[#EEF2F7] mb-2">Ville *</label>
                   {loadingFees ? (
-                    <div className="h-11 bg-[#FAF7F4] rounded-lg animate-pulse"></div>
+                    <div className="h-11 bg-[#171A1C] rounded-lg animate-pulse"></div>
                   ) : shippingFees.length > 0 ? (
                     <select
                       value={cityId}
                       onChange={(e) => setCityId(e.target.value)}
                       required
-                      className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                      className="w-full px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
                     >
                       {shippingFees.map(fee => (
                         <option key={fee.id} value={fee.id}>
@@ -240,40 +240,40 @@ export default function Checkout() {
                       ))}
                     </select>
                   ) : (
-                    <p className="text-sm text-[#7D6A5D]">Aucune ville de livraison configurée pour le moment.</p>
+                    <p className="text-sm text-[#8E959D]">Aucune ville de livraison configurée pour le moment.</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-[#241A14] mb-2">Adresse détaillée *</label>
+                  <label className="block text-sm font-semibold text-[#EEF2F7] mb-2">Adresse détaillée *</label>
                   <textarea
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     required
                     rows={3}
                     placeholder="Quartier, rue, repère..."
-                    className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                    className="w-full px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-[#241A14] mb-2">
-                    Notes de commande <span className="font-normal text-[#7D6A5D]">(optionnel)</span>
+                  <label className="block text-sm font-semibold text-[#EEF2F7] mb-2">
+                    Notes de commande <span className="font-normal text-[#8E959D]">(optionnel)</span>
                   </label>
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     rows={2}
                     placeholder="Instructions spéciales, informations complémentaires..."
-                    className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                    className="w-full px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg border border-[#E8E0D8] p-6">
-              <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-3">Paiement</h2>
-              <p className="text-sm text-[#5B4B41]">
+            <div className="bg-[#1C2021] rounded-lg border border-[#35383C] p-6">
+              <h2 className="font-serif font-semibold text-xl text-[#EEF2F7] mb-3">Paiement</h2>
+              <p className="text-sm text-[#B3B8BE]">
                 Le paiement par Mobile Money (MoneyFusion) arrive très prochainement. Votre commande sera enregistrée et notre équipe vous contactera pour organiser le règlement et la livraison.
               </p>
             </div>
@@ -281,32 +281,32 @@ export default function Checkout() {
 
           {/* Order summary */}
           <div>
-            <div className="bg-white rounded-lg border border-[#E8E0D8] p-6 sticky top-6">
-              <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-6">Votre commande</h2>
+            <div className="bg-[#1C2021] rounded-lg border border-[#35383C] p-6 sticky top-6">
+              <h2 className="font-serif font-semibold text-xl text-[#EEF2F7] mb-6">Votre commande</h2>
 
               <div className="space-y-3 mb-6">
                 {cartItems.map(item => (
                   <div key={item.id} className="flex justify-between text-sm">
-                    <span className="text-[#5B4B41]">{item.name} × {item.quantity}</span>
-                    <span className="text-[#241A14] font-medium">
+                    <span className="text-[#B3B8BE]">{item.name} × {item.quantity}</span>
+                    <span className="text-[#EEF2F7] font-medium">
                       {(formatAmount(item.price_fcfa * item.quantity))} FCFA
                     </span>
                   </div>
                 ))}
               </div>
 
-              <div className="border-t border-[#E8E0D8] pt-4 space-y-2">
-                <div className="flex justify-between text-sm text-[#5B4B41]">
+              <div className="border-t border-[#35383C] pt-4 space-y-2">
+                <div className="flex justify-between text-sm text-[#B3B8BE]">
                   <span>Produits</span>
                   <span>{formatAmount(productsTotal)} FCFA</span>
                 </div>
-                <div className="flex justify-between text-sm text-[#5B4B41]">
+                <div className="flex justify-between text-sm text-[#B3B8BE]">
                   <span>Livraison</span>
                   <span>{formatAmount(shippingCost)} FCFA</span>
                 </div>
-                <div className="flex justify-between text-lg font-bold text-[#241A14] pt-2 border-t border-[#E8E0D8]">
+                <div className="flex justify-between text-lg font-bold text-[#EEF2F7] pt-2 border-t border-[#35383C]">
                   <span>Total</span>
-                  <span className="text-[#C2410C]">{formatAmount(total)} FCFA</span>
+                  <span className="text-[#FDC700]">{formatAmount(total)} FCFA</span>
                 </div>
               </div>
 
@@ -325,7 +325,7 @@ export default function Checkout() {
                 {submitting ? 'Envoi en cours...' : 'Confirmer la commande'}
               </Button>
 
-              <Link href="/cart" className="block text-center text-sm text-[#C2410C] hover:underline mt-4">
+              <Link href="/cart" className="block text-center text-sm text-[#FDC700] hover:underline mt-4">
                 Retour au panier
               </Link>
             </div>

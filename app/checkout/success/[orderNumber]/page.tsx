@@ -79,19 +79,19 @@ export default function CheckoutSuccess() {
 
   if (authLoading || loading) {
     return (
-      <main className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#C2410C] border-t-transparent rounded-full animate-spin"></div>
+      <main className="min-h-screen bg-[#1C2021] flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-[#FDC700] border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
   }
 
   if (notFound || !order) {
     return (
-      <main className="min-h-screen bg-white flex flex-col">
+      <main className="min-h-screen bg-[#1C2021] flex flex-col">
         <Navbar />
         <div className="flex-1 max-w-2xl mx-auto w-full px-5 sm:px-10 py-24 text-center">
-          <h1 className="font-serif font-semibold text-3xl text-[#241A14] mb-3">Commande introuvable</h1>
-          <p className="text-[#5B4B41] mb-8">Nous n&apos;avons pas trouvé cette commande.</p>
+          <h1 className="font-serif font-semibold text-3xl text-[#EEF2F7] mb-3">Commande introuvable</h1>
+          <p className="text-[#B3B8BE] mb-8">Nous n&apos;avons pas trouvé cette commande.</p>
           <Link href="/products">
             <Button variant="primary">Retour au catalogue</Button>
           </Link>
@@ -102,26 +102,26 @@ export default function CheckoutSuccess() {
   }
 
   return (
-    <main className="min-h-screen bg-white flex flex-col">
+    <main className="min-h-screen bg-[#1C2021] flex flex-col">
       <Navbar />
 
       <div className="flex-1 max-w-2xl mx-auto w-full px-5 sm:px-10 py-16">
-        <div className="bg-white rounded-lg border border-[#E8E0D8] p-8">
+        <div className="bg-[#1C2021] rounded-lg border border-[#35383C] p-8">
           <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E7A46" strokeWidth="2.5">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3FCE7A" strokeWidth="2.5">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
 
-          <h1 className="font-serif font-semibold text-2xl text-[#241A14] text-center mb-2">
+          <h1 className="font-serif font-semibold text-2xl text-[#EEF2F7] text-center mb-2">
             Commande confirmée
           </h1>
-          <p className="text-[#5B4B41] text-center mb-8">
-            Numéro de commande : <span className="font-semibold text-[#241A14]">{order.order_number}</span>
+          <p className="text-[#B3B8BE] text-center mb-8">
+            Numéro de commande : <span className="font-semibold text-[#EEF2F7]">{order.order_number}</span>
           </p>
 
-          <div className="bg-[#FAF7F4] rounded-lg p-4 border border-[#E8E0D8] mb-6">
-            <p className="text-sm text-[#5B4B41]">
+          <div className="bg-[#171A1C] rounded-lg p-4 border border-[#35383C] mb-6">
+            <p className="text-sm text-[#B3B8BE]">
               Votre commande a bien été enregistrée. Notre équipe vous contactera au{' '}
               <strong>{order.shipping_address.phone}</strong> pour organiser le paiement et la livraison à{' '}
               <strong>{order.shipping_address.city}</strong>.
@@ -129,10 +129,10 @@ export default function CheckoutSuccess() {
           </div>
 
           {order.delivery_code && (
-            <div className="bg-orange-50 border border-[#C2410C]/30 rounded-lg p-4 mb-6 text-center">
-              <p className="text-xs font-semibold text-[#C2410C] uppercase mb-1">Code de livraison</p>
-              <p className="text-3xl font-bold text-[#241A14] tracking-widest mb-2">{order.delivery_code}</p>
-              <p className="text-xs text-[#5B4B41]">
+            <div className="bg-[#2A2418] border border-[#FDC700]/30 rounded-lg p-4 mb-6 text-center">
+              <p className="text-xs font-semibold text-[#FDC700] uppercase mb-1">Code de livraison</p>
+              <p className="text-3xl font-bold text-[#EEF2F7] tracking-widest mb-2">{order.delivery_code}</p>
+              <p className="text-xs text-[#B3B8BE]">
                 Gardez ce code précieusement. Ne le donnez au livreur qu&apos;au moment où il vous remet votre colis. Cela confirme que vous avez bien reçu votre commande.
               </p>
             </div>
@@ -141,28 +141,28 @@ export default function CheckoutSuccess() {
           <div className="space-y-2 mb-6">
             {items.map(item => (
               <div key={item.id} className="flex justify-between text-sm">
-                <span className="text-[#5B4B41]">
+                <span className="text-[#B3B8BE]">
                   {item.product_name}{item.variant_label ? ` (${item.variant_label})` : ''} × {item.quantity}
                 </span>
-                <span className="text-[#241A14] font-medium">
+                <span className="text-[#EEF2F7] font-medium">
                   {formatAmount(item.subtotal_fcfa)} FCFA
                 </span>
               </div>
             ))}
           </div>
 
-          <div className="border-t border-[#E8E0D8] pt-4 space-y-2">
-            <div className="flex justify-between text-sm text-[#5B4B41]">
+          <div className="border-t border-[#35383C] pt-4 space-y-2">
+            <div className="flex justify-between text-sm text-[#B3B8BE]">
               <span>Produits</span>
               <span>{formatAmount(order.total_products_fcfa)} FCFA</span>
             </div>
-            <div className="flex justify-between text-sm text-[#5B4B41]">
+            <div className="flex justify-between text-sm text-[#B3B8BE]">
               <span>Livraison</span>
               <span>{formatAmount(order.shipping_cost_fcfa)} FCFA</span>
             </div>
-            <div className="flex justify-between text-lg font-bold text-[#241A14] pt-2 border-t border-[#E8E0D8]">
+            <div className="flex justify-between text-lg font-bold text-[#EEF2F7] pt-2 border-t border-[#35383C]">
               <span>Total</span>
-              <span className="text-[#C2410C]">{formatAmount(order.total_fcfa)} FCFA</span>
+              <span className="text-[#FDC700]">{formatAmount(order.total_fcfa)} FCFA</span>
             </div>
           </div>
 

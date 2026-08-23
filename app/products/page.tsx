@@ -116,29 +116,29 @@ function ProductsContent() {
   const FiltersPanel = (
     <div className="space-y-6">
       <div>
-        <p className="text-sm font-semibold text-[#241A14] mb-3">Prix (FCFA)</p>
+        <p className="text-sm font-semibold text-[#EEF2F7] mb-3">Prix (FCFA)</p>
         <div className="flex items-center gap-2">
           <input
             type="number"
             placeholder="Min"
             value={priceMin}
             onChange={e => setPriceMin(e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+            className="w-full px-3 py-2 text-sm border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
           />
-          <span className="text-[#7D6A5D]" aria-hidden="true">-</span>
+          <span className="text-[#8E959D]" aria-hidden="true">-</span>
           <input
             type="number"
             placeholder="Max"
             value={priceMax}
             onChange={e => setPriceMax(e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+            className="w-full px-3 py-2 text-sm border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
           />
         </div>
       </div>
 
       {cpuOptions.length > 0 && (
         <div>
-          <p className="text-sm font-semibold text-[#241A14] mb-3">Processeur</p>
+          <p className="text-sm font-semibold text-[#EEF2F7] mb-3">Processeur</p>
           <div className="flex flex-wrap gap-2">
             {cpuOptions.map(cpu => (
               <button
@@ -147,8 +147,8 @@ function ProductsContent() {
                 onClick={() => setSelectedCpu(selectedCpu === cpu ? '' : cpu)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
                   selectedCpu === cpu
-                    ? 'bg-[#241A14] text-white border-[#241A14]'
-                    : 'border-[#E8E0D8] text-[#5B4B41] hover:border-[#241A14]'
+                    ? 'bg-[#2A2D31] text-white border-[#4E5257]'
+                    : 'border-[#35383C] text-[#B3B8BE] hover:border-[#4E5257]'
                 }`}
               >
                 {cpu}
@@ -162,7 +162,7 @@ function ProductsContent() {
         <button
           type="button"
           onClick={() => { setPriceMin(''); setPriceMax(''); setSelectedCpu('') }}
-          className="text-sm text-[#C2410C] font-semibold hover:underline"
+          className="text-sm text-[#FDC700] font-semibold hover:underline"
         >
           Réinitialiser les filtres
         </button>
@@ -171,23 +171,23 @@ function ProductsContent() {
   )
 
   return (
-    <main className="min-h-screen bg-white flex flex-col">
+    <main className="min-h-screen bg-[#1C2021] flex flex-col">
       <Navbar />
 
       <div className="flex-1 max-w-7xl mx-auto w-full px-5 sm:px-10 py-16">
-        <div className="text-sm text-[#7D6A5D] mb-6">
-          <Link href="/" className="hover:text-[#C2410C]">Accueil</Link>
+        <div className="text-sm text-[#8E959D] mb-6">
+          <Link href="/" className="hover:text-[#FDC700]">Accueil</Link>
           {' / '}
-          <span className="text-[#241A14]">Catalogue</span>
+          <span className="text-[#EEF2F7]">Catalogue</span>
         </div>
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="font-serif font-semibold text-4xl mb-2 text-[#241A14]">
+          <h1 className="font-serif font-semibold text-4xl mb-2 text-[#EEF2F7]">
             {search ? `Résultats pour « ${search} »` : category ? categoryLabel[category] || category : 'Tous les produits'}
           </h1>
           {!loading && (
-            <p className="text-[#5B4B41]">
+            <p className="text-[#B3B8BE]">
               {filteredProducts.length} produit{filteredProducts.length !== 1 ? 's' : ''} disponible{filteredProducts.length !== 1 ? 's' : ''}
             </p>
           )}
@@ -200,8 +200,8 @@ function ProductsContent() {
             <Link href="/products" className="flex-shrink-0">
               <span className={`inline-block px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
                 !category
-                  ? 'bg-[#241A14] text-white border-[#241A14]'
-                  : 'bg-white border-[#E8E0D8] text-[#5B4B41] hover:border-[#241A14] hover:text-[#241A14]'
+                  ? 'bg-[#2A2D31] text-white border-[#4E5257]'
+                  : 'bg-[#1C2021] border-[#35383C] text-[#B3B8BE] hover:border-[#4E5257] hover:text-[#EEF2F7]'
               }`}>
                 Tous
               </span>
@@ -211,8 +211,8 @@ function ProductsContent() {
               <Link key={cat.value} href={`/products?category=${cat.value}`} className="flex-shrink-0">
                 <span className={`inline-block px-4 py-2 rounded-full text-sm font-medium border transition-colors whitespace-nowrap ${
                   category === cat.value
-                    ? 'bg-[#241A14] text-white border-[#241A14]'
-                    : 'bg-white border-[#E8E0D8] text-[#5B4B41] hover:border-[#241A14] hover:text-[#241A14]'
+                    ? 'bg-[#2A2D31] text-white border-[#4E5257]'
+                    : 'bg-[#1C2021] border-[#35383C] text-[#B3B8BE] hover:border-[#4E5257] hover:text-[#EEF2F7]'
                 }`}>
                   {cat.label}
                 </span>
@@ -229,20 +229,20 @@ function ProductsContent() {
             aria-expanded={showFilters}
             className={`lg:hidden flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${
               hasActiveFilters
-                ? 'bg-[#241A14] text-white border-[#241A14]'
-                : 'bg-white border-[#E8E0D8] text-[#241A14]'
+                ? 'bg-[#2A2D31] text-white border-[#4E5257]'
+                : 'bg-[#1C2021] border-[#35383C] text-[#EEF2F7]'
             }`}
           >
             <SlidersHorizontal size={14} /> Filtrer
             {hasActiveFilters && <span className="text-xs">•</span>}
           </button>
           <div className="hidden lg:block" />
-          <label className="flex items-center gap-2 text-sm text-[#7D6A5D]">
+          <label className="flex items-center gap-2 text-sm text-[#8E959D]">
             <span className="hidden sm:inline">Trier par</span>
             <select
               value={sort}
               onChange={e => setSort(e.target.value)}
-              className="px-4 py-2 bg-white border border-[#E8E0D8] rounded-full text-sm text-[#241A14] focus:outline-none focus:ring-2 focus:ring-[#C2410C] cursor-pointer"
+              className="px-4 py-2 bg-[#1C2021] border border-[#35383C] rounded-full text-sm text-[#EEF2F7] focus:outline-none focus:ring-2 focus:ring-[#FDC700] cursor-pointer"
             >
               {sortOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -252,7 +252,7 @@ function ProductsContent() {
         </div>
 
         {showFilters && (
-          <div className="lg:hidden mb-8 bg-white border border-[#E8E0D8] rounded-2xl p-5">
+          <div className="lg:hidden mb-8 bg-[#1C2021] border border-[#35383C] rounded-2xl p-5">
             {FiltersPanel}
           </div>
         )}
@@ -261,7 +261,7 @@ function ProductsContent() {
           {/* Filtres desktop */}
           <aside className="hidden lg:block">
             <div className="sticky top-6">
-              <p className="text-xs font-semibold text-[#7D6A5D] uppercase tracking-wide mb-4">Filtres</p>
+              <p className="text-xs font-semibold text-[#8E959D] uppercase tracking-wide mb-4">Filtres</p>
               {FiltersPanel}
             </div>
           </aside>
@@ -272,10 +272,10 @@ function ProductsContent() {
               <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-9">
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="bg-[#E8E0D8] aspect-square rounded-xl"></div>
+                    <div className="bg-[#2A2D31] aspect-square rounded-xl"></div>
                     <div className="pt-2.5 space-y-2">
-                      <div className="h-3.5 bg-[#E8E0D8] rounded w-3/4"></div>
-                      <div className="h-3.5 bg-[#E8E0D8] rounded w-1/3"></div>
+                      <div className="h-3.5 bg-[#2A2D31] rounded w-3/4"></div>
+                      <div className="h-3.5 bg-[#2A2D31] rounded w-1/3"></div>
                     </div>
                   </div>
                 ))}
@@ -289,8 +289,8 @@ function ProductsContent() {
                 </div>
 
                 {popularFallback.length > 0 && (
-                  <div className="mt-16 pt-10 border-t border-[#E8E0D8]">
-                    <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-6">Vous pourriez aussi aimer</h2>
+                  <div className="mt-16 pt-10 border-t border-[#35383C]">
+                    <h2 className="font-serif font-semibold text-xl text-[#EEF2F7] mb-6">Vous pourriez aussi aimer</h2>
                     <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-9">
                       {popularFallback.map(p => (
                         <ProductCard key={p.id} {...p} />
@@ -300,28 +300,28 @@ function ProductsContent() {
                 )}
               </>
             ) : search ? (
-              <div className="text-center py-20 px-6 bg-white rounded-2xl border-2 border-dashed border-[#E8E0D8]">
-                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[#FAF7F4] flex items-center justify-center">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#C2410C" strokeWidth="1.5">
+              <div className="text-center py-20 px-6 bg-[#1C2021] rounded-2xl border-2 border-dashed border-[#35383C]">
+                <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-[#171A1C] flex items-center justify-center">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FDC700" strokeWidth="1.5">
                     <circle cx="11" cy="11" r="8" />
                     <line x1="21" y1="21" x2="16.65" y2="16.65" />
                   </svg>
                 </div>
-                <h3 className="font-serif font-semibold text-xl text-[#241A14] mb-2">
+                <h3 className="font-serif font-semibold text-xl text-[#EEF2F7] mb-2">
                   Aucun résultat pour « {search} »
                 </h3>
-                <p className="text-[#7D6A5D] max-w-md mx-auto mb-6">
+                <p className="text-[#8E959D] max-w-md mx-auto mb-6">
                   Ce produit n&apos;est pas encore disponible dans notre catalogue. Il sera peut-être ajouté lors d&apos;une prochaine mise à jour. N&apos;hésitez pas à revenir vérifier, ou à parcourir le catalogue complet en attendant.
                 </p>
                 <Link href="/products">
-                  <button className="px-6 py-2.5 bg-[#C2410C] hover:bg-[#9A3412] text-white rounded-full font-semibold text-sm transition-colors">
+                  <button className="px-6 py-2.5 bg-[#FDC700] hover:bg-[#E0B000] text-[#1A1A1A] rounded-full font-semibold text-sm transition-colors">
                     Voir tout le catalogue
                   </button>
                 </Link>
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-[#5B4B41]">Aucun produit trouvé{hasActiveFilters ? ' avec ces filtres' : ' dans cette catégorie'}.</p>
+                <p className="text-[#B3B8BE]">Aucun produit trouvé{hasActiveFilters ? ' avec ces filtres' : ' dans cette catégorie'}.</p>
               </div>
             )}
           </div>
@@ -335,7 +335,7 @@ function ProductsContent() {
 
 export default function Products() {
   return (
-    <Suspense fallback={<main className="min-h-screen bg-white" />}>
+    <Suspense fallback={<main className="min-h-screen bg-[#1C2021]" />}>
       <ProductsContent />
     </Suspense>
   )

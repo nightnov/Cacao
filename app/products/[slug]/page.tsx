@@ -15,7 +15,7 @@ import { getVideoEmbedUrl } from '@/lib/video'
 import { addToCart } from '@/lib/cart'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { Star, ShieldCheck, RotateCcw, Truck } from 'lucide-react'
+import { Star, ShieldCheck, RotateCcw, Truck, CreditCard } from 'lucide-react'
 import { VariantOption, ProductVariant } from '@/types/admin'
 import { findMatchingVariant, variantLabel } from '@/lib/variants'
 import { categoryLabel } from '@/lib/categories'
@@ -661,18 +661,19 @@ export default function ProductDetail() {
           )}
 
           {activeTab === 'specs' && (
-            <div className="max-w-xl">
+            <div className="max-w-3xl">
               {specEntries.length > 0 ? (
-                <table className="w-full text-sm">
-                  <tbody className="divide-y divide-[#35383C]">
-                    {specEntries.map(([key, value]) => (
-                      <tr key={key}>
-                        <td className="py-2.5 pr-4 text-[#8E959D] w-1/3">{specLabels[key] || key}</td>
-                        <td className="py-2.5 text-[#EEF2F7] font-medium">{String(value)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <div className="border border-[#35383C] rounded-xl overflow-hidden">
+                  {specEntries.map(([key, value], i) => (
+                    <div
+                      key={key}
+                      className={`grid grid-cols-1 sm:grid-cols-[220px,1fr] text-[12.5px] ${i % 2 === 0 ? 'bg-[#1C2021]' : ''}`}
+                    >
+                      <div className="px-4 py-3 text-[#8E959D] sm:border-r border-[#35383C]">{specLabels[key] || key}</div>
+                      <div className="px-4 pb-3 sm:py-3 text-[#EEF2F7] font-medium">{String(value)}</div>
+                    </div>
+                  ))}
+                </div>
               ) : (
                 <p className="text-sm text-[#8E959D]">Aucune caractéristique renseignée pour ce produit.</p>
               )}
@@ -680,11 +681,38 @@ export default function ProductDetail() {
           )}
 
           {activeTab === 'shipping' && (
-            <div className="max-w-xl space-y-3 text-sm text-[#B3B8BE] leading-relaxed">
-              <p>Livraison via Yango partout à Abidjan. Les délais sont estimatifs et peuvent varier selon la zone.</p>
-              <p>Paiement sécurisé via MoneyFusion (Wave, Orange Money, MTN Money, Moov Money, carte bancaire).</p>
-              <p>Retour possible sous 14 jours après réception pour un produit non utilisé ; remboursement traité sous 7 à 10 jours ouvrables.</p>
-              <Link href="/legal/terms" className="inline-block text-[#FDC700] font-semibold hover:underline">
+            <div className="max-w-3xl">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {[
+                  {
+                    icon: Truck,
+                    t: 'Délai de livraison',
+                    p: 'Comptez moins de 5 jours pour Abidjan et l’intérieur du pays. Le suivi apparaît dans votre espace client dès l’expédition.'
+                  },
+                  {
+                    icon: ShieldCheck,
+                    t: 'Code de livraison',
+                    p: 'Un code à quatre chiffres apparaît dans votre compte dès que la commande part. Ne le donnez au livreur qu’à la remise du colis.'
+                  },
+                  {
+                    icon: RotateCcw,
+                    t: 'Retour sous 14 jours',
+                    p: 'Si l’appareil ne correspond pas à votre usage, vous disposez de 14 jours après réception pour nous le retourner.'
+                  },
+                  {
+                    icon: CreditCard,
+                    t: 'Moyens de paiement',
+                    p: 'Wave, Orange Money, MTN Money, Moov Money et carte bancaire. La transaction est traitée par MoneyFusion.'
+                  }
+                ].map(({ icon: Icon, t, p }) => (
+                  <div key={t} className="bg-[#1C2021] border border-[#35383C] rounded-xl p-5">
+                    <Icon size={20} strokeWidth={1.8} className="text-[#FDC700] mb-2.5" />
+                    <h4 className="text-[13.5px] font-bold text-[#EEF2F7] mb-1.5">{t}</h4>
+                    <p className="text-[12px] text-[#8E959D] leading-[1.65]">{p}</p>
+                  </div>
+                ))}
+              </div>
+              <Link href="/legal/terms" className="inline-block mt-5 text-[13px] text-[#FDC700] font-bold hover:underline">
                 Voir les conditions complètes →
               </Link>
             </div>
@@ -728,18 +756,58 @@ export default function ProductDetail() {
               {reviews.length === 0 ? (
                 <p className="text-sm text-[#8E959D]">Aucun avis pour le moment. Soyez le premier à donner votre avis sur ce produit.</p>
               ) : (
-                <div className="space-y-5">
-                  {reviews.map(review => (
-                    <div key={review.id} className="pb-5 border-b border-[#35383C] last:border-b-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <StarRating rating={review.rating} showCount={false} size={13} />
-                        <span className="text-xs text-[#8E959D]">
-                          {review.profiles?.first_name || 'Client'} · {new Date(review.created_at).toLocaleDateString('fr-CI')}
-                        </span>
-                      </div>
-                      {review.comment && <p className="text-sm text-[#B3B8BE]">{review.comment}</p>}
+                <div className="grid grid-cols-1 sm:grid-cols-[230px,1fr] gap-7 items-start">
+                  {/* Synthèse : note moyenne et répartition, toutes deux calculées
+                      sur les avis réellement enregistrés. */}
+                  <div className="bg-[#1C2021] border border-[#35383C] rounded-xl p-5 text-center">
+                    <p className="font-display text-[40px] text-[#FDC700] leading-none">
+                      {avgRating.toFixed(1).replace('.', ',')}
+                    </p>
+                    <div className="flex justify-center my-2">
+                      <StarRating rating={avgRating} showCount={false} size={14} />
                     </div>
-                  ))}
+                    <p className="text-[11.5px] text-[#8E959D]">
+                      {reviewCount} avis{reviewCount > 1 ? '' : ''}
+                    </p>
+                    <div className="mt-4 text-left space-y-1.5">
+                      {[5, 4, 3, 2, 1].map(star => {
+                        const n = reviews.filter(r => r.rating === star).length
+                        const pct = reviewCount > 0 ? Math.round((n / reviewCount) * 100) : 0
+                        return (
+                          <div key={star} className="flex items-center gap-2 text-[10.5px] text-[#8E959D]">
+                            <span className="w-5 flex-shrink-0">{star}★</span>
+                            <span className="flex-1 h-1.5 bg-[#2A2D31] rounded-full overflow-hidden">
+                              <span className="block h-full bg-[#FDC700]" style={{ width: `${pct}%` }} />
+                            </span>
+                            <span className="w-4 text-right tabular-nums flex-shrink-0">{n}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="space-y-5">
+                    {reviews.map(review => (
+                      <div key={review.id} className="pb-5 border-b border-[#35383C] last:border-b-0">
+                        <div className="flex items-center gap-2.5 mb-2 flex-wrap">
+                          <span className="w-7 h-7 rounded-full bg-[#2A2D31] border border-[#3E4247] flex items-center justify-center text-[11px] font-bold text-[#B3B8BE] flex-shrink-0">
+                            {(review.profiles?.first_name || 'C').charAt(0).toUpperCase()}
+                          </span>
+                          <span className="text-[12.5px] font-bold text-[#EEF2F7]">
+                            {review.profiles?.first_name || 'Client'}
+                          </span>
+                          <span className="text-[9.5px] bg-[#00A63E]/15 text-[#3FCE7A] px-1.5 py-0.5 rounded font-bold">
+                            Achat vérifié
+                          </span>
+                          <span className="text-[10.5px] text-[#6F767E] ml-auto">
+                            {new Date(review.created_at).toLocaleDateString('fr-CI', { day: 'numeric', month: 'long', year: 'numeric' })}
+                          </span>
+                        </div>
+                        <StarRating rating={review.rating} showCount={false} size={12} />
+                        {review.comment && <p className="text-[12.5px] text-[#B3B8BE] leading-[1.7] mt-2">{review.comment}</p>}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

@@ -257,7 +257,10 @@ export default function Account() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-[220px,1fr] gap-4 md:gap-6">
+        {/* minmax(0,1fr) et non 1fr : une piste `1fr` garde un min-width auto
+            implicite, donc elle refuse de rétrécir sous la largeur du contenu
+            et fait déborder toute la page horizontalement. */}
+        <div className="grid grid-cols-1 md:grid-cols-[220px,minmax(0,1fr)] gap-4 md:gap-6">
           {/* Navigation. Onglets défilants sur mobile, colonne sur grand écran :
               une colonne étroite compressée sur téléphone rendait les libellés
               illisibles. */}
@@ -382,14 +385,17 @@ export default function Account() {
                               <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`}></span>
                               {status.label}
                             </span>
-                            <div className="text-right flex-shrink-0 hidden md:block">
-                              <p className="text-xs text-[#8E959D]">Commande #{order.order_number}</p>
-                              <p className="text-xs text-[#8E959D]">
+                            {/* Le numéro de commande est long et sans espace :
+                                sans min-w-0 + truncate il empêche la ligne de
+                                rétrécir et fait déborder la page. */}
+                            <div className="text-right hidden lg:block min-w-0 max-w-[190px]">
+                              <p className="text-xs text-[#8E959D] truncate">Commande #{order.order_number}</p>
+                              <p className="text-xs text-[#8E959D] truncate">
                                 {new Date(order.created_at).toLocaleDateString('fr-CI', { day: 'numeric', month: 'short', year: 'numeric' })}
                               </p>
                             </div>
-                            <button onClick={() => setActiveSection('orders')} className="text-xs text-[#FDC700] font-semibold hover:underline flex-shrink-0">
-                              Voir les détails →
+                            <button onClick={() => setActiveSection('orders')} className="text-xs text-[#FDC700] font-semibold hover:underline flex-shrink-0 whitespace-nowrap">
+                              Détails →
                             </button>
                           </div>
                         )

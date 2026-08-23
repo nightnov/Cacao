@@ -127,10 +127,13 @@ export default function Home() {
   const deals = products.filter(p => !!p.compare_at_price_fcfa && p.compare_at_price_fcfa > p.price_fcfa).slice(0, 4)
   const heroProduct = popular.find(p => p.image_urls?.length > 0) || popular[0] || null
 
-  // Rayons les plus fournis : construits sur les produits réellement en ligne
+  // Rayons les plus fournis. Un rayon dont tous les produits figurent déjà
+  // dans « meilleures ventes » est masqué : sur un petit catalogue, il
+  // affichait exactement la même grille juste en dessous.
+  const popularIds = new Set(popular.map(p => p.id))
   const topCategories = CATEGORIES
     .map(cat => ({ cat, items: products.filter(p => p.category === cat.value).slice(0, 4) }))
-    .filter(({ items }) => items.length > 0)
+    .filter(({ items }) => items.length > 0 && items.some(p => !popularIds.has(p.id)))
     .sort((a, b) => b.items.length - a.items.length)
     .slice(0, 4)
 
@@ -186,16 +189,22 @@ export default function Home() {
           </div>
 
           {/* Vitrine : bannière définie dans l'admin, sinon le produit le plus consulté */}
+          {/* Hauteur FIXE et non min-height : avec `w-full` + `object-contain`,
+              une image sans hauteur imposée se dimensionne sur son ratio et
+              atteignait 805 px, entraînant toute la section avec elle. */}
           {bannerUrl ? (
-            <Link href="/products" className="group relative rounded-xl overflow-hidden border border-[#3A3E42] bg-[#171A1C] min-h-[240px] lg:min-h-[340px]">
+            <Link href="/products" className="group relative rounded-xl overflow-hidden border border-[#3A3E42] bg-[#171A1C] h-[220px] sm:h-[280px] lg:h-[330px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={bannerUrl} alt="Offre en cours" className="w-full h-full object-cover min-h-[240px] lg:min-h-[340px]" />
+              <img src={bannerUrl} alt="Offre en cours" className="w-full h-full object-cover" />
               <span className="absolute top-4 left-4 bg-[#FDC700] text-[#1A1A1A] text-[10px] font-extrabold tracking-[1px] px-3 py-1.5 rounded">
                 EN CE MOMENT
               </span>
             </Link>
           ) : heroProduct ? (
-            <Link href={`/products/${heroProduct.slug}`} className="group relative rounded-xl overflow-hidden border border-[#3A3E42] bg-[#171A1C] min-h-[240px] lg:min-h-[340px] flex items-center justify-center">
+            <Link
+              href={`/products/${heroProduct.slug}`}
+              className="group relative rounded-xl overflow-hidden border border-[#3A3E42] bg-[#171A1C] h-[220px] sm:h-[280px] lg:h-[330px] flex items-center justify-center"
+            >
               <span className="absolute top-4 left-4 z-10 bg-[#FDC700] text-[#1A1A1A] text-[10px] font-extrabold tracking-[1px] px-3 py-1.5 rounded">
                 EN CE MOMENT
               </span>
@@ -204,23 +213,23 @@ export default function Home() {
                 <img
                   src={heroProduct.image_urls[0]}
                   alt={heroProduct.name}
-                  className="w-full h-full min-h-[240px] lg:min-h-[340px] object-contain p-8 transition-transform duration-500 group-hover:scale-[1.03]"
+                  className="max-w-full max-h-full object-contain p-6 pb-16 transition-transform duration-500 group-hover:scale-[1.03]"
                 />
               ) : (
-                <Laptop size={88} strokeWidth={1} className="text-[#3E4247]" />
+                <Laptop size={80} strokeWidth={1} className="text-[#3E4247]" />
               )}
-              <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black/90 to-transparent flex items-end justify-between gap-4 flex-wrap">
+              <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/95 via-black/70 to-transparent flex items-end justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="font-display text-[17px] tracking-[1px] text-[#EEF2F7] line-clamp-1">{heroProduct.name}</p>
-                  <p className="text-[11.5px] text-[#B3B8BE] mt-1">Voir la fiche produit</p>
+                  <p className="font-display text-[15px] tracking-[1px] text-[#EEF2F7] line-clamp-1">{heroProduct.name}</p>
+                  <p className="text-[11px] text-[#B3B8BE] mt-0.5">Voir la fiche produit</p>
                 </div>
-                <p className="font-display text-[21px] text-[#FDC700] whitespace-nowrap tabular-nums">
+                <p className="font-display text-[19px] text-[#FDC700] whitespace-nowrap tabular-nums flex-shrink-0">
                   {formatAmount(heroProduct.price_fcfa)} FCFA
                 </p>
               </div>
             </Link>
           ) : (
-            <div className="rounded-xl border border-dashed border-[#3A3E42] bg-[#171A1C] min-h-[240px] flex flex-col items-center justify-center text-center p-8">
+            <div className="rounded-xl border border-dashed border-[#3A3E42] bg-[#171A1C] h-[220px] lg:h-[330px] flex flex-col items-center justify-center text-center p-8">
               <Laptop size={44} strokeWidth={1} className="text-[#3E4247] mb-4" />
               <p className="font-display text-[15px] tracking-[1px] text-[#B3B8BE]">CATALOGUE EN PRÉPARATION</p>
               <p className="text-[12px] text-[#6F767E] mt-2 max-w-xs">
@@ -240,31 +249,53 @@ export default function Home() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {gammes.map(({ cat, min, count }) => {
             const Icon = cat.icon
-            return (
+            const empty = count === 0
+
+            const inner = (
+              <>
+                <span className={`absolute inset-x-0 top-0 h-[3px] ${empty ? 'bg-[#3E4247]' : 'bg-[#FDC700]'}`} />
+                <span className={`w-12 h-12 mx-auto mt-1.5 mb-3.5 rounded-xl bg-[#2A2D31] border border-[#3E4247] flex items-center justify-center ${empty ? 'text-[#6F767E]' : 'text-[#FDC700]'}`}>
+                  <Icon size={21} strokeWidth={1.7} />
+                </span>
+                <h3 className={`font-display text-[15px] tracking-[1px] mb-1.5 ${empty ? 'text-[#8E959D]' : 'text-[#EEF2F7]'}`}>
+                  {cat.short.toUpperCase()}
+                </h3>
+                <p className="text-[11.5px] text-[#8E959D] leading-[1.5] min-h-[34px]">{GAMME_PITCH[cat.value]}</p>
+                {min !== null ? (
+                  <>
+                    <p className="text-[11px] text-[#B3B8BE] mt-3">
+                      À partir de
+                      <span className="block font-display text-[15px] text-[#FDC700] tabular-nums mt-0.5">
+                        {formatAmount(min)} FCFA
+                      </span>
+                    </p>
+                    <span className="block mt-3 text-[11.5px] font-bold text-[#FDC700] group-hover:underline">
+                      Découvrir →
+                    </span>
+                  </>
+                ) : (
+                  /* Aucun produit dans ce rayon : la carte n'est pas cliquable et
+                     n'annonce aucune alerte, qui n'existe pas. */
+                  <p className="text-[11px] text-[#6F767E] mt-3 min-h-[62px] flex items-center justify-center">
+                    Bientôt disponible
+                  </p>
+                )}
+              </>
+            )
+
+            const base = 'relative rounded-xl p-5 text-center overflow-hidden transition-colors border'
+
+            return empty ? (
+              <div key={cat.value} className={`${base} bg-[#1C2021]/60 border-[#2E3236] cursor-default`}>
+                {inner}
+              </div>
+            ) : (
               <Link
                 key={cat.value}
                 href={`/products?category=${cat.value}`}
-                className="group relative bg-[#1C2021] border border-[#35383C] hover:border-[#4E5257] rounded-xl p-5 text-center overflow-hidden transition-colors"
+                className={`group ${base} bg-[#1C2021] border-[#35383C] hover:border-[#4E5257]`}
               >
-                <span className="absolute inset-x-0 top-0 h-[3px] bg-[#FDC700]" />
-                <span className="w-12 h-12 mx-auto mt-1.5 mb-3.5 rounded-xl bg-[#2A2D31] border border-[#3E4247] flex items-center justify-center text-[#FDC700]">
-                  <Icon size={21} strokeWidth={1.7} />
-                </span>
-                <h3 className="font-display text-[15px] tracking-[1px] text-[#EEF2F7] mb-1.5">{cat.short.toUpperCase()}</h3>
-                <p className="text-[11.5px] text-[#8E959D] leading-[1.5] min-h-[34px]">{GAMME_PITCH[cat.value]}</p>
-                {min !== null ? (
-                  <p className="text-[11px] text-[#B3B8BE] mt-3">
-                    À partir de
-                    <span className="block font-display text-[15px] text-[#FDC700] tabular-nums mt-0.5">
-                      {formatAmount(min)} FCFA
-                    </span>
-                  </p>
-                ) : (
-                  <p className="text-[11px] text-[#6F767E] mt-3 min-h-[38px] flex items-center justify-center">Bientôt disponible</p>
-                )}
-                <span className="block mt-3 text-[11.5px] font-bold text-[#FDC700] group-hover:underline">
-                  {count > 0 ? 'Découvrir →' : 'Nous prévenir →'}
-                </span>
+                {inner}
               </Link>
             )
           })}

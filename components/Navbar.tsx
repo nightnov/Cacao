@@ -11,6 +11,7 @@ import { getCartCount, CART_EVENT } from '@/lib/cart'
 import { useAuth } from '@/hooks/useAuth'
 import { getSupabaseClient } from '@/lib/supabase'
 import { CATEGORIES } from '@/lib/categories'
+import { CategoryNav } from '@/components/CategoryNav'
 
 const FALLBACK_SEARCH_SUGGESTIONS = ['PC portable', 'Écran', 'Clavier']
 const ADMIN_UUID = 'f4e9e8fd-8e85-4045-a6e5-c2c62204c5ff'
@@ -30,7 +31,6 @@ export function Navbar() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [popularSearches, setPopularSearches] = useState<string[]>([])
-  const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const { user, loading: authLoading, isLoggedIn, logout } = useAuth()
   const accountMenuRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -45,17 +45,6 @@ export function Navbar() {
     router.push(`/products?search=${encodeURIComponent(q)}`)
   }
 
-  // Catégorie active lue depuis l'URL côté client. `useSearchParams` rendrait
-  // dynamiques toutes les pages statiques qui affichent la navbar.
-  useEffect(() => {
-    const read = () => {
-      const p = new URLSearchParams(window.location.search)
-      setActiveCategory(window.location.pathname === '/products' ? p.get('category') : null)
-    }
-    read()
-    window.addEventListener('popstate', read)
-    return () => window.removeEventListener('popstate', read)
-  }, [])
 
   // Raccourci Ctrl/Cmd + K vers la recherche, comme annoncé dans le champ
   useEffect(() => {
@@ -148,17 +137,8 @@ export function Navbar() {
           CACAO
         </Link>
 
-        <div className="hidden lg:flex gap-5 text-[13.5px] font-medium">
-          {CATEGORIES.slice(0, 5).map(cat => (
-            <Link
-              key={cat.value}
-              href={`/products?category=${cat.value}`}
-              className={activeCategory === cat.value ? 'text-[#FDC700]' : 'text-[#B3B8BE] hover:text-[#EEF2F7] transition-colors'}
-            >
-              {cat.label}
-            </Link>
-          ))}
-        </div>
+        <CategoryNav />
+
 
         {/* Recherche : occupe l'espace disponible entre la marque et les actions */}
         <div className="hidden sm:block relative flex-1 min-w-0 max-w-md ml-auto">

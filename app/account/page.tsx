@@ -213,7 +213,7 @@ export default function Account() {
   if (authLoading || !isLoggedIn) {
     return (
       <main className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#FF6600] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-[#C2410C] border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
   }
@@ -230,31 +230,31 @@ export default function Account() {
     <main className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
-      <div className="flex-1 max-w-6xl mx-auto px-10 py-16 w-full">
-        <div className="text-sm text-[#8A8579] mb-6">
-          <Link href="/" className="hover:text-[#FF6600]">Accueil</Link>
+      <div className="flex-1 max-w-6xl mx-auto px-5 sm:px-10 py-16 w-full">
+        <div className="text-sm text-[#7D6A5D] mb-6">
+          <Link href="/" className="hover:text-[#C2410C]">Accueil</Link>
           {' / '}
-          <span className="text-[#1A1A1A]">Mon compte</span>
+          <span className="text-[#241A14]">Mon compte</span>
         </div>
 
         {/* En-tête */}
         <div className="flex items-center justify-between mb-10 flex-wrap gap-4">
           <div>
-            <h1 className="font-serif font-semibold text-2xl text-[#1A1A1A]">Bonjour, {displayName !== 'Bienvenue' ? displayName.split(' ')[0] : ''} 👋</h1>
-            <p className="text-sm text-[#8A8579]">Bienvenue sur votre espace personnel</p>
+            <h1 className="font-serif font-semibold text-2xl text-[#241A14]">Bonjour, {displayName !== 'Bienvenue' ? displayName.split(' ')[0] : ''} 👋</h1>
+            <p className="text-sm text-[#7D6A5D]">Bienvenue sur votre espace personnel</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-[240px,1fr] gap-10">
           {/* Carte profil + navigation latérale */}
           <div>
-            <div className="bg-white border border-[#E4DDCF] rounded-2xl p-5 mb-3 text-center">
-              <div className="w-16 h-16 rounded-full bg-[#1A1A1A] text-white text-xl font-semibold flex items-center justify-center mx-auto mb-3">
+            <div className="bg-white border border-[#E8E0D8] rounded-2xl p-5 mb-3 text-center">
+              <div className="w-16 h-16 rounded-full bg-[#241A14] text-white text-xl font-semibold flex items-center justify-center mx-auto mb-3">
                 {avatarLetter}
               </div>
-              <p className="font-semibold text-[#1A1A1A]">{displayName}</p>
-              <p className="text-xs text-[#8A8579] truncate">{user?.email}</p>
-              {profile.phone && <p className="text-xs text-[#8A8579]">{profile.phone}</p>}
+              <p className="font-semibold text-[#241A14]">{displayName}</p>
+              <p className="text-xs text-[#7D6A5D] truncate">{user?.email}</p>
+              {profile.phone && <p className="text-xs text-[#7D6A5D]">{profile.phone}</p>}
             </div>
 
             <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible pb-2 md:pb-0">
@@ -265,11 +265,11 @@ export default function Account() {
                   <Link
                     key={section.key}
                     href={section.href}
-                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-[#56534C] hover:bg-[#FBF6EE] transition-colors whitespace-nowrap"
+                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-[#5B4B41] hover:bg-[#FAF7F4] transition-colors whitespace-nowrap"
                   >
                     <Icon size={16} /> {section.label}
                     {section.key === 'messages' && unreadMessages > 0 && (
-                      <span className="ml-auto bg-[#FF6600] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                      <span className="ml-auto bg-[#C2410C] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                         {unreadMessages}
                       </span>
                     )}
@@ -282,8 +282,8 @@ export default function Account() {
                   onClick={() => setActiveSection(section.key)}
                   className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors whitespace-nowrap ${
                     activeSection === section.key
-                      ? 'bg-orange-50 text-[#FF6600] font-semibold'
-                      : 'text-[#56534C] hover:bg-[#FBF6EE]'
+                      ? 'bg-orange-50 text-[#C2410C] font-semibold'
+                      : 'text-[#5B4B41] hover:bg-[#FAF7F4]'
                   }`}
                 >
                   <Icon size={16} /> {section.label}
@@ -292,7 +292,7 @@ export default function Account() {
             })}
             <button
               onClick={logout}
-              className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors whitespace-nowrap mt-2 md:border-t md:border-[#E4DDCF] md:pt-4"
+              className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors whitespace-nowrap mt-2 md:border-t md:border-[#E8E0D8] md:pt-4"
             >
               <LogOut size={16} /> Déconnexion
             </button>
@@ -314,11 +314,11 @@ export default function Account() {
                     <button
                       key={stat.label}
                       onClick={() => setActiveSection(stat.section)}
-                      className="bg-white border border-[#E4DDCF] rounded-2xl p-5 text-left hover:border-[#FF6600] transition-colors"
+                      className="bg-white border border-[#E8E0D8] rounded-2xl p-5 text-left hover:border-[#C2410C] transition-colors"
                     >
-                      <stat.icon size={18} className="text-[#FF6600] mb-2" strokeWidth={1.5} />
-                      <p className="text-2xl font-semibold text-[#1A1A1A]">{loadingOrders ? '—' : stat.value}</p>
-                      <p className="text-xs text-[#8A8579]">{stat.label}</p>
+                      <stat.icon size={18} className="text-[#C2410C] mb-2" strokeWidth={1.5} />
+                      <p className="text-2xl font-semibold text-[#241A14]">{loadingOrders ? '—' : stat.value}</p>
+                      <p className="text-xs text-[#7D6A5D]">{stat.label}</p>
                     </button>
                   ))}
                 </div>
@@ -326,9 +326,9 @@ export default function Account() {
                 {/* Commandes récentes */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="font-serif font-semibold text-xl text-[#1A1A1A]">Mes commandes récentes</h2>
+                    <h2 className="font-serif font-semibold text-xl text-[#241A14]">Mes commandes récentes</h2>
                     {orders.length > 0 && (
-                      <button onClick={() => setActiveSection('orders')} className="text-sm text-[#FF6600] font-semibold hover:underline">
+                      <button onClick={() => setActiveSection('orders')} className="text-sm text-[#C2410C] font-semibold hover:underline">
                         Voir toutes mes commandes →
                       </button>
                     )}
@@ -336,17 +336,17 @@ export default function Account() {
                   {loadingOrders ? (
                     <div className="space-y-3">
                       {[1, 2].map(i => (
-                        <div key={i} className="bg-white rounded-2xl border border-[#E4DDCF] p-4 h-16 animate-pulse" />
+                        <div key={i} className="bg-white rounded-2xl border border-[#E8E0D8] p-4 h-16 animate-pulse" />
                       ))}
                     </div>
                   ) : orders.length === 0 ? (
-                    <div className="bg-white rounded-2xl border-2 border-dashed border-[#E4DDCF] p-10 text-center">
-                      <ShoppingBag size={26} className="text-[#FF6600] mx-auto mb-3" strokeWidth={1.5} />
-                      <p className="text-[#56534C] mb-4">Vous n&apos;avez pas encore passé de commande.</p>
+                    <div className="bg-white rounded-2xl border-2 border-dashed border-[#E8E0D8] p-10 text-center">
+                      <ShoppingBag size={26} className="text-[#C2410C] mx-auto mb-3" strokeWidth={1.5} />
+                      <p className="text-[#5B4B41] mb-4">Vous n&apos;avez pas encore passé de commande.</p>
                       <Link href="/products"><Button variant="primary">Découvrir les produits</Button></Link>
                     </div>
                   ) : (
-                    <div className="bg-white rounded-2xl border border-[#E4DDCF] divide-y divide-[#E4DDCF]">
+                    <div className="bg-white rounded-2xl border border-[#E8E0D8] divide-y divide-[#E8E0D8]">
                       {orders.slice(0, 4).map(order => {
                         const status = statusLabels[order.status] || statusLabels.pending
                         const items = itemsByOrder[order.id] || []
@@ -354,20 +354,20 @@ export default function Account() {
                         const thumb = firstItem?.products?.image_urls?.[0]
                         return (
                           <div key={order.id} className="flex items-center gap-4 px-5 py-4">
-                            <div className="w-12 h-12 rounded-lg bg-[#FBF6EE] border border-[#E4DDCF] overflow-hidden flex-shrink-0 flex items-center justify-center">
+                            <div className="w-12 h-12 rounded-lg bg-[#FAF7F4] border border-[#E8E0D8] overflow-hidden flex-shrink-0 flex items-center justify-center">
                               {thumb ? (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img src={thumb} alt="" className="w-full h-full object-cover" />
                               ) : (
-                                <ShoppingBag size={16} className="text-[#FF6600]" />
+                                <ShoppingBag size={16} className="text-[#C2410C]" />
                               )}
                             </div>
                             <div className="min-w-0 flex-1">
-                              <p className="font-medium text-[#1A1A1A] truncate">
+                              <p className="font-medium text-[#241A14] truncate">
                                 {firstItem?.product_name || order.order_number}
                                 {items.length > 1 ? ` +${items.length - 1}` : ''}
                               </p>
-                              <p className="text-xs text-[#8A8579]">
+                              <p className="text-xs text-[#7D6A5D]">
                                 {order.total_fcfa.toLocaleString('fr-CI')} FCFA · x{firstItem?.quantity || 1}
                               </p>
                             </div>
@@ -376,12 +376,12 @@ export default function Account() {
                               {status.label}
                             </span>
                             <div className="text-right flex-shrink-0 hidden md:block">
-                              <p className="text-xs text-[#8A8579]">Commande #{order.order_number}</p>
-                              <p className="text-xs text-[#8A8579]">
+                              <p className="text-xs text-[#7D6A5D]">Commande #{order.order_number}</p>
+                              <p className="text-xs text-[#7D6A5D]">
                                 {new Date(order.created_at).toLocaleDateString('fr-CI', { day: 'numeric', month: 'short', year: 'numeric' })}
                               </p>
                             </div>
-                            <button onClick={() => setActiveSection('orders')} className="text-xs text-[#FF6600] font-semibold hover:underline flex-shrink-0">
+                            <button onClick={() => setActiveSection('orders')} className="text-xs text-[#C2410C] font-semibold hover:underline flex-shrink-0">
                               Voir les détails →
                             </button>
                           </div>
@@ -395,30 +395,30 @@ export default function Account() {
                   {/* Favoris */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <h2 className="font-serif font-semibold text-xl text-[#1A1A1A]">Mes produits favoris</h2>
+                      <h2 className="font-serif font-semibold text-xl text-[#241A14]">Mes produits favoris</h2>
                       {favorites.length > 0 && (
-                        <button onClick={() => setActiveSection('favorites')} className="text-sm text-[#FF6600] font-semibold hover:underline">
+                        <button onClick={() => setActiveSection('favorites')} className="text-sm text-[#C2410C] font-semibold hover:underline">
                           Voir tous mes favoris →
                         </button>
                       )}
                     </div>
                     {favorites.length === 0 ? (
-                      <div className="bg-white rounded-2xl border-2 border-dashed border-[#E4DDCF] p-10 text-center">
-                        <Heart size={26} className="text-[#FF6600] mx-auto mb-3" strokeWidth={1.5} />
-                        <p className="text-[#56534C]">Aucun favori pour le moment.</p>
+                      <div className="bg-white rounded-2xl border-2 border-dashed border-[#E8E0D8] p-10 text-center">
+                        <Heart size={26} className="text-[#C2410C] mx-auto mb-3" strokeWidth={1.5} />
+                        <p className="text-[#5B4B41]">Aucun favori pour le moment.</p>
                       </div>
                     ) : (
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         {favorites.slice(0, 4).map(p => (
                           <Link key={p.id} href={`/products/${p.slug}`} className="group">
-                            <div className="aspect-square rounded-xl bg-[#FBF6EE] border border-[#E4DDCF] overflow-hidden mb-2">
+                            <div className="aspect-square rounded-xl bg-[#FAF7F4] border border-[#E8E0D8] overflow-hidden mb-2">
                               {p.image_urls?.[0] && (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img src={p.image_urls[0]} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                               )}
                             </div>
-                            <p className="text-sm text-[#1A1A1A] truncate">{p.name}</p>
-                            <p className="text-xs text-[#56534C]">{p.price_fcfa.toLocaleString('fr-CI')} FCFA</p>
+                            <p className="text-sm text-[#241A14] truncate">{p.name}</p>
+                            <p className="text-xs text-[#5B4B41]">{p.price_fcfa.toLocaleString('fr-CI')} FCFA</p>
                           </Link>
                         ))}
                       </div>
@@ -426,20 +426,20 @@ export default function Account() {
                   </div>
 
                   {/* Informations du compte */}
-                  <div className="bg-white border border-[#E4DDCF] rounded-2xl p-6 h-fit">
-                    <h3 className="font-serif font-semibold text-lg text-[#1A1A1A] mb-4">Informations du compte</h3>
+                  <div className="bg-white border border-[#E8E0D8] rounded-2xl p-6 h-fit">
+                    <h3 className="font-serif font-semibold text-lg text-[#241A14] mb-4">Informations du compte</h3>
                     <div className="space-y-3 text-sm">
                       <div>
-                        <p className="text-[#8A8579] text-xs uppercase">Nom complet</p>
-                        <p className="text-[#1A1A1A]">{displayName !== 'Bienvenue' ? displayName : '—'}</p>
+                        <p className="text-[#7D6A5D] text-xs uppercase">Nom complet</p>
+                        <p className="text-[#241A14]">{displayName !== 'Bienvenue' ? displayName : '—'}</p>
                       </div>
                       <div>
-                        <p className="text-[#8A8579] text-xs uppercase">E-mail</p>
-                        <p className="text-[#1A1A1A] truncate">{user?.email}</p>
+                        <p className="text-[#7D6A5D] text-xs uppercase">E-mail</p>
+                        <p className="text-[#241A14] truncate">{user?.email}</p>
                       </div>
                       <div>
-                        <p className="text-[#8A8579] text-xs uppercase">Téléphone</p>
-                        <p className="text-[#1A1A1A]">{profile.phone || '—'}</p>
+                        <p className="text-[#7D6A5D] text-xs uppercase">Téléphone</p>
+                        <p className="text-[#241A14]">{profile.phone || '—'}</p>
                       </div>
                     </div>
                     <Button variant="primary" className="w-full mt-5" onClick={() => setActiveSection('addresses')}>
@@ -452,25 +452,25 @@ export default function Account() {
 
             {activeSection === 'favorites' && (
               <div>
-                <h2 className="font-serif font-semibold text-xl text-[#1A1A1A] mb-6">Mes favoris</h2>
+                <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-6">Mes favoris</h2>
                 {favorites.length === 0 ? (
-                  <div className="bg-white rounded-2xl border-2 border-dashed border-[#E4DDCF] p-12 text-center">
-                    <Heart size={28} className="text-[#FF6600] mx-auto mb-3" strokeWidth={1.5} />
-                    <p className="text-[#56534C] mb-4">Aucun favori pour le moment.</p>
+                  <div className="bg-white rounded-2xl border-2 border-dashed border-[#E8E0D8] p-12 text-center">
+                    <Heart size={28} className="text-[#C2410C] mx-auto mb-3" strokeWidth={1.5} />
+                    <p className="text-[#5B4B41] mb-4">Aucun favori pour le moment.</p>
                     <Link href="/products"><Button variant="primary">Découvrir les produits</Button></Link>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-5 gap-y-8">
                     {favorites.map(p => (
                       <Link key={p.id} href={`/products/${p.slug}`} className="group">
-                        <div className="aspect-square rounded-xl bg-[#FBF6EE] border border-[#E4DDCF] overflow-hidden mb-2">
+                        <div className="aspect-square rounded-xl bg-[#FAF7F4] border border-[#E8E0D8] overflow-hidden mb-2">
                           {p.image_urls?.[0] && (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={p.image_urls[0]} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                           )}
                         </div>
-                        <p className="text-sm text-[#1A1A1A] truncate">{p.name}</p>
-                        <p className="text-xs text-[#56534C]">{p.price_fcfa.toLocaleString('fr-CI')} FCFA</p>
+                        <p className="text-sm text-[#241A14] truncate">{p.name}</p>
+                        <p className="text-xs text-[#5B4B41]">{p.price_fcfa.toLocaleString('fr-CI')} FCFA</p>
                       </Link>
                     ))}
                   </div>
@@ -480,21 +480,21 @@ export default function Account() {
 
             {activeSection === 'orders' && (
               <div>
-                <h2 className="font-serif font-semibold text-xl text-[#1A1A1A] mb-6">Mes commandes</h2>
+                <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-6">Mes commandes</h2>
 
                 {loadingOrders ? (
                   <div className="space-y-3">
                     {[1, 2].map(i => (
-                      <div key={i} className="bg-white rounded-2xl border border-[#E4DDCF] p-6 animate-pulse">
-                        <div className="h-4 bg-[#E4DDCF] rounded w-1/3 mb-2"></div>
-                        <div className="h-3 bg-[#E4DDCF] rounded w-1/4"></div>
+                      <div key={i} className="bg-white rounded-2xl border border-[#E8E0D8] p-6 animate-pulse">
+                        <div className="h-4 bg-[#E8E0D8] rounded w-1/3 mb-2"></div>
+                        <div className="h-3 bg-[#E8E0D8] rounded w-1/4"></div>
                       </div>
                     ))}
                   </div>
                 ) : orders.length === 0 ? (
-                  <div className="bg-white rounded-2xl border-2 border-dashed border-[#E4DDCF] p-12 text-center">
-                    <ShoppingBag size={28} className="text-[#FF6600] mx-auto mb-3" strokeWidth={1.5} />
-                    <p className="text-[#56534C] mb-4">Vous n&apos;avez pas encore passé de commande.</p>
+                  <div className="bg-white rounded-2xl border-2 border-dashed border-[#E8E0D8] p-12 text-center">
+                    <ShoppingBag size={28} className="text-[#C2410C] mx-auto mb-3" strokeWidth={1.5} />
+                    <p className="text-[#5B4B41] mb-4">Vous n&apos;avez pas encore passé de commande.</p>
                     <Link href="/products">
                       <Button variant="primary">Découvrir les produits</Button>
                     </Link>
@@ -508,18 +508,18 @@ export default function Account() {
                       const firstItem = items[0]
 
                       return (
-                        <div key={order.id} className="bg-white rounded-2xl border border-[#E4DDCF] overflow-hidden">
+                        <div key={order.id} className="bg-white rounded-2xl border border-[#E8E0D8] overflow-hidden">
                           <button
                             onClick={() => setExpandedOrder(isExpanded ? null : order.id)}
-                            className="w-full flex items-center justify-between px-6 py-4 hover:bg-[#FBF6EE] transition-colors text-left gap-4"
+                            className="w-full flex items-center justify-between px-6 py-4 hover:bg-[#FAF7F4] transition-colors text-left gap-4"
                           >
                             <div className="min-w-0">
-                              <p className="font-semibold text-[#1A1A1A]">{order.order_number}</p>
-                              <p className="text-xs text-[#8A8579] mb-1">
+                              <p className="font-semibold text-[#241A14]">{order.order_number}</p>
+                              <p className="text-xs text-[#7D6A5D] mb-1">
                                 {new Date(order.created_at).toLocaleDateString('fr-CI', { day: 'numeric', month: 'long', year: 'numeric' })}
                               </p>
                               {firstItem && (
-                                <p className="text-sm text-[#56534C] truncate">
+                                <p className="text-sm text-[#5B4B41] truncate">
                                   {firstItem.product_name}{items.length > 1 ? ` +${items.length - 1} autre${items.length > 2 ? 's' : ''}` : ''}
                                 </p>
                               )}
@@ -529,12 +529,12 @@ export default function Account() {
                                 <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`}></span>
                                 {status.label}
                               </span>
-                              <span className="font-semibold text-[#1A1A1A] whitespace-nowrap">
+                              <span className="font-semibold text-[#241A14] whitespace-nowrap">
                                 {order.total_fcfa.toLocaleString('fr-CI')} FCFA
                               </span>
                               <svg
                                 width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                                className={`text-[#8A8579] transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
+                                className={`text-[#7D6A5D] transition-transform flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}`}
                               >
                                 <polyline points="6 9 12 15 18 9" />
                               </svg>
@@ -542,12 +542,12 @@ export default function Account() {
                           </button>
 
                           {isExpanded && (
-                            <div className="border-t border-[#E4DDCF] px-6 py-4 bg-[#FBF6EE]">
+                            <div className="border-t border-[#E8E0D8] px-6 py-4 bg-[#FAF7F4]">
                               <div className="space-y-2 mb-4">
                                 {items.map(item => (
                                   <div key={item.id} className="flex justify-between text-sm">
-                                    <span className="text-[#56534C]">{item.product_name} × {item.quantity}</span>
-                                    <span className="text-[#1A1A1A] font-medium">
+                                    <span className="text-[#5B4B41]">{item.product_name} × {item.quantity}</span>
+                                    <span className="text-[#241A14] font-medium">
                                       {item.subtotal_fcfa.toLocaleString('fr-CI')} FCFA
                                     </span>
                                   </div>
@@ -555,27 +555,27 @@ export default function Account() {
                               </div>
 
                               {order.shipping_address && (
-                                <p className="text-xs text-[#8A8579] mb-3">
-                                  Livraison à {order.shipping_address.city} — {order.shipping_address.address}
+                                <p className="text-xs text-[#7D6A5D] mb-3">
+                                  Livraison à {order.shipping_address.city}, {order.shipping_address.address}
                                 </p>
                               )}
 
                               {order.delivery_code && !['delivered', 'cancelled', 'refunded'].includes(order.status) && (
-                                <div className="bg-orange-50 border border-[#FF6600]/30 rounded-lg p-3 mb-3 text-center">
-                                  <p className="text-[10px] font-semibold text-[#FF6600] uppercase mb-0.5">Code de livraison</p>
-                                  <p className="text-xl font-bold text-[#1A1A1A] tracking-widest">{order.delivery_code}</p>
-                                  <p className="text-[10px] text-[#56534C] mt-1">
+                                <div className="bg-orange-50 border border-[#C2410C]/30 rounded-lg p-3 mb-3 text-center">
+                                  <p className="text-[10px] font-semibold text-[#C2410C] uppercase mb-0.5">Code de livraison</p>
+                                  <p className="text-xl font-bold text-[#241A14] tracking-widest">{order.delivery_code}</p>
+                                  <p className="text-[10px] text-[#5B4B41] mt-1">
                                     À donner au livreur uniquement à la remise du colis
                                   </p>
                                 </div>
                               )}
 
-                              <div className="border-t border-[#E4DDCF] pt-3 space-y-1">
-                                <div className="flex justify-between text-xs text-[#56534C]">
+                              <div className="border-t border-[#E8E0D8] pt-3 space-y-1">
+                                <div className="flex justify-between text-xs text-[#5B4B41]">
                                   <span>Produits</span>
                                   <span>{order.total_products_fcfa.toLocaleString('fr-CI')} FCFA</span>
                                 </div>
-                                <div className="flex justify-between text-xs text-[#56534C]">
+                                <div className="flex justify-between text-xs text-[#5B4B41]">
                                   <span>Livraison</span>
                                   <span>{order.shipping_cost_fcfa.toLocaleString('fr-CI')} FCFA</span>
                                 </div>
@@ -592,35 +592,35 @@ export default function Account() {
 
             {activeSection === 'reviews' && (
               <div>
-                <h2 className="font-serif font-semibold text-xl text-[#1A1A1A] mb-6">Mes avis</h2>
+                <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-6">Mes avis</h2>
 
                 {reviews.length === 0 ? (
-                  <div className="bg-white rounded-2xl border-2 border-dashed border-[#E4DDCF] p-12 text-center">
-                    <Star size={28} className="text-[#FF6600] mx-auto mb-3" strokeWidth={1.5} />
-                    <p className="text-[#56534C]">Vous n&apos;avez encore laissé aucun avis.</p>
+                  <div className="bg-white rounded-2xl border-2 border-dashed border-[#E8E0D8] p-12 text-center">
+                    <Star size={28} className="text-[#C2410C] mx-auto mb-3" strokeWidth={1.5} />
+                    <p className="text-[#5B4B41]">Vous n&apos;avez encore laissé aucun avis.</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {reviews.map(review => (
-                      <div key={review.id} className="bg-white rounded-2xl border border-[#E4DDCF] p-6">
+                      <div key={review.id} className="bg-white rounded-2xl border border-[#E8E0D8] p-6">
                         <div className="flex items-center justify-between mb-2 gap-4">
                           {review.products?.slug ? (
-                            <Link href={`/products/${review.products.slug}`} className="font-semibold text-[#1A1A1A] hover:underline">
+                            <Link href={`/products/${review.products.slug}`} className="font-semibold text-[#241A14] hover:underline">
                               {review.products.name}
                             </Link>
                           ) : (
-                            <span className="font-semibold text-[#1A1A1A]">{review.products?.name || 'Produit'}</span>
+                            <span className="font-semibold text-[#241A14]">{review.products?.name || 'Produit'}</span>
                           )}
-                          <span className="text-xs text-[#8A8579] whitespace-nowrap">
+                          <span className="text-xs text-[#7D6A5D] whitespace-nowrap">
                             {new Date(review.created_at).toLocaleDateString('fr-CI', { day: 'numeric', month: 'long', year: 'numeric' })}
                           </span>
                         </div>
                         <div className="flex items-center gap-0.5 mb-2">
                           {[1, 2, 3, 4, 5].map(i => (
-                            <Star key={i} size={14} className={i <= review.rating ? 'fill-[#FF6600] text-[#FF6600]' : 'text-[#E4DDCF]'} />
+                            <Star key={i} size={14} className={i <= review.rating ? 'fill-[#C2410C] text-[#C2410C]' : 'text-[#E8E0D8]'} />
                           ))}
                         </div>
-                        {review.comment && <p className="text-sm text-[#56534C]">{review.comment}</p>}
+                        {review.comment && <p className="text-sm text-[#5B4B41]">{review.comment}</p>}
                       </div>
                     ))}
                   </div>
@@ -629,41 +629,41 @@ export default function Account() {
             )}
 
             {activeSection === 'addresses' && (
-              <div className="bg-white rounded-2xl border border-[#E4DDCF] p-8">
-                <h2 className="font-serif font-semibold text-xl text-[#1A1A1A] mb-1">Adresses</h2>
-                <p className="text-sm text-[#8A8579] mb-6">Utilisée pour pré-remplir vos livraisons.</p>
+              <div className="bg-white rounded-2xl border border-[#E8E0D8] p-8">
+                <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-1">Adresses</h2>
+                <p className="text-sm text-[#7D6A5D] mb-6">Utilisée pour pré-remplir vos livraisons.</p>
 
                 <form onSubmit={handleSaveProfile} className="space-y-4 max-w-md">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">Téléphone</label>
+                      <label className="block text-sm font-semibold text-[#241A14] mb-2">Téléphone</label>
                       <input
                         type="tel"
                         value={profile.phone || ''}
                         onChange={(e) => setProfile(p => ({ ...p, phone: e.target.value }))}
                         placeholder="07 00 00 00 00"
-                        className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
+                        className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">Ville</label>
+                      <label className="block text-sm font-semibold text-[#241A14] mb-2">Ville</label>
                       <input
                         type="text"
                         value={profile.city || ''}
                         onChange={(e) => setProfile(p => ({ ...p, city: e.target.value }))}
                         placeholder="Abidjan"
-                        className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
+                        className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">Adresse</label>
+                    <label className="block text-sm font-semibold text-[#241A14] mb-2">Adresse</label>
                     <input
                       type="text"
                       value={profile.address || ''}
                       onChange={(e) => setProfile(p => ({ ...p, address: e.target.value }))}
                       placeholder="Quartier, rue, repère..."
-                      className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
+                      className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
                     />
                   </div>
                   <div className="flex items-center gap-4 pt-2">
@@ -677,9 +677,9 @@ export default function Account() {
             )}
 
             {activeSection === 'settings' && (
-              <div className="bg-white rounded-2xl border border-[#E4DDCF] p-8">
-                <h2 className="font-serif font-semibold text-xl text-[#1A1A1A] mb-1">Paramètres</h2>
-                <p className="text-sm text-[#8A8579] mb-6">Gestion de votre compte.</p>
+              <div className="bg-white rounded-2xl border border-[#E8E0D8] p-8">
+                <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-1">Paramètres</h2>
+                <p className="text-sm text-[#7D6A5D] mb-6">Gestion de votre compte.</p>
                 <Button type="button" variant="outline" onClick={logout}>
                   Se déconnecter
                 </Button>
@@ -687,13 +687,13 @@ export default function Account() {
             )}
 
             {activeSection === 'help' && (
-              <div className="bg-white rounded-2xl border border-[#E4DDCF] p-8">
-                <h2 className="font-serif font-semibold text-xl text-[#1A1A1A] mb-1">Aide</h2>
-                <p className="text-sm text-[#8A8579] mb-6">Besoin d&apos;assistance ?</p>
+              <div className="bg-white rounded-2xl border border-[#E8E0D8] p-8">
+                <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-1">Aide</h2>
+                <p className="text-sm text-[#7D6A5D] mb-6">Besoin d&apos;assistance ?</p>
                 <div className="flex flex-col gap-3 max-w-xs">
-                  <Link href="/faq" className="text-[#FF6600] font-semibold hover:underline">Questions fréquentes →</Link>
-                  <Link href="/contact" className="text-[#FF6600] font-semibold hover:underline">Nous contacter →</Link>
-                  <Link href="/account/messages" className="text-[#FF6600] font-semibold hover:underline">Mes messages →</Link>
+                  <Link href="/faq" className="text-[#C2410C] font-semibold hover:underline">Questions fréquentes →</Link>
+                  <Link href="/contact" className="text-[#C2410C] font-semibold hover:underline">Nous contacter →</Link>
+                  <Link href="/account/messages" className="text-[#C2410C] font-semibold hover:underline">Mes messages →</Link>
                 </div>
               </div>
             )}

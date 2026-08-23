@@ -43,18 +43,18 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-[#E4DDCF] px-6 py-4 flex items-center justify-between">
+        <div className="sticky top-0 bg-white border-b border-[#E8E0D8] px-6 py-4 flex items-center justify-between">
           <div>
-            <h2 className="font-serif font-semibold text-2xl text-[#1A1A1A]">
+            <h2 className="font-serif font-semibold text-2xl text-[#241A14]">
               Commande {order.order_number}
             </h2>
-            <p className="text-[#56534C] text-sm mt-1">
+            <p className="text-[#5B4B41] text-sm mt-1">
               {new Date(order.created_at).toLocaleDateString('fr-CI')} à {new Date(order.created_at).toLocaleTimeString('fr-CI')}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-[#8A8579] hover:text-[#1A1A1A] text-2xl"
+            className="text-[#7D6A5D] hover:text-[#241A14] text-2xl"
           >
             ✕
           </button>
@@ -62,10 +62,10 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
 
         <div className="p-6 space-y-6">
           {/* Status */}
-          <div className="bg-[#FBF6EE] rounded-lg p-4 border border-[#E4DDCF]">
+          <div className="bg-[#FAF7F4] rounded-lg p-4 border border-[#E8E0D8]">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="font-semibold text-[#1A1A1A]">Statut actuel</h3>
-              <span className="px-3 py-1 bg-[#FF6600] text-white rounded-full text-sm font-semibold">
+              <h3 className="font-semibold text-[#241A14]">Statut actuel</h3>
+              <span className="px-3 py-1 bg-[#C2410C] text-white rounded-full text-sm font-semibold">
                 {statusLabels[order.status]}
               </span>
             </div>
@@ -73,7 +73,7 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
               <button
                 onClick={handleStatusChange}
                 disabled={updating}
-                className="w-full px-4 py-2 bg-[#FF6600] text-white rounded-lg hover:bg-[#E65C00] transition-colors font-semibold disabled:opacity-50"
+                className="w-full px-4 py-2 bg-[#C2410C] text-white rounded-lg hover:bg-[#9A3412] transition-colors font-semibold disabled:opacity-50"
               >
                 {updating ? 'Mise à jour...' : `Passer à ${statusLabels[nextStatus[order.status]]}`}
               </button>
@@ -82,23 +82,23 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
 
           {/* Client Info */}
           <div>
-            <h3 className="font-semibold text-[#1A1A1A] mb-3">Client</h3>
+            <h3 className="font-semibold text-[#241A14] mb-3">Client</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-[#8A8579] uppercase font-semibold mb-1">Nom</p>
-                <p className="text-[#1A1A1A]">{order.profiles?.first_name} {order.profiles?.last_name}</p>
+                <p className="text-xs text-[#7D6A5D] uppercase font-semibold mb-1">Nom</p>
+                <p className="text-[#241A14]">{order.profiles?.first_name} {order.profiles?.last_name}</p>
               </div>
               <div>
-                <p className="text-xs text-[#8A8579] uppercase font-semibold mb-1">Email</p>
-                <p className="text-[#1A1A1A]">{order.profiles?.email}</p>
+                <p className="text-xs text-[#7D6A5D] uppercase font-semibold mb-1">Email</p>
+                <p className="text-[#241A14]">{order.profiles?.email}</p>
               </div>
               <div>
-                <p className="text-xs text-[#8A8579] uppercase font-semibold mb-1">Téléphone</p>
-                <p className="text-[#1A1A1A]">{order.profiles?.phone || '-'}</p>
+                <p className="text-xs text-[#7D6A5D] uppercase font-semibold mb-1">Téléphone</p>
+                <p className="text-[#241A14]">{order.profiles?.phone || '-'}</p>
               </div>
               <div>
-                <p className="text-xs text-[#8A8579] uppercase font-semibold mb-1">Paiement</p>
-                <p className="text-[#1A1A1A]">{order.payment_method || '-'}</p>
+                <p className="text-xs text-[#7D6A5D] uppercase font-semibold mb-1">Paiement</p>
+                <p className="text-[#241A14]">{order.payment_method || '-'}</p>
               </div>
             </div>
           </div>
@@ -106,10 +106,10 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
           {/* Shipping Address */}
           {order.shipping_address && (
             <div>
-              <h3 className="font-semibold text-[#1A1A1A] mb-3">Adresse de livraison</h3>
-              <div className="bg-[#FBF6EE] rounded-lg p-4 border border-[#E4DDCF]">
-                <p className="text-[#1A1A1A]">{order.shipping_address.address}</p>
-                <p className="text-[#56534C] text-sm">{order.shipping_address.city}</p>
+              <h3 className="font-semibold text-[#241A14] mb-3">Adresse de livraison</h3>
+              <div className="bg-[#FAF7F4] rounded-lg p-4 border border-[#E8E0D8]">
+                <p className="text-[#241A14]">{order.shipping_address.address}</p>
+                <p className="text-[#5B4B41] text-sm">{order.shipping_address.city}</p>
               </div>
             </div>
           )}
@@ -117,10 +117,10 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
           {/* Delivery code */}
           {order.delivery_code && (
             <div>
-              <h3 className="font-semibold text-[#1A1A1A] mb-3">Code de livraison</h3>
-              <div className="bg-orange-50 border border-[#FF6600]/30 rounded-lg p-4">
-                <p className="text-2xl font-bold text-[#1A1A1A] tracking-widest">{order.delivery_code}</p>
-                <p className="text-xs text-[#56534C] mt-1">
+              <h3 className="font-semibold text-[#241A14] mb-3">Code de livraison</h3>
+              <div className="bg-orange-50 border border-[#C2410C]/30 rounded-lg p-4">
+                <p className="text-2xl font-bold text-[#241A14] tracking-widest">{order.delivery_code}</p>
+                <p className="text-xs text-[#5B4B41] mt-1">
                   Le client doit donner ce code au livreur uniquement à la remise du colis, pour confirmer la bonne réception.
                 </p>
               </div>
@@ -130,31 +130,31 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
           {/* Order notes */}
           {order.notes && (
             <div>
-              <h3 className="font-semibold text-[#1A1A1A] mb-3">Notes du client</h3>
-              <div className="bg-[#FBF6EE] rounded-lg p-4 border border-[#E4DDCF]">
-                <p className="text-[#1A1A1A] text-sm whitespace-pre-wrap">{order.notes}</p>
+              <h3 className="font-semibold text-[#241A14] mb-3">Notes du client</h3>
+              <div className="bg-[#FAF7F4] rounded-lg p-4 border border-[#E8E0D8]">
+                <p className="text-[#241A14] text-sm whitespace-pre-wrap">{order.notes}</p>
               </div>
             </div>
           )}
 
           {/* Order Items */}
           <div>
-            <h3 className="font-semibold text-[#1A1A1A] mb-3">Produits commandés</h3>
+            <h3 className="font-semibold text-[#241A14] mb-3">Produits commandés</h3>
             <div className="space-y-2">
               {items.map(item => (
-                <div key={item.id} className="flex items-center justify-between bg-[#FBF6EE] rounded-lg p-4 border border-[#E4DDCF]">
+                <div key={item.id} className="flex items-center justify-between bg-[#FAF7F4] rounded-lg p-4 border border-[#E8E0D8]">
                   <div>
-                    <p className="font-medium text-[#1A1A1A]">{item.product_name}</p>
+                    <p className="font-medium text-[#241A14]">{item.product_name}</p>
                     {item.variant_label && (
-                      <p className="text-xs text-[#8A8579]">{item.variant_label}</p>
+                      <p className="text-xs text-[#7D6A5D]">{item.variant_label}</p>
                     )}
-                    <p className="text-sm text-[#56534C]">Quantité: {item.quantity}</p>
+                    <p className="text-sm text-[#5B4B41]">Quantité: {item.quantity}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-[#1A1A1A]">
+                    <p className="font-semibold text-[#241A14]">
                       {item.subtotal_fcfa.toLocaleString('fr-CI')} FCFA
                     </p>
-                    <p className="text-sm text-[#56534C]">
+                    <p className="text-sm text-[#5B4B41]">
                       {item.unit_price_fcfa.toLocaleString('fr-CI')} FCFA x {item.quantity}
                     </p>
                   </div>
@@ -164,19 +164,19 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
           </div>
 
           {/* Pricing Summary */}
-          <div className="border-t border-[#E4DDCF] pt-6">
+          <div className="border-t border-[#E8E0D8] pt-6">
             <div className="space-y-2">
-              <div className="flex justify-between text-[#56534C]">
+              <div className="flex justify-between text-[#5B4B41]">
                 <span>Produits</span>
                 <span>{order.total_products_fcfa.toLocaleString('fr-CI')} FCFA</span>
               </div>
-              <div className="flex justify-between text-[#56534C]">
+              <div className="flex justify-between text-[#5B4B41]">
                 <span>Livraison</span>
                 <span>{order.shipping_cost_fcfa.toLocaleString('fr-CI')} FCFA</span>
               </div>
-              <div className="flex justify-between text-lg font-bold text-[#1A1A1A] pt-2 border-t border-[#E4DDCF]">
+              <div className="flex justify-between text-lg font-bold text-[#241A14] pt-2 border-t border-[#E8E0D8]">
                 <span>Total</span>
-                <span className="text-[#FF6600]">{order.total_fcfa.toLocaleString('fr-CI')} FCFA</span>
+                <span className="text-[#C2410C]">{order.total_fcfa.toLocaleString('fr-CI')} FCFA</span>
               </div>
             </div>
           </div>
@@ -184,7 +184,7 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
           {/* Close Button */}
           <button
             onClick={onClose}
-            className="w-full px-4 py-2 border-2 border-[#1A1A1A] text-[#1A1A1A] rounded-lg hover:bg-[#1A1A1A] hover:text-white transition-colors font-semibold"
+            className="w-full px-4 py-2 border-2 border-[#241A14] text-[#241A14] rounded-lg hover:bg-[#241A14] hover:text-white transition-colors font-semibold"
           >
             Fermer
           </button>

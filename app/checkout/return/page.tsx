@@ -72,13 +72,13 @@ function ReturnContent() {
     <main className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
-      <div className="flex-1 max-w-2xl mx-auto w-full px-10 py-24 text-center">
-        <div className="bg-white rounded-lg border border-[#E4DDCF] p-8">
+      <div className="flex-1 max-w-2xl mx-auto w-full px-5 sm:px-10 py-24 text-center">
+        <div className="bg-white rounded-lg border border-[#E8E0D8] p-8">
           {state === 'checking' && (
             <>
-              <div className="w-10 h-10 border-4 border-[#FF6600] border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-              <h1 className="font-serif font-semibold text-2xl text-[#1A1A1A] mb-2">Vérification du paiement...</h1>
-              <p className="text-[#56534C]">Merci de patienter quelques instants.</p>
+              <div className="w-10 h-10 border-4 border-[#C2410C] border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+              <h1 className="font-serif font-semibold text-2xl text-[#241A14] mb-2">Vérification du paiement...</h1>
+              <p className="text-[#5B4B41]">Merci de patienter quelques instants.</p>
             </>
           )}
 
@@ -89,8 +89,8 @@ function ReturnContent() {
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </div>
-              <h1 className="font-serif font-semibold text-2xl text-[#1A1A1A] mb-2">Paiement confirmé !</h1>
-              <p className="text-[#56534C] mb-8">
+              <h1 className="font-serif font-semibold text-2xl text-[#241A14] mb-2">Paiement confirmé !</h1>
+              <p className="text-[#5B4B41] mb-8">
                 Votre commande <strong>{orderNumber}</strong> est confirmée. Vous recevrez bientôt des nouvelles de la livraison.
               </p>
               <Link href="/account">
@@ -107,9 +107,9 @@ function ReturnContent() {
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
               </div>
-              <h1 className="font-serif font-semibold text-2xl text-[#1A1A1A] mb-2">Paiement en cours de traitement</h1>
-              <p className="text-[#56534C] mb-8">
-                Votre commande <strong>{orderNumber}</strong> est enregistrée. La confirmation du paiement peut prendre quelques minutes — vous pouvez suivre son statut dans votre compte.
+              <h1 className="font-serif font-semibold text-2xl text-[#241A14] mb-2">Paiement en cours de traitement</h1>
+              <p className="text-[#5B4B41] mb-8">
+                Votre commande <strong>{orderNumber}</strong> est enregistrée. La confirmation du paiement peut prendre quelques minutes. Vous pouvez suivre son statut dans votre compte.
               </p>
               <Link href="/account">
                 <Button variant="outline">Voir mes commandes</Button>
@@ -125,8 +125,8 @@ function ReturnContent() {
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </div>
-              <h1 className="font-serif font-semibold text-2xl text-[#1A1A1A] mb-2">Paiement annulé</h1>
-              <p className="text-[#56534C] mb-8">
+              <h1 className="font-serif font-semibold text-2xl text-[#241A14] mb-2">Paiement annulé</h1>
+              <p className="text-[#5B4B41] mb-8">
                 Le paiement de la commande <strong>{orderNumber}</strong> n&apos;a pas abouti. Vous pouvez réessayer depuis votre panier.
               </p>
               <Link href="/cart">
@@ -137,8 +137,8 @@ function ReturnContent() {
 
           {state === 'not_found' && (
             <>
-              <h1 className="font-serif font-semibold text-2xl text-[#1A1A1A] mb-2">Commande introuvable</h1>
-              <p className="text-[#56534C] mb-8">Nous n&apos;avons pas pu retrouver cette commande.</p>
+              <h1 className="font-serif font-semibold text-2xl text-[#241A14] mb-2">Commande introuvable</h1>
+              <p className="text-[#5B4B41] mb-8">Nous n&apos;avons pas pu retrouver cette commande.</p>
               <Link href="/account">
                 <Button variant="outline">Voir mes commandes</Button>
               </Link>

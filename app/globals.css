@@ -16,9 +16,9 @@ html {
 }
 
 body {
-  background-color: #FBF6EE;
-  color: #1A1A1A;
-  font-family: 'Inter', sans-serif;
+  background-color: #FAF7F4;
+  color: #241A14;
+  font-family: var(--font-jakarta), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   width: 100%;
@@ -27,7 +27,7 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-jakarta), sans-serif;
+  font-family: var(--font-jakarta), system-ui, sans-serif;
 }
 
 a {
@@ -39,21 +39,48 @@ button {
   font-family: inherit;
 }
 
-/* Scrollbar styling */
+/* Anneau de focus visible au clavier, indispensable pour un tunnel d'achat accessible */
+:focus-visible {
+  outline: 2px solid #C2410C;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #FBF6EE;
+  background: #FAF7F4;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D4D2C8;
+  background: #DDD2C7;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #8A8579;
+  background: #7D6A5D;
+}
+
+/* Masque la barre de défilement des carrousels horizontaux sans bloquer le geste */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

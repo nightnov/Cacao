@@ -21,8 +21,8 @@ export function Pagination({ page, pageSize, total, onPageChange }: PaginationPr
   const pages = Array.from({ length: lastPage - firstPage + 1 }, (_, i) => firstPage + i)
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4 border-t border-[#E4DDCF]">
-      <p className="text-sm text-[#8A8579]">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4 border-t border-[#E8E0D8]">
+      <p className="text-sm text-[#7D6A5D]">
         Affichage {start}-{end} sur {total}
       </p>
       <div className="flex items-center gap-1">
@@ -30,7 +30,7 @@ export function Pagination({ page, pageSize, total, onPageChange }: PaginationPr
           type="button"
           onClick={() => onPageChange(page - 1)}
           disabled={page === 1}
-          className="p-2 rounded-lg text-[#56534C] hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent"
+          className="p-2 rounded-lg text-[#5B4B41] hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent"
           aria-label="Page précédente"
         >
           <ChevronLeft size={16} />
@@ -41,7 +41,7 @@ export function Pagination({ page, pageSize, total, onPageChange }: PaginationPr
             type="button"
             onClick={() => onPageChange(p)}
             className={`w-8 h-8 rounded-lg text-sm font-semibold transition-colors ${
-              p === page ? 'bg-[#FF6600] text-white' : 'text-[#56534C] hover:bg-gray-100'
+              p === page ? 'bg-[#C2410C] text-white' : 'text-[#5B4B41] hover:bg-gray-100'
             }`}
           >
             {p}
@@ -51,7 +51,7 @@ export function Pagination({ page, pageSize, total, onPageChange }: PaginationPr
           type="button"
           onClick={() => onPageChange(page + 1)}
           disabled={page === totalPages}
-          className="p-2 rounded-lg text-[#56534C] hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent"
+          className="p-2 rounded-lg text-[#5B4B41] hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent"
           aria-label="Page suivante"
         >
           <ChevronRight size={16} />

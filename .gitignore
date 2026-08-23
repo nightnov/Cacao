@@ -38,3 +38,6 @@ yarn-error.log*
 # graphify (artefact local d'analyse de code, pas du code applicatif)
 graphify-out
 scratch
+
+# Artefact de build TypeScript
+tsconfig.tsbuildinfo

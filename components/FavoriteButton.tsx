@@ -71,7 +71,7 @@ export function FavoriteButton({ productId, size = 18, className = '' }: Favorit
     >
       <Heart
         size={size}
-        className={isFavorite ? 'fill-[#FF6600] text-[#FF6600]' : 'text-[#1A1A1A]'}
+        className={isFavorite ? 'fill-[#C2410C] text-[#C2410C]' : 'text-[#241A14]'}
         strokeWidth={1.8}
       />
     </button>

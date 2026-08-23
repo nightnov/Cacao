@@ -100,7 +100,7 @@ export default function AdminOrders() {
   const pagedOrders = orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const columns: Column<Order>[] = [
-    { key: 'order_number', header: 'Commande', render: o => <span className="font-medium text-[#1A1A1A]">{o.order_number}</span> },
+    { key: 'order_number', header: 'Commande', render: o => <span className="font-medium text-[#241A14]">{o.order_number}</span> },
     {
       key: 'client',
       header: 'Client',
@@ -109,7 +109,7 @@ export default function AdminOrders() {
         return (
           <div className="flex items-center gap-3">
             <Avatar name={name} size="sm" />
-            <span className="text-[#56534C]">{name}</span>
+            <span className="text-[#5B4B41]">{name}</span>
           </div>
         )
       }
@@ -139,7 +139,7 @@ export default function AdminOrders() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="font-serif font-semibold text-4xl text-[#1A1A1A] mb-6">Commandes</h1>
+        <h1 className="font-serif font-semibold text-4xl text-[#241A14] mb-6">Commandes</h1>
 
         {/* Status Filter */}
         <div className="flex gap-2 flex-wrap">
@@ -147,8 +147,8 @@ export default function AdminOrders() {
             onClick={() => setStatusFilter('')}
             className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
               statusFilter === ''
-                ? 'bg-[#1A1A1A] text-white'
-                : 'border-2 border-[#1A1A1A] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white'
+                ? 'bg-[#241A14] text-white'
+                : 'border-2 border-[#241A14] text-[#241A14] hover:bg-[#241A14] hover:text-white'
             }`}
           >
             Toutes
@@ -159,8 +159,8 @@ export default function AdminOrders() {
               onClick={() => setStatusFilter(key)}
               className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
                 statusFilter === key
-                  ? 'bg-[#1A1A1A] text-white'
-                  : 'border-2 border-[#1A1A1A] text-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white'
+                  ? 'bg-[#241A14] text-white'
+                  : 'border-2 border-[#241A14] text-[#241A14] hover:bg-[#241A14] hover:text-white'
               }`}
             >
               {label}

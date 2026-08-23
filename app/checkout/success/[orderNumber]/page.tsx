@@ -79,7 +79,7 @@ export default function CheckoutSuccess() {
   if (authLoading || loading) {
     return (
       <main className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#FF6600] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-[#C2410C] border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
   }
@@ -88,9 +88,9 @@ export default function CheckoutSuccess() {
     return (
       <main className="min-h-screen bg-white flex flex-col">
         <Navbar />
-        <div className="flex-1 max-w-2xl mx-auto w-full px-10 py-24 text-center">
-          <h1 className="font-serif font-semibold text-3xl text-[#1A1A1A] mb-3">Commande introuvable</h1>
-          <p className="text-[#56534C] mb-8">Nous n&apos;avons pas trouvé cette commande.</p>
+        <div className="flex-1 max-w-2xl mx-auto w-full px-5 sm:px-10 py-24 text-center">
+          <h1 className="font-serif font-semibold text-3xl text-[#241A14] mb-3">Commande introuvable</h1>
+          <p className="text-[#5B4B41] mb-8">Nous n&apos;avons pas trouvé cette commande.</p>
           <Link href="/products">
             <Button variant="primary">Retour au catalogue</Button>
           </Link>
@@ -104,23 +104,23 @@ export default function CheckoutSuccess() {
     <main className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
-      <div className="flex-1 max-w-2xl mx-auto w-full px-10 py-16">
-        <div className="bg-white rounded-lg border border-[#E4DDCF] p-8">
+      <div className="flex-1 max-w-2xl mx-auto w-full px-5 sm:px-10 py-16">
+        <div className="bg-white rounded-lg border border-[#E8E0D8] p-8">
           <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1E7A46" strokeWidth="2.5">
               <polyline points="20 6 9 17 4 12" />
             </svg>
           </div>
 
-          <h1 className="font-serif font-semibold text-2xl text-[#1A1A1A] text-center mb-2">
+          <h1 className="font-serif font-semibold text-2xl text-[#241A14] text-center mb-2">
             Commande confirmée
           </h1>
-          <p className="text-[#56534C] text-center mb-8">
-            Numéro de commande : <span className="font-semibold text-[#1A1A1A]">{order.order_number}</span>
+          <p className="text-[#5B4B41] text-center mb-8">
+            Numéro de commande : <span className="font-semibold text-[#241A14]">{order.order_number}</span>
           </p>
 
-          <div className="bg-[#FBF6EE] rounded-lg p-4 border border-[#E4DDCF] mb-6">
-            <p className="text-sm text-[#56534C]">
+          <div className="bg-[#FAF7F4] rounded-lg p-4 border border-[#E8E0D8] mb-6">
+            <p className="text-sm text-[#5B4B41]">
               Votre commande a bien été enregistrée. Notre équipe vous contactera au{' '}
               <strong>{order.shipping_address.phone}</strong> pour organiser le paiement et la livraison à{' '}
               <strong>{order.shipping_address.city}</strong>.
@@ -128,11 +128,11 @@ export default function CheckoutSuccess() {
           </div>
 
           {order.delivery_code && (
-            <div className="bg-orange-50 border border-[#FF6600]/30 rounded-lg p-4 mb-6 text-center">
-              <p className="text-xs font-semibold text-[#FF6600] uppercase mb-1">Code de livraison</p>
-              <p className="text-3xl font-bold text-[#1A1A1A] tracking-widest mb-2">{order.delivery_code}</p>
-              <p className="text-xs text-[#56534C]">
-                Gardez ce code précieusement. Ne le donnez au livreur qu&apos;au moment où il vous remet votre colis — cela confirme que vous avez bien reçu votre commande.
+            <div className="bg-orange-50 border border-[#C2410C]/30 rounded-lg p-4 mb-6 text-center">
+              <p className="text-xs font-semibold text-[#C2410C] uppercase mb-1">Code de livraison</p>
+              <p className="text-3xl font-bold text-[#241A14] tracking-widest mb-2">{order.delivery_code}</p>
+              <p className="text-xs text-[#5B4B41]">
+                Gardez ce code précieusement. Ne le donnez au livreur qu&apos;au moment où il vous remet votre colis. Cela confirme que vous avez bien reçu votre commande.
               </p>
             </div>
           )}
@@ -140,28 +140,28 @@ export default function CheckoutSuccess() {
           <div className="space-y-2 mb-6">
             {items.map(item => (
               <div key={item.id} className="flex justify-between text-sm">
-                <span className="text-[#56534C]">
+                <span className="text-[#5B4B41]">
                   {item.product_name}{item.variant_label ? ` (${item.variant_label})` : ''} × {item.quantity}
                 </span>
-                <span className="text-[#1A1A1A] font-medium">
+                <span className="text-[#241A14] font-medium">
                   {item.subtotal_fcfa.toLocaleString('fr-CI')} FCFA
                 </span>
               </div>
             ))}
           </div>
 
-          <div className="border-t border-[#E4DDCF] pt-4 space-y-2">
-            <div className="flex justify-between text-sm text-[#56534C]">
+          <div className="border-t border-[#E8E0D8] pt-4 space-y-2">
+            <div className="flex justify-between text-sm text-[#5B4B41]">
               <span>Produits</span>
               <span>{order.total_products_fcfa.toLocaleString('fr-CI')} FCFA</span>
             </div>
-            <div className="flex justify-between text-sm text-[#56534C]">
+            <div className="flex justify-between text-sm text-[#5B4B41]">
               <span>Livraison</span>
               <span>{order.shipping_cost_fcfa.toLocaleString('fr-CI')} FCFA</span>
             </div>
-            <div className="flex justify-between text-lg font-bold text-[#1A1A1A] pt-2 border-t border-[#E4DDCF]">
+            <div className="flex justify-between text-lg font-bold text-[#241A14] pt-2 border-t border-[#E8E0D8]">
               <span>Total</span>
-              <span className="text-[#FF6600]">{order.total_fcfa.toLocaleString('fr-CI')} FCFA</span>
+              <span className="text-[#C2410C]">{order.total_fcfa.toLocaleString('fr-CI')} FCFA</span>
             </div>
           </div>
 

@@ -8,8 +8,8 @@ const items = [
 
 export function TrustBar() {
   return (
-    <div className="bg-[#FBF3E7] border-b border-[#E4DDCF]">
-      <div className="max-w-7xl mx-auto px-10 py-2.5 flex items-center justify-center gap-8 flex-wrap">
+    <div className="bg-[#F3EDE6] border-b border-[#E8E0D8]">
+      <div className="max-w-7xl mx-auto px-5 sm:px-10 py-2.5 flex items-center justify-center gap-8 flex-wrap">
         {items.map(({ icon: Icon, label }) => (
           <div key={label} className="flex items-center gap-2 text-xs text-[#6B4A2E] font-medium">
             <Icon size={14} strokeWidth={2} />

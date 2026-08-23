@@ -7,7 +7,7 @@ interface BadgeProps {
 
 export function Badge({ children, variant = 'primary' }: BadgeProps) {
   const variants = {
-    primary: 'bg-[#FF6600] text-white',
+    primary: 'bg-[#C2410C] text-white',
     secondary: 'bg-[#1E7A46] text-white'
   }
 

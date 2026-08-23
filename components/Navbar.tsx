@@ -124,8 +124,8 @@ export function Navbar() {
 
   return (
     <>
-    <nav className="bg-white border-b border-[#E4DDCF]">
-      <div className="max-w-7xl mx-auto px-10 py-4 flex items-center justify-between">
+    <nav className="bg-white border-b border-[#E8E0D8]">
+      <div className="max-w-7xl mx-auto px-5 sm:px-10 py-4 flex items-center justify-between">
         {/* Logo + Menu Button */}
         <div className="relative flex items-center gap-3 flex-shrink-0" ref={menuRef}>
           <button
@@ -133,33 +133,33 @@ export function Navbar() {
             className="flex flex-col gap-1.5"
             aria-label="Ouvrir le menu"
           >
-            <span className={`w-6 h-0.5 bg-[#1A1A1A] transition-all ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
-            <span className={`w-6 h-0.5 bg-[#1A1A1A] transition-all ${isMenuOpen ? 'opacity-0' : ''}`}></span>
-            <span className={`w-6 h-0.5 bg-[#1A1A1A] transition-all ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
+            <span className={`w-6 h-0.5 bg-[#241A14] transition-all ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
+            <span className={`w-6 h-0.5 bg-[#241A14] transition-all ${isMenuOpen ? 'opacity-0' : ''}`}></span>
+            <span className={`w-6 h-0.5 bg-[#241A14] transition-all ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`}></span>
           </button>
-          <Link href="/" className="font-serif font-bold text-3xl text-[#1A1A1A] hover:opacity-80">
+          <Link href="/" className="font-serif font-bold text-3xl text-[#241A14] hover:opacity-80">
             Cacao
           </Link>
 
           {/* Desktop dropdown */}
           {isMenuOpen && (
-            <div className="hidden md:block absolute left-0 top-12 w-72 bg-white rounded-lg border border-[#E4DDCF] shadow-lg overflow-hidden z-50">
+            <div className="hidden md:block absolute left-0 top-12 w-72 bg-white rounded-lg border border-[#E8E0D8] shadow-lg overflow-hidden z-50">
               <Link
                 href="/products"
                 onClick={() => setIsMenuOpen(false)}
-                className="block px-4 py-3 text-sm font-semibold text-[#1A1A1A] hover:bg-[#FBF6EE] transition-colors"
+                className="block px-4 py-3 text-sm font-semibold text-[#241A14] hover:bg-[#FAF7F4] transition-colors"
               >
                 Catalogue
               </Link>
-              <div className="border-t border-[#E4DDCF]"></div>
-              <p className="px-4 pt-3 pb-1 text-[10px] font-semibold text-[#8A8579] uppercase tracking-wide">Catégories</p>
+              <div className="border-t border-[#E8E0D8]"></div>
+              <p className="px-4 pt-3 pb-1 text-[10px] font-semibold text-[#7D6A5D] uppercase tracking-wide">Catégories</p>
               {categoryLinks.map(cat =>
                 cat.href ? (
                   <Link
                     key={cat.label}
                     href={cat.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className="block px-4 py-2 text-sm text-[#56534C] hover:bg-[#FBF6EE] hover:text-[#FF6600] transition-colors"
+                    className="block px-4 py-2 text-sm text-[#5B4B41] hover:bg-[#FAF7F4] hover:text-[#C2410C] transition-colors"
                   >
                     {cat.label}
                   </Link>
@@ -175,18 +175,18 @@ export function Navbar() {
                   key={link.href}
                   href={link.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className="block pl-8 pr-4 py-1.5 text-xs text-[#8A8579] hover:text-[#FF6600] transition-colors"
+                  className="block pl-8 pr-4 py-1.5 text-xs text-[#7D6A5D] hover:text-[#C2410C] transition-colors"
                 >
                   {link.label}
                 </Link>
               ))}
-              <div className="border-t border-[#E4DDCF]"></div>
+              <div className="border-t border-[#E8E0D8]"></div>
               {navLinks.filter(l => l.href !== '/products').map(link => (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className="block px-4 py-2.5 text-sm text-[#56534C] hover:bg-[#FBF6EE] hover:text-[#FF6600] transition-colors"
+                  className="block px-4 py-2.5 text-sm text-[#5B4B41] hover:bg-[#FAF7F4] hover:text-[#C2410C] transition-colors"
                 >
                   {link.label}
                 </Link>
@@ -201,7 +201,7 @@ export function Navbar() {
         {/* Search + Cart */}
         <div className="flex items-center gap-4 flex-shrink-0">
           <div className="hidden sm:block relative">
-            <div className="flex bg-white border-2 border-[#1A1A1A] rounded-full px-4 py-2 items-center gap-2">
+            <div className="flex bg-white border-2 border-[#241A14] rounded-full px-4 py-2 items-center gap-2">
               <input
                 type="text"
                 placeholder="Rechercher un produit, une idée, une catégorie…"
@@ -212,11 +212,11 @@ export function Navbar() {
                 onKeyDown={e => {
                   if (e.key === 'Enter') handleSearchSubmit()
                 }}
-                className="text-sm bg-transparent outline-none text-[#1A1A1A] placeholder-[#8A8579] w-56 md:w-96"
+                className="text-sm bg-transparent outline-none text-[#241A14] placeholder-[#7D6A5D] w-56 md:w-96"
               />
               <button
                 onClick={() => handleSearchSubmit()}
-                className="bg-[#FF6600] w-8 h-8 rounded-full flex items-center justify-center text-white hover:bg-[#E65C00] flex-shrink-0"
+                className="bg-[#C2410C] w-8 h-8 rounded-full flex items-center justify-center text-white hover:bg-[#9A3412] flex-shrink-0"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
                   <circle cx="11" cy="11" r="8" />
@@ -226,14 +226,14 @@ export function Navbar() {
             </div>
 
             {showSuggestions && (
-              <div className="absolute left-0 top-12 w-80 bg-white rounded-lg border border-[#E4DDCF] shadow-lg p-4 z-50">
-                <p className="text-xs font-semibold text-[#8A8579] uppercase mb-3">Recherches populaires</p>
+              <div className="absolute left-0 top-12 w-80 bg-white rounded-lg border border-[#E8E0D8] shadow-lg p-4 z-50">
+                <p className="text-xs font-semibold text-[#7D6A5D] uppercase mb-3">Recherches populaires</p>
                 <div className="flex flex-wrap gap-2">
                   {suggestions.map(s => (
                     <button
                       key={s}
                       onClick={() => handleSearchSubmit(s)}
-                      className="px-3 py-1.5 bg-gray-100 hover:bg-orange-50 hover:text-[#FF6600] rounded-full text-sm text-[#56534C] transition-colors"
+                      className="px-3 py-1.5 bg-gray-100 hover:bg-orange-50 hover:text-[#C2410C] rounded-full text-sm text-[#5B4B41] transition-colors"
                     >
                       {s}
                     </button>
@@ -249,22 +249,22 @@ export function Navbar() {
               <div className="hidden sm:block relative" ref={accountMenuRef}>
                 <button
                   onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-                  className="w-9 h-9 rounded-full bg-[#1A1A1A] text-white font-semibold flex items-center justify-center hover:opacity-80 transition-opacity"
+                  className="w-9 h-9 rounded-full bg-[#241A14] text-white font-semibold flex items-center justify-center hover:opacity-80 transition-opacity"
                 >
                   {avatarLetter}
                 </button>
 
                 {isAccountMenuOpen && (
-                  <div className="absolute right-0 top-12 w-64 bg-white rounded-lg border border-[#E4DDCF] shadow-lg overflow-hidden z-50">
-                    <div className="px-4 py-3 border-b border-[#E4DDCF] flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-[#1A1A1A] text-white font-semibold flex items-center justify-center flex-shrink-0">
+                  <div className="absolute right-0 top-12 w-64 bg-white rounded-lg border border-[#E8E0D8] shadow-lg overflow-hidden z-50">
+                    <div className="px-4 py-3 border-b border-[#E8E0D8] flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-[#241A14] text-white font-semibold flex items-center justify-center flex-shrink-0">
                         {avatarLetter}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-[#1A1A1A] truncate">{displayName}</p>
+                        <p className="text-sm font-semibold text-[#241A14] truncate">{displayName}</p>
                         <Link
                           href="/account"
-                          className="text-xs text-[#FF6600] hover:underline"
+                          className="text-xs text-[#C2410C] hover:underline"
                           onClick={() => setIsAccountMenuOpen(false)}
                         >
                           Voir mon profil
@@ -276,7 +276,7 @@ export function Navbar() {
                       <>
                         <Link
                           href="/admin"
-                          className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#FF6600] hover:bg-[#FBF6EE] transition-colors"
+                          className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#C2410C] hover:bg-[#FAF7F4] transition-colors"
                           onClick={() => setIsAccountMenuOpen(false)}
                         >
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -287,13 +287,13 @@ export function Navbar() {
                           </svg>
                           Dashboard Admin
                         </Link>
-                        <div className="border-t border-[#E4DDCF]"></div>
+                        <div className="border-t border-[#E8E0D8]"></div>
                       </>
                     )}
 
                     <Link
                       href="/account"
-                      className="flex items-center gap-3 px-4 py-3 text-sm text-[#1A1A1A] hover:bg-[#FBF6EE] transition-colors"
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-[#241A14] hover:bg-[#FAF7F4] transition-colors"
                       onClick={() => setIsAccountMenuOpen(false)}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -305,7 +305,7 @@ export function Navbar() {
 
                     <Link
                       href="/account/messages"
-                      className="flex items-center gap-3 px-4 py-3 text-sm text-[#1A1A1A] hover:bg-[#FBF6EE] transition-colors"
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-[#241A14] hover:bg-[#FAF7F4] transition-colors"
                       onClick={() => setIsAccountMenuOpen(false)}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -313,7 +313,7 @@ export function Navbar() {
                       </svg>
                       Messages
                       {unreadCount > 0 && (
-                        <span className="ml-auto bg-[#FF6600] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                        <span className="ml-auto bg-[#C2410C] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                           {unreadCount}
                         </span>
                       )}
@@ -321,7 +321,7 @@ export function Navbar() {
 
                     <Link
                       href="/cart"
-                      className="flex items-center gap-3 px-4 py-3 text-sm text-[#1A1A1A] hover:bg-[#FBF6EE] transition-colors"
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-[#241A14] hover:bg-[#FAF7F4] transition-colors"
                       onClick={() => setIsAccountMenuOpen(false)}
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -332,14 +332,14 @@ export function Navbar() {
                       Mon panier
                     </Link>
 
-                    <div className="border-t border-[#E4DDCF]"></div>
+                    <div className="border-t border-[#E8E0D8]"></div>
 
                     <button
                       onClick={() => {
                         setIsAccountMenuOpen(false)
                         logout()
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#1A1A1A] hover:bg-[#FBF6EE] transition-colors text-left"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#241A14] hover:bg-[#FAF7F4] transition-colors text-left"
                     >
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -354,7 +354,7 @@ export function Navbar() {
             ) : (
               <Link
                 href="/account/login"
-                className="hidden sm:block text-sm font-semibold text-[#1A1A1A] hover:text-[#FF6600] transition-colors"
+                className="hidden sm:block text-sm font-semibold text-[#241A14] hover:text-[#C2410C] transition-colors"
               >
                 Connexion
               </Link>
@@ -363,7 +363,7 @@ export function Navbar() {
 
           {/* Favorites Icon */}
           <Link href="/account/favorites" className="hidden sm:block hover:opacity-70 transition-opacity" aria-label="Mes favoris">
-            <Heart size={20} strokeWidth={1.8} className="text-[#1A1A1A]" />
+            <Heart size={20} strokeWidth={1.8} className="text-[#241A14]" />
           </Link>
 
           {/* Cart Icon */}
@@ -374,7 +374,7 @@ export function Navbar() {
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
             </svg>
             {cartCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-[#FF6600] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+              <span className="absolute -top-2 -right-2 bg-[#C2410C] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                 {cartCount}
               </span>
             )}
@@ -384,14 +384,14 @@ export function Navbar() {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden border-t border-[#E4DDCF] bg-white">
-          <div className="max-w-7xl mx-auto px-10 py-4 flex flex-col gap-2">
+        <div className="md:hidden border-t border-[#E8E0D8] bg-white">
+          <div className="max-w-7xl mx-auto px-5 sm:px-10 py-4 flex flex-col gap-2">
             {/* Main navigation */}
             {navLinks.map(link => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-semibold text-[#1A1A1A] hover:text-[#FF6600] transition-colors py-2"
+                className="text-sm font-semibold text-[#241A14] hover:text-[#C2410C] transition-colors py-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {link.label}
@@ -399,22 +399,22 @@ export function Navbar() {
             ))}
 
             {/* Divider */}
-            <div className="border-t border-[#E4DDCF] my-2"></div>
+            <div className="border-t border-[#E8E0D8] my-2"></div>
 
             {/* Account */}
             {!authLoading && (
               isLoggedIn ? (
                 <>
                   <div className="flex items-center gap-3 py-2">
-                    <div className="w-8 h-8 rounded-full bg-[#1A1A1A] text-white text-sm font-semibold flex items-center justify-center flex-shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-[#241A14] text-white text-sm font-semibold flex items-center justify-center flex-shrink-0">
                       {avatarLetter}
                     </div>
-                    <span className="text-sm font-semibold text-[#1A1A1A] truncate">{displayName}</span>
+                    <span className="text-sm font-semibold text-[#241A14] truncate">{displayName}</span>
                   </div>
                   {isAdmin && (
                     <Link
                       href="/admin"
-                      className="text-sm font-semibold text-[#FF6600] hover:underline py-1.5 pl-4"
+                      className="text-sm font-semibold text-[#C2410C] hover:underline py-1.5 pl-4"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       Dashboard Admin
@@ -422,26 +422,26 @@ export function Navbar() {
                   )}
                   <Link
                     href="/account"
-                    className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors py-1.5 pl-4"
+                    className="text-sm text-[#5B4B41] hover:text-[#C2410C] transition-colors py-1.5 pl-4"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Mes commandes
                   </Link>
                   <Link
                     href="/account/messages"
-                    className="flex items-center gap-2 text-sm text-[#56534C] hover:text-[#FF6600] transition-colors py-1.5 pl-4"
+                    className="flex items-center gap-2 text-sm text-[#5B4B41] hover:text-[#C2410C] transition-colors py-1.5 pl-4"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Messages
                     {unreadCount > 0 && (
-                      <span className="bg-[#FF6600] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                      <span className="bg-[#C2410C] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                         {unreadCount}
                       </span>
                     )}
                   </Link>
                   <button
                     onClick={() => { setIsMenuOpen(false); logout() }}
-                    className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors py-1.5 pl-4 text-left"
+                    className="text-sm text-[#5B4B41] hover:text-[#C2410C] transition-colors py-1.5 pl-4 text-left"
                   >
                     Se déconnecter
                   </button>
@@ -449,7 +449,7 @@ export function Navbar() {
               ) : (
                 <Link
                   href="/account/login"
-                  className="text-sm font-semibold text-[#1A1A1A] hover:text-[#FF6600] transition-colors py-2"
+                  className="text-sm font-semibold text-[#241A14] hover:text-[#C2410C] transition-colors py-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Connexion
@@ -458,16 +458,16 @@ export function Navbar() {
             )}
 
             {/* Divider */}
-            <div className="border-t border-[#E4DDCF] my-2"></div>
+            <div className="border-t border-[#E8E0D8] my-2"></div>
 
             {/* Category filters */}
-            <div className="text-xs font-semibold text-[#8A8579] py-2 uppercase">Catégories</div>
+            <div className="text-xs font-semibold text-[#7D6A5D] py-2 uppercase">Catégories</div>
             {categoryLinks.map(cat =>
               cat.href ? (
                 <Link
                   key={cat.label}
                   href={cat.href}
-                  className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors py-1.5 pl-4"
+                  className="text-sm text-[#5B4B41] hover:text-[#C2410C] transition-colors py-1.5 pl-4"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {cat.label}
@@ -483,7 +483,7 @@ export function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-xs text-[#8A8579] hover:text-[#FF6600] transition-colors py-1 pl-8"
+                className="text-xs text-[#7D6A5D] hover:text-[#C2410C] transition-colors py-1 pl-8"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {link.label}
@@ -492,14 +492,14 @@ export function Navbar() {
 
             <Link
               href="/account/favorites"
-              className="text-sm text-[#56534C] hover:text-[#FF6600] transition-colors py-1.5 pl-4"
+              className="text-sm text-[#5B4B41] hover:text-[#C2410C] transition-colors py-1.5 pl-4"
               onClick={() => setIsMenuOpen(false)}
             >
               Mes favoris
             </Link>
 
             {/* Mobile Search */}
-            <div className="flex bg-white border-2 border-[#1A1A1A] rounded-lg px-3 py-2 items-center gap-2 mt-4">
+            <div className="flex bg-white border-2 border-[#241A14] rounded-lg px-3 py-2 items-center gap-2 mt-4">
               <input
                 type="text"
                 placeholder="Rechercher un produit..."
@@ -508,11 +508,11 @@ export function Navbar() {
                 onKeyDown={e => {
                   if (e.key === 'Enter') handleSearchSubmit()
                 }}
-                className="text-sm bg-transparent outline-none text-[#1A1A1A] placeholder-[#8A8579] flex-1"
+                className="text-sm bg-transparent outline-none text-[#241A14] placeholder-[#7D6A5D] flex-1"
               />
               <button
                 onClick={() => handleSearchSubmit()}
-                className="bg-[#FF6600] w-8 h-8 rounded flex items-center justify-center text-white hover:bg-[#E65C00] flex-shrink-0"
+                className="bg-[#C2410C] w-8 h-8 rounded flex items-center justify-center text-white hover:bg-[#9A3412] flex-shrink-0"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
                   <circle cx="11" cy="11" r="8" />
@@ -527,7 +527,7 @@ export function Navbar() {
                 <button
                   key={s}
                   onClick={() => handleSearchSubmit(s)}
-                  className="px-3 py-1.5 bg-gray-100 hover:bg-orange-50 hover:text-[#FF6600] rounded-full text-xs text-[#56534C] transition-colors"
+                  className="px-3 py-1.5 bg-gray-100 hover:bg-orange-50 hover:text-[#C2410C] rounded-full text-xs text-[#5B4B41] transition-colors"
                 >
                   {s}
                 </button>

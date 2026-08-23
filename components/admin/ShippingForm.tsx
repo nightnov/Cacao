@@ -86,13 +86,13 @@ export default function ShippingForm({ fee, onClose }: ShippingFormProps) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg max-w-md w-full">
         {/* Header */}
-        <div className="border-b border-[#E4DDCF] px-6 py-4 flex items-center justify-between">
-          <h2 className="font-serif font-semibold text-2xl text-[#1A1A1A]">
+        <div className="border-b border-[#E8E0D8] px-6 py-4 flex items-center justify-between">
+          <h2 className="font-serif font-semibold text-2xl text-[#241A14]">
             {fee ? 'Modifier tarif' : 'Ajouter tarif'}
           </h2>
           <button
             onClick={onClose}
-            className="text-[#8A8579] hover:text-[#1A1A1A] text-2xl"
+            className="text-[#7D6A5D] hover:text-[#241A14] text-2xl"
           >
             ✕
           </button>
@@ -109,34 +109,34 @@ export default function ShippingForm({ fee, onClose }: ShippingFormProps) {
 
           {/* City */}
           <div>
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">Ville *</label>
+            <label className="block text-sm font-semibold text-[#241A14] mb-2">Ville *</label>
             <input
               type="text"
               name="city"
               value={formData.city}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
+              className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
               placeholder="Ex: Abidjan"
             />
           </div>
 
           {/* Price */}
           <div>
-            <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">Tarif (FCFA) *</label>
+            <label className="block text-sm font-semibold text-[#241A14] mb-2">Tarif (FCFA) *</label>
             <input
               type="number"
               name="price_fcfa"
               value={formData.price_fcfa}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
+              className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
               placeholder="5000"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 pt-4 border-t border-[#E4DDCF]">
+          <div className="flex gap-3 pt-4 border-t border-[#E8E0D8]">
             <Button
               type="submit"
               variant="primary"

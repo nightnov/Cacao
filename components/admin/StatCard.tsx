@@ -13,7 +13,7 @@ interface StatCardProps {
 
 export function StatCard({ label, value, icon: Icon, iconBg, iconColor, trend, href }: StatCardProps) {
   const content = (
-    <div className="bg-white rounded-2xl border border-[#E4DDCF] p-6 hover:shadow-md transition-shadow h-full">
+    <div className="bg-white rounded-2xl border border-[#E8E0D8] p-6 hover:shadow-md transition-shadow h-full">
       <div className="flex items-start justify-between mb-4">
         <div className={`w-11 h-11 rounded-full flex items-center justify-center ${iconBg}`}>
           <Icon size={20} className={iconColor} />
@@ -28,8 +28,8 @@ export function StatCard({ label, value, icon: Icon, iconBg, iconColor, trend, h
           </span>
         )}
       </div>
-      <p className="font-serif font-bold text-3xl text-[#1A1A1A] mb-1">{value}</p>
-      <p className="text-sm text-[#8A8579]">{label}</p>
+      <p className="font-serif font-bold text-3xl text-[#241A14] mb-1">{value}</p>
+      <p className="text-sm text-[#7D6A5D]">{label}</p>
     </div>
   )
 

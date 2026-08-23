@@ -179,7 +179,7 @@ export default function Checkout() {
   if (authLoading || cartItems.length === 0) {
     return (
       <main className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#FF6600] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-[#C2410C] border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
   }
@@ -188,91 +188,91 @@ export default function Checkout() {
     <main className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
-      <div className="flex-1 max-w-5xl mx-auto px-10 py-16 w-full">
+      <div className="flex-1 max-w-5xl mx-auto px-5 sm:px-10 py-16 w-full">
         <h1 className="font-serif font-semibold text-4xl mb-8">Finaliser la commande</h1>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Shipping form */}
           <div className="md:col-span-2 space-y-6">
-            <div className="bg-white rounded-lg border border-[#E4DDCF] p-6">
-              <h2 className="font-serif font-semibold text-xl text-[#1A1A1A] mb-6">Livraison</h2>
+            <div className="bg-white rounded-lg border border-[#E8E0D8] p-6">
+              <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-6">Livraison</h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">Nom complet *</label>
+                  <label className="block text-sm font-semibold text-[#241A14] mb-2">Nom complet *</label>
                   <input
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
-                    className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
+                    className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">Téléphone *</label>
+                  <label className="block text-sm font-semibold text-[#241A14] mb-2">Téléphone *</label>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     required
                     placeholder="07 00 00 00 00"
-                    className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
+                    className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">Ville *</label>
+                  <label className="block text-sm font-semibold text-[#241A14] mb-2">Ville *</label>
                   {loadingFees ? (
-                    <div className="h-11 bg-[#FBF6EE] rounded-lg animate-pulse"></div>
+                    <div className="h-11 bg-[#FAF7F4] rounded-lg animate-pulse"></div>
                   ) : shippingFees.length > 0 ? (
                     <select
                       value={cityId}
                       onChange={(e) => setCityId(e.target.value)}
                       required
-                      className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
+                      className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
                     >
                       {shippingFees.map(fee => (
                         <option key={fee.id} value={fee.id}>
-                          {fee.city} — {fee.price_fcfa.toLocaleString('fr-CI')} FCFA
+                          {fee.city} · {fee.price_fcfa.toLocaleString("fr-CI")} FCFA
                         </option>
                       ))}
                     </select>
                   ) : (
-                    <p className="text-sm text-[#8A8579]">Aucune ville de livraison configurée pour le moment.</p>
+                    <p className="text-sm text-[#7D6A5D]">Aucune ville de livraison configurée pour le moment.</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">Adresse détaillée *</label>
+                  <label className="block text-sm font-semibold text-[#241A14] mb-2">Adresse détaillée *</label>
                   <textarea
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     required
                     rows={3}
                     placeholder="Quartier, rue, repère..."
-                    className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
+                    className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-[#1A1A1A] mb-2">
-                    Notes de commande <span className="font-normal text-[#8A8579]">(optionnel)</span>
+                  <label className="block text-sm font-semibold text-[#241A14] mb-2">
+                    Notes de commande <span className="font-normal text-[#7D6A5D]">(optionnel)</span>
                   </label>
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     rows={2}
                     placeholder="Instructions spéciales, informations complémentaires..."
-                    className="w-full px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600]"
+                    className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg border border-[#E4DDCF] p-6">
-              <h2 className="font-serif font-semibold text-xl text-[#1A1A1A] mb-3">Paiement</h2>
-              <p className="text-sm text-[#56534C]">
+            <div className="bg-white rounded-lg border border-[#E8E0D8] p-6">
+              <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-3">Paiement</h2>
+              <p className="text-sm text-[#5B4B41]">
                 Le paiement par Mobile Money (MoneyFusion) arrive très prochainement. Votre commande sera enregistrée et notre équipe vous contactera pour organiser le règlement et la livraison.
               </p>
             </div>
@@ -280,32 +280,32 @@ export default function Checkout() {
 
           {/* Order summary */}
           <div>
-            <div className="bg-white rounded-lg border border-[#E4DDCF] p-6 sticky top-6">
-              <h2 className="font-serif font-semibold text-xl text-[#1A1A1A] mb-6">Votre commande</h2>
+            <div className="bg-white rounded-lg border border-[#E8E0D8] p-6 sticky top-6">
+              <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-6">Votre commande</h2>
 
               <div className="space-y-3 mb-6">
                 {cartItems.map(item => (
                   <div key={item.id} className="flex justify-between text-sm">
-                    <span className="text-[#56534C]">{item.name} × {item.quantity}</span>
-                    <span className="text-[#1A1A1A] font-medium">
+                    <span className="text-[#5B4B41]">{item.name} × {item.quantity}</span>
+                    <span className="text-[#241A14] font-medium">
                       {(item.price_fcfa * item.quantity).toLocaleString('fr-CI')} FCFA
                     </span>
                   </div>
                 ))}
               </div>
 
-              <div className="border-t border-[#E4DDCF] pt-4 space-y-2">
-                <div className="flex justify-between text-sm text-[#56534C]">
+              <div className="border-t border-[#E8E0D8] pt-4 space-y-2">
+                <div className="flex justify-between text-sm text-[#5B4B41]">
                   <span>Produits</span>
                   <span>{productsTotal.toLocaleString('fr-CI')} FCFA</span>
                 </div>
-                <div className="flex justify-between text-sm text-[#56534C]">
+                <div className="flex justify-between text-sm text-[#5B4B41]">
                   <span>Livraison</span>
                   <span>{shippingCost.toLocaleString('fr-CI')} FCFA</span>
                 </div>
-                <div className="flex justify-between text-lg font-bold text-[#1A1A1A] pt-2 border-t border-[#E4DDCF]">
+                <div className="flex justify-between text-lg font-bold text-[#241A14] pt-2 border-t border-[#E8E0D8]">
                   <span>Total</span>
-                  <span className="text-[#FF6600]">{total.toLocaleString('fr-CI')} FCFA</span>
+                  <span className="text-[#C2410C]">{total.toLocaleString('fr-CI')} FCFA</span>
                 </div>
               </div>
 
@@ -324,7 +324,7 @@ export default function Checkout() {
                 {submitting ? 'Envoi en cours...' : 'Confirmer la commande'}
               </Button>
 
-              <Link href="/cart" className="block text-center text-sm text-[#FF6600] hover:underline mt-4">
+              <Link href="/cart" className="block text-center text-sm text-[#C2410C] hover:underline mt-4">
                 Retour au panier
               </Link>
             </div>

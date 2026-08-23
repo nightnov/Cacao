@@ -136,37 +136,37 @@ export default function AdminMessages() {
 
   return (
     <div>
-      <h1 className="font-serif font-semibold text-4xl text-[#1A1A1A] mb-8">Messages</h1>
+      <h1 className="font-serif font-semibold text-4xl text-[#241A14] mb-8">Messages</h1>
 
       {loading ? (
-        <div className="bg-white rounded-lg border border-[#E4DDCF] p-12 text-center">
-          <p className="text-[#56534C]">Chargement...</p>
+        <div className="bg-white rounded-lg border border-[#E8E0D8] p-12 text-center">
+          <p className="text-[#5B4B41]">Chargement...</p>
         </div>
       ) : conversations.length === 0 ? (
-        <div className="bg-white rounded-lg border border-[#E4DDCF] p-12 text-center">
-          <p className="text-[#56534C]">Aucun message pour l&apos;instant</p>
+        <div className="bg-white rounded-lg border border-[#E8E0D8] p-12 text-center">
+          <p className="text-[#5B4B41]">Aucun message pour l&apos;instant</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white rounded-lg border border-[#E4DDCF] overflow-hidden" style={{ height: '70vh' }}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white rounded-lg border border-[#E8E0D8] overflow-hidden" style={{ height: '70vh' }}>
           {/* Conversation list */}
-          <div className="md:col-span-1 border-r border-[#E4DDCF] overflow-y-auto">
+          <div className="md:col-span-1 border-r border-[#E8E0D8] overflow-y-auto">
             {conversations.map(convo => (
               <button
                 key={convo.userId}
                 onClick={() => handleSelect(convo.userId)}
-                className={`w-full text-left px-4 py-4 border-b border-[#E4DDCF] hover:bg-[#FBF6EE] transition-colors ${
-                  selectedUserId === convo.userId ? 'bg-[#FBF6EE]' : ''
+                className={`w-full text-left px-4 py-4 border-b border-[#E8E0D8] hover:bg-[#FAF7F4] transition-colors ${
+                  selectedUserId === convo.userId ? 'bg-[#FAF7F4]' : ''
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-semibold text-[#1A1A1A] truncate">{convo.customerName}</span>
+                  <span className="text-sm font-semibold text-[#241A14] truncate">{convo.customerName}</span>
                   {convo.unreadCount > 0 && (
-                    <span className="bg-[#FF6600] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="bg-[#C2410C] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">
                       {convo.unreadCount}
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-[#8A8579] truncate">{convo.lastMessage}</p>
+                <p className="text-xs text-[#7D6A5D] truncate">{convo.lastMessage}</p>
               </button>
             ))}
           </div>
@@ -175,24 +175,24 @@ export default function AdminMessages() {
           <div className="md:col-span-2 flex flex-col">
             {selectedConvo ? (
               <>
-                <div className="px-6 py-4 border-b border-[#E4DDCF]">
-                  <p className="font-semibold text-[#1A1A1A]">{selectedConvo.customerName}</p>
-                  <p className="text-xs text-[#8A8579]">{selectedConvo.email}</p>
+                <div className="px-6 py-4 border-b border-[#E8E0D8]">
+                  <p className="font-semibold text-[#241A14]">{selectedConvo.customerName}</p>
+                  <p className="text-xs text-[#7D6A5D]">{selectedConvo.email}</p>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
                   {selectedConvo.messages.map(msg => (
                     <div key={msg.id} className={`flex ${msg.sender === 'admin' ? 'justify-end' : 'justify-start'}`}>
                       <div className={`max-w-[75%] rounded-lg px-4 py-3 ${
-                        msg.sender === 'admin' ? 'bg-[#FF6600] text-white' : 'bg-[#FBF6EE] text-[#1A1A1A]'
+                        msg.sender === 'admin' ? 'bg-[#C2410C] text-white' : 'bg-[#FAF7F4] text-[#241A14]'
                       }`}>
                         {msg.product_name && (
-                          <p className={`text-xs mb-1 font-semibold ${msg.sender === 'admin' ? 'text-white/80' : 'text-[#8A8579]'}`}>
+                          <p className={`text-xs mb-1 font-semibold ${msg.sender === 'admin' ? 'text-white/80' : 'text-[#7D6A5D]'}`}>
                             📦 {msg.product_name}
                           </p>
                         )}
                         <p className="text-sm whitespace-pre-wrap">{msg.body}</p>
-                        <p className={`text-xs mt-1 ${msg.sender === 'admin' ? 'text-white/70' : 'text-[#8A8579]'}`}>
+                        <p className={`text-xs mt-1 ${msg.sender === 'admin' ? 'text-white/70' : 'text-[#7D6A5D]'}`}>
                           {new Date(msg.created_at).toLocaleString('fr-CI', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
@@ -201,13 +201,13 @@ export default function AdminMessages() {
                   <div ref={bottomRef}></div>
                 </div>
 
-                <form onSubmit={handleReply} className="border-t border-[#E4DDCF] p-4 flex gap-3">
+                <form onSubmit={handleReply} className="border-t border-[#E8E0D8] p-4 flex gap-3">
                   <textarea
                     value={reply}
                     onChange={(e) => setReply(e.target.value)}
                     rows={2}
                     placeholder="Répondre..."
-                    className="flex-1 px-4 py-2.5 border border-[#E4DDCF] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6600] resize-none text-sm"
+                    className="flex-1 px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C] resize-none text-sm"
                   />
                   <Button type="submit" variant="primary" disabled={sending || !reply.trim()}>
                     Envoyer
@@ -215,7 +215,7 @@ export default function AdminMessages() {
                 </form>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center text-[#8A8579] text-sm">
+              <div className="flex-1 flex items-center justify-center text-[#7D6A5D] text-sm">
                 Sélectionnez une conversation
               </div>
             )}

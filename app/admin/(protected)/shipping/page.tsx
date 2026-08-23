@@ -75,7 +75,7 @@ export default function AdminShipping() {
   const pagedFees = fees.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const columns: Column<ShippingFee>[] = [
-    { key: 'city', header: 'Ville', render: f => <span className="font-medium text-[#1A1A1A]">{f.city}</span> },
+    { key: 'city', header: 'Ville', render: f => <span className="font-medium text-[#241A14]">{f.city}</span> },
     { key: 'price', header: 'Tarif', render: f => `${f.price_fcfa.toLocaleString('fr-CI')} FCFA` },
     {
       key: 'actions',
@@ -93,7 +93,7 @@ export default function AdminShipping() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="font-serif font-semibold text-4xl text-[#1A1A1A]">Frais de livraison</h1>
+        <h1 className="font-serif font-semibold text-4xl text-[#241A14]">Frais de livraison</h1>
         <Button
           variant="primary"
           onClick={() => {

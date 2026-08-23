@@ -67,7 +67,7 @@ export default function Favorites() {
   if (authLoading || !isLoggedIn) {
     return (
       <main className="min-h-screen bg-white flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#FF6600] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-[#C2410C] border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
   }
@@ -76,28 +76,28 @@ export default function Favorites() {
     <main className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
-      <div className="flex-1 max-w-6xl mx-auto px-10 py-16 w-full">
+      <div className="flex-1 max-w-6xl mx-auto px-5 sm:px-10 py-16 w-full">
         <h1 className="font-serif font-semibold text-4xl mb-8">Mes favoris</h1>
 
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="animate-pulse">
-                <div className="bg-[#E4DDCF] aspect-square rounded-xl"></div>
+                <div className="bg-[#E8E0D8] aspect-square rounded-xl"></div>
                 <div className="pt-2.5 space-y-2">
-                  <div className="h-3.5 bg-[#E4DDCF] rounded w-3/4"></div>
-                  <div className="h-3.5 bg-[#E4DDCF] rounded w-1/3"></div>
+                  <div className="h-3.5 bg-[#E8E0D8] rounded w-3/4"></div>
+                  <div className="h-3.5 bg-[#E8E0D8] rounded w-1/3"></div>
                 </div>
               </div>
             ))}
           </div>
         ) : products.length === 0 ? (
-          <div className="bg-white rounded-2xl border-2 border-dashed border-[#E4DDCF] p-16 text-center">
-            <div className="w-14 h-14 rounded-full bg-[#FBF6EE] flex items-center justify-center mx-auto mb-4">
-              <Heart size={22} className="text-[#FF6600]" strokeWidth={1.8} />
+          <div className="bg-white rounded-2xl border-2 border-dashed border-[#E8E0D8] p-16 text-center">
+            <div className="w-14 h-14 rounded-full bg-[#FAF7F4] flex items-center justify-center mx-auto mb-4">
+              <Heart size={22} className="text-[#C2410C]" strokeWidth={1.8} />
             </div>
-            <h2 className="font-serif font-semibold text-xl text-[#1A1A1A] mb-2">Aucun favori pour le moment</h2>
-            <p className="text-[#8A8579] mb-6">Explorez le catalogue et ajoutez les produits qui vous plaisent en cliquant sur le cœur.</p>
+            <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-2">Aucun favori pour le moment</h2>
+            <p className="text-[#7D6A5D] mb-6">Explorez le catalogue et ajoutez les produits qui vous plaisent en cliquant sur le cœur.</p>
             <Link href="/products">
               <Button variant="primary">Découvrir les produits</Button>
             </Link>

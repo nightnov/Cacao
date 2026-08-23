@@ -154,12 +154,16 @@ export function Navbar() {
             {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
 
-          <Link href="/" className="font-serif font-extrabold text-2xl sm:text-3xl text-[#241A14] hover:opacity-80 flex-shrink-0 tracking-tight">
-            Cacao
+          {/* Marque : pastille orange + mot-symbole, reprise de la maquette validée */}
+          <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 hover:opacity-80 transition-opacity" aria-label="CACAO, accueil">
+            <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-[#C2410C] flex items-center justify-center flex-shrink-0" aria-hidden="true">
+              <span className="w-3.5 h-2.5 sm:w-4 sm:h-3 border-2 border-white rounded-[2px]" />
+            </span>
+            <span className="font-serif font-extrabold text-2xl sm:text-3xl text-[#241A14] tracking-tight">Cacao</span>
           </Link>
 
-          {/* Recherche : élément central de la barre, comme sur les marketplaces */}
-          <div className="hidden sm:block relative flex-1 max-w-2xl">
+          {/* Recherche : occupe tout l'espace entre le logo et les actions */}
+          <div className="hidden sm:block relative flex-1 min-w-0">
             <div className="flex bg-white border-2 border-[#241A14] rounded-full pl-4 pr-1 py-1 items-center gap-2">
               <input
                 type="text"
@@ -199,7 +203,7 @@ export function Navbar() {
           </div>
 
           {/* Actions avec libellés : une icône seule laisse le client deviner */}
-          <div className="flex items-center gap-4 sm:gap-6 ml-auto flex-shrink-0">
+          <div className="flex items-center gap-4 sm:gap-5 ml-auto flex-shrink-0">
             <Link href="/account/favorites" className={`hidden sm:flex ${actionItem}`}>
               <Heart size={19} strokeWidth={1.7} />
               Favoris

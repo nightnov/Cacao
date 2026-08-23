@@ -1,4 +1,4 @@
-import { ShieldCheck, Truck, RotateCcw, LifeBuoy } from 'lucide-react'
+import { ShieldCheck, Truck, RotateCcw, Headphones } from 'lucide-react'
 
 /**
  * Bandeau de réassurance affiché sur toutes les pages du site.
@@ -11,7 +11,7 @@ const items = [
   { icon: ShieldCheck, title: 'Paiement sécurisé', detail: 'Wave, Orange, MTN, Moov, carte' },
   { icon: Truck, title: 'Livraison suivie', detail: 'Code remis à la réception' },
   { icon: RotateCcw, title: 'Retour sous 14 jours', detail: 'Si le produit ne convient pas' },
-  { icon: LifeBuoy, title: 'Assistance CACAO', detail: 'Une question ? On répond' }
+  { icon: Headphones, title: 'Assistance CACAO', detail: 'Une question ? On répond' }
 ]
 
 export function TrustBar() {

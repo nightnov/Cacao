@@ -228,77 +228,83 @@ export default function Account() {
   const deliveredCount = orders.filter(o => o.status === 'delivered').length
 
   return (
-    <main className="min-h-screen bg-white flex flex-col">
+    <main className="min-h-screen bg-[#FAF7F4] flex flex-col">
       <Navbar />
 
-      <div className="flex-1 max-w-6xl mx-auto px-5 sm:px-10 py-16 w-full">
-        <div className="text-sm text-[#7D6A5D] mb-6">
+      <div className="flex-1 max-w-6xl mx-auto px-5 sm:px-10 py-6 sm:py-9 w-full">
+        <nav aria-label="Fil d'Ariane" className="text-[13px] text-[#7D6A5D] mb-4">
           <Link href="/" className="hover:text-[#C2410C]">Accueil</Link>
           {' / '}
           <span className="text-[#241A14]">Mon compte</span>
-        </div>
+        </nav>
 
-        {/* En-tête */}
-        <div className="flex items-center justify-between mb-10 flex-wrap gap-4">
-          <div>
-            <h1 className="font-serif font-semibold text-2xl text-[#241A14]">Bonjour, {displayName !== 'Bienvenue' ? displayName.split(' ')[0] : ''} 👋</h1>
-            <p className="text-sm text-[#7D6A5D]">Bienvenue sur votre espace personnel</p>
+        {/* En-tête : identité du client et raccourci vers ses coordonnées */}
+        <div className="bg-white border border-[#E8E0D8] rounded-2xl p-4 sm:p-5 mb-4 flex items-center gap-4">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#241A14] text-white text-lg font-bold flex items-center justify-center flex-shrink-0">
+            {avatarLetter}
           </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="font-serif font-extrabold text-lg sm:text-xl text-[#241A14] truncate">
+              Bonjour{displayName !== 'Bienvenue' ? `, ${displayName.split(' ')[0]}` : ''}
+            </h1>
+            <p className="text-[13px] text-[#7D6A5D] truncate">{user?.email}</p>
+          </div>
+          <button
+            onClick={() => setActiveSection('addresses')}
+            className="hidden sm:block text-[13px] font-bold text-[#C2410C] hover:underline whitespace-nowrap"
+          >
+            Modifier mes infos
+          </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-[240px,1fr] gap-10">
-          {/* Carte profil + navigation latérale */}
-          <div>
-            <div className="bg-white border border-[#E8E0D8] rounded-2xl p-5 mb-3 text-center">
-              <div className="w-16 h-16 rounded-full bg-[#241A14] text-white text-xl font-semibold flex items-center justify-center mx-auto mb-3">
-                {avatarLetter}
-              </div>
-              <p className="font-semibold text-[#241A14]">{displayName}</p>
-              <p className="text-xs text-[#7D6A5D] truncate">{user?.email}</p>
-              {profile.phone && <p className="text-xs text-[#7D6A5D]">{profile.phone}</p>}
-            </div>
-
-            <nav className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible pb-2 md:pb-0">
+        <div className="grid grid-cols-1 md:grid-cols-[220px,1fr] gap-4 md:gap-6">
+          {/* Navigation. Onglets défilants sur mobile, colonne sur grand écran :
+              une colonne étroite compressée sur téléphone rendait les libellés
+              illisibles. */}
+          <nav className="flex md:flex-col gap-1.5 md:gap-1 overflow-x-auto no-scrollbar md:overflow-visible md:bg-white md:border md:border-[#E8E0D8] md:rounded-2xl md:p-2 md:h-fit">
             {sections.map(section => {
               const Icon = section.icon
+              const base = 'flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-[13.5px] font-semibold transition-colors whitespace-nowrap flex-shrink-0'
+
               if (section.href) {
                 return (
                   <Link
                     key={section.key}
                     href={section.href}
-                    className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-[#5B4B41] hover:bg-[#FAF7F4] transition-colors whitespace-nowrap"
+                    className={`${base} bg-white border border-[#E8E0D8] md:border-0 md:bg-transparent text-[#5B4B41] hover:text-[#C2410C] md:hover:bg-[#FAF7F4]`}
                   >
-                    <Icon size={16} /> {section.label}
+                    <Icon size={16} strokeWidth={1.9} /> {section.label}
                     {section.key === 'messages' && unreadMessages > 0 && (
-                      <span className="ml-auto bg-[#C2410C] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                      <span className="md:ml-auto bg-[#C2410C] text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                         {unreadMessages}
                       </span>
                     )}
                   </Link>
                 )
               }
+              const active = activeSection === section.key
               return (
                 <button
                   key={section.key}
                   onClick={() => setActiveSection(section.key)}
-                  className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors whitespace-nowrap ${
-                    activeSection === section.key
-                      ? 'bg-orange-50 text-[#C2410C] font-semibold'
-                      : 'text-[#5B4B41] hover:bg-[#FAF7F4]'
+                  aria-current={active ? 'page' : undefined}
+                  className={`${base} ${
+                    active
+                      ? 'bg-[#241A14] text-white md:bg-orange-50 md:text-[#C2410C]'
+                      : 'bg-white border border-[#E8E0D8] md:border-0 md:bg-transparent text-[#5B4B41] hover:text-[#C2410C] md:hover:bg-[#FAF7F4]'
                   }`}
                 >
-                  <Icon size={16} /> {section.label}
+                  <Icon size={16} strokeWidth={1.9} /> {section.label}
                 </button>
               )
             })}
             <button
               onClick={logout}
-              className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-colors whitespace-nowrap mt-2 md:border-t md:border-[#E8E0D8] md:pt-4"
+              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-[13.5px] font-semibold text-red-600 bg-white border border-[#E8E0D8] md:border-0 md:bg-transparent hover:bg-red-50 transition-colors whitespace-nowrap flex-shrink-0 md:mt-1 md:border-t md:border-[#E8E0D8] md:rounded-none md:pt-3"
             >
-              <LogOut size={16} /> Déconnexion
+              <LogOut size={16} strokeWidth={1.9} /> Déconnexion
             </button>
-            </nav>
-          </div>
+          </nav>
 
           {/* Contenu */}
           <div>

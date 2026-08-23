@@ -6,7 +6,7 @@ import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { ProductCard } from '@/components/ProductCard'
 import { getSupabaseClient } from '@/lib/supabase'
-import { Laptop, LayoutGrid } from 'lucide-react'
+import { Laptop } from 'lucide-react'
 import { CATEGORIES } from '@/lib/categories'
 import { formatAmount } from '@/lib/format'
 
@@ -120,10 +120,14 @@ export default function Home() {
   }
 
   const popular = [...products].sort((a, b) => (b.view_count || 0) - (a.view_count || 0)).slice(0, 5)
-  const newest = [...products].slice(0, 4) // déjà trié par created_at desc côté API
   const deals = products.filter(p => !!p.compare_at_price_fcfa && p.compare_at_price_fcfa > p.price_fcfa).slice(0, 4)
-  const gaming = products.filter(p => p.category === 'gaming').slice(0, 4)
-  const forWork = products.filter(p => p.category === 'portable' || p.category === 'bureau').slice(0, 4)
+  // Rayons à mettre en avant : ceux qui contiennent le plus de produits,
+  // limités à 4 sections pour que la page reste lisible. Aucun rayon inventé.
+  const topCategories = CATEGORIES
+    .map(cat => ({ cat, items: products.filter(p => p.category === cat.value).slice(0, 4) }))
+    .filter(({ items }) => items.length > 0)
+    .sort((a, b) => b.items.length - a.items.length)
+    .slice(0, 4)
   // Produit mis en avant dans le hero : le plus consulté qui a une vraie photo,
   // sinon le premier disponible. Aucun produit -> le hero reste sur une colonne.
   const heroProduct = popular.find(p => p.image_urls?.length > 0) || popular[0] || null
@@ -184,32 +188,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Rangée de rayons : tuiles carrées, une icône distincte par catégorie */}
-      <section className="max-w-7xl mx-auto px-5 sm:px-10 pt-5 pb-2">
-        <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2.5">
-          {CATEGORIES.map(cat => {
-            const Icon = cat.icon
-            return (
-              <Link
-                key={cat.value}
-                href={`/products?category=${cat.value}`}
-                className="group flex flex-col items-center justify-center gap-2 py-3.5 px-1 rounded-xl border border-[#E8E0D8] bg-white hover:border-[#C2410C] hover:bg-[#FFF8F4] transition-colors"
-              >
-                <Icon size={21} strokeWidth={1.6} className="text-[#C2410C]" />
-                <span className="text-[10.5px] font-semibold text-[#3D2A20] text-center leading-tight">{cat.short}</span>
-              </Link>
-            )
-          })}
-          <Link
-            href="/products"
-            className="flex flex-col items-center justify-center gap-2 py-3.5 px-1 rounded-xl bg-[#241A14] hover:bg-[#3D2A20] transition-colors"
-          >
-            <LayoutGrid size={21} strokeWidth={1.6} className="text-white" />
-            <span className="text-[10.5px] font-semibold text-white text-center leading-tight">Voir tout</span>
-          </Link>
-        </div>
-      </section>
-
       {/* Bannière promotionnelle */}
       {bannerUrl && (
         <section className="max-w-7xl mx-auto px-5 sm:px-10 pt-8">
@@ -250,60 +228,21 @@ export default function Home() {
         </section>
       )}
 
-      {/* PC Gaming — n'apparaît que si des produits gaming existent réellement */}
-      {gaming.length > 0 && (
-        <section className="bg-[#241A14]">
-          <div className="max-w-7xl mx-auto px-5 sm:px-10 py-14">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h2 className="font-serif font-semibold text-2xl text-white">PC Gaming</h2>
-                <p className="text-sm text-white/60 mt-1">Des performances extrêmes pour une expérience de jeu ultime.</p>
-              </div>
-              <Link href="/products?category=gaming" className="text-[#C2410C] font-semibold hover:underline text-sm">
-                Voir tout →
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8">
-              {gaming.map(product => (
-                <ProductCard key={product.id} {...product} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Rayons les plus fournis. Les sections se construisent à partir des
+          produits réellement en ligne : un rayon vide ne s'affiche pas, et
+          l'ordre suit le nombre de produits que contient chaque rayon. */}
+      {topCategories.map(({ cat, items }) => (
+        <ProductSection
+          key={cat.value}
+          title={cat.label}
+          products={items}
+          href={`/products?category=${cat.value}`}
+        />
+      ))}
 
-      {/* PC pour le travail + Meilleures offres, côte à côte */}
-      {(forWork.length > 0 || deals.length > 0) && (
-        <section className="max-w-7xl mx-auto px-5 sm:px-10 py-14">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {forWork.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="font-serif font-semibold text-xl text-[#241A14]">PC pour le travail et les études</h2>
-                  <Link href="/products?category=portable" className="text-[#C2410C] font-semibold hover:underline text-sm">Voir tout →</Link>
-                </div>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-6">
-                  {forWork.map(product => (
-                    <ProductCard key={product.id} {...product} />
-                  ))}
-                </div>
-              </div>
-            )}
-            {deals.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="font-serif font-semibold text-xl text-[#241A14]">Les meilleures offres</h2>
-                  <Link href="/products?sort=newest" className="text-[#C2410C] font-semibold hover:underline text-sm">Voir tout →</Link>
-                </div>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-6">
-                  {deals.map(product => (
-                    <ProductCard key={product.id} {...product} />
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
+      {/* Meilleures offres : uniquement si des remises réelles existent */}
+      {deals.length > 0 && (
+        <ProductSection title="Les meilleures offres" products={deals} href="/products" />
       )}
 
       {/* Newsletter */}

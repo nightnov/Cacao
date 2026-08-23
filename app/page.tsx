@@ -61,7 +61,7 @@ function ProductSection({ title, products, href }: { title: string; products: Pr
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-11">
       <div className="flex items-end justify-between gap-4 mb-5">
-        <h2 className="font-display text-[19px] sm:text-[22px] tracking-[1px] text-[#EEF2F7]">{title}</h2>
+        <h2 className="font-display text-[19px] sm:text-[22px] text-[#EEF2F7]">{title}</h2>
         {href && (
           <Link href={href} className="text-[12.5px] font-bold text-[#FDC700] hover:underline whitespace-nowrap">
             Voir tout →
@@ -153,10 +153,10 @@ export default function Home() {
       <section className="border-b border-[#35383C] bg-gradient-to-b from-[#1C2021] to-[#222427]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-8 lg:py-10 grid grid-cols-1 lg:grid-cols-[355px,1fr] gap-7 items-stretch">
           <div className="flex flex-col justify-center">
-            <span className="inline-flex self-start items-center gap-2 border border-[#FDC700]/40 text-[#FDC700] text-[10px] font-bold tracking-[1.4px] px-3 py-1.5 rounded-full mb-4">
+            <span className="inline-flex self-start items-center gap-2 border border-[#FDC700]/40 text-[#FDC700] text-[10px] font-bold tracking-[0.6px] px-3 py-1.5 rounded-full mb-4">
               <MapPin size={12} strokeWidth={2} /> LIVRAISON PARTOUT EN CÔTE D&apos;IVOIRE
             </span>
-            <h1 className="font-display text-[28px] sm:text-[34px] lg:text-[38px] leading-[1.06] tracking-[1px] text-[#EEF2F7] mb-3">
+            <h1 className="font-display text-[28px] sm:text-[34px] lg:text-[38px] leading-[1.06] text-[#EEF2F7] mb-3">
               LA PERFORMANCE,<br />SANS <span className="text-[#FDC700]">COMPROMIS.</span>
             </h1>
             <p className="text-[13.5px] text-[#B3B8BE] leading-[1.65] mb-6">
@@ -196,7 +196,7 @@ export default function Home() {
             <Link href="/products" className="group relative rounded-xl overflow-hidden border border-[#3A3E42] bg-[#171A1C] h-[220px] sm:h-[280px] lg:h-[330px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={bannerUrl} alt="Offre en cours" className="w-full h-full object-cover" />
-              <span className="absolute top-4 left-4 bg-[#FDC700] text-[#1A1A1A] text-[10px] font-extrabold tracking-[1px] px-3 py-1.5 rounded">
+              <span className="absolute top-4 left-4 bg-[#FDC700] text-[#1A1A1A] text-[10px] font-extrabold px-3 py-1.5 rounded">
                 EN CE MOMENT
               </span>
             </Link>
@@ -205,7 +205,7 @@ export default function Home() {
               href={`/products/${heroProduct.slug}`}
               className="group relative rounded-xl overflow-hidden border border-[#3A3E42] bg-[#171A1C] h-[220px] sm:h-[280px] lg:h-[330px] flex items-center justify-center"
             >
-              <span className="absolute top-4 left-4 z-10 bg-[#FDC700] text-[#1A1A1A] text-[10px] font-extrabold tracking-[1px] px-3 py-1.5 rounded">
+              <span className="absolute top-4 left-4 z-10 bg-[#FDC700] text-[#1A1A1A] text-[10px] font-extrabold px-3 py-1.5 rounded">
                 EN CE MOMENT
               </span>
               {heroProduct.image_urls?.[0] ? (
@@ -220,7 +220,7 @@ export default function Home() {
               )}
               <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/95 via-black/70 to-transparent flex items-end justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="font-display text-[15px] tracking-[1px] text-[#EEF2F7] line-clamp-1">{heroProduct.name}</p>
+                  <p className="font-display text-[15px] text-[#EEF2F7] line-clamp-1">{heroProduct.name}</p>
                   <p className="text-[11px] text-[#B3B8BE] mt-0.5">Voir la fiche produit</p>
                 </div>
                 <p className="font-display text-[19px] text-[#FDC700] whitespace-nowrap tabular-nums flex-shrink-0">
@@ -231,7 +231,7 @@ export default function Home() {
           ) : (
             <div className="rounded-xl border border-dashed border-[#3A3E42] bg-[#171A1C] h-[220px] lg:h-[330px] flex flex-col items-center justify-center text-center p-8">
               <Laptop size={44} strokeWidth={1} className="text-[#3E4247] mb-4" />
-              <p className="font-display text-[15px] tracking-[1px] text-[#B3B8BE]">CATALOGUE EN PRÉPARATION</p>
+              <p className="font-display text-[15px] text-[#B3B8BE]">CATALOGUE EN PRÉPARATION</p>
               <p className="text-[12px] text-[#6F767E] mt-2 max-w-xs">
                 Les premiers produits seront mis en ligne très prochainement.
               </p>
@@ -243,7 +243,7 @@ export default function Home() {
       {/* Gammes : prix « à partir de » calculé sur les vrais produits en ligne */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-11">
         <div className="text-center mb-7">
-          <h2 className="font-display text-[21px] sm:text-[25px] tracking-[1px] text-[#EEF2F7] mb-2">CHOISISSEZ VOTRE GAMME</h2>
+          <h2 className="font-display text-[21px] sm:text-[25px] text-[#EEF2F7] mb-2">CHOISISSEZ VOTRE GAMME</h2>
           <p className="text-[13px] text-[#8E959D]">Quatre familles, un même niveau d&apos;exigence sur la sélection.</p>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -257,7 +257,7 @@ export default function Home() {
                 <span className={`w-12 h-12 mx-auto mt-1.5 mb-3.5 rounded-xl bg-[#2A2D31] border border-[#3E4247] flex items-center justify-center ${empty ? 'text-[#6F767E]' : 'text-[#FDC700]'}`}>
                   <Icon size={21} strokeWidth={1.7} />
                 </span>
-                <h3 className={`font-display text-[15px] tracking-[1px] mb-1.5 ${empty ? 'text-[#8E959D]' : 'text-[#EEF2F7]'}`}>
+                <h3 className={`font-display text-[15px] mb-1.5 ${empty ? 'text-[#8E959D]' : 'text-[#EEF2F7]'}`}>
                   {cat.short.toUpperCase()}
                 </h3>
                 <p className="text-[11.5px] text-[#8E959D] leading-[1.5] min-h-[34px]">{GAMME_PITCH[cat.value]}</p>
@@ -305,7 +305,7 @@ export default function Home() {
       {/* Meilleures ventes */}
       {loading ? (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-11">
-          <h2 className="font-display text-[19px] sm:text-[22px] tracking-[1px] text-[#EEF2F7] mb-5">NOS MEILLEURES VENTES</h2>
+          <h2 className="font-display text-[19px] sm:text-[22px] text-[#EEF2F7] mb-5">NOS MEILLEURES VENTES</h2>
           <GridSkeleton />
         </section>
       ) : (
@@ -330,7 +330,7 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-11">
         <div className="bg-gradient-to-r from-[#1C2021] to-[#2A2118] border border-[#4A4126] rounded-xl p-6 sm:p-8 flex flex-col lg:flex-row items-start lg:items-center gap-6">
           <div className="flex-1">
-            <h3 className="font-display text-[19px] sm:text-[21px] tracking-[1px] text-[#EEF2F7] mb-2">COMPLÉTEZ VOTRE ÉQUIPEMENT</h3>
+            <h3 className="font-display text-[19px] sm:text-[21px] text-[#EEF2F7] mb-2">COMPLÉTEZ VOTRE ÉQUIPEMENT</h3>
             <p className="text-[13px] text-[#B3B8BE] leading-[1.6] max-w-lg mb-4">
               Claviers, souris, casques, sacoches, câbles et adaptateurs. Tout ce qu&apos;il faut autour de votre machine, au même endroit.
             </p>
@@ -351,7 +351,7 @@ export default function Home() {
       {/* Pourquoi CACAO */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-11">
         <div className="text-center mb-7">
-          <h2 className="font-display text-[21px] sm:text-[25px] tracking-[1px] text-[#EEF2F7]">POURQUOI CACAO ?</h2>
+          <h2 className="font-display text-[21px] sm:text-[25px] text-[#EEF2F7]">POURQUOI CACAO ?</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           {[
@@ -374,7 +374,7 @@ export default function Home() {
       {/* Newsletter */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-14">
         <div className="bg-[#1C2021] border border-[#35383C] rounded-xl p-7 sm:p-9 text-center">
-          <h2 className="font-display text-[19px] sm:text-[22px] tracking-[1px] text-[#EEF2F7] mb-2">NE MANQUEZ AUCUNE OFFRE</h2>
+          <h2 className="font-display text-[19px] sm:text-[22px] text-[#EEF2F7] mb-2">NE MANQUEZ AUCUNE OFFRE</h2>
           <p className="text-[13px] text-[#8E959D] mb-6 max-w-md mx-auto">
             Recevez les nouveautés et les bonnes affaires CACAO.
           </p>

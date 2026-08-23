@@ -87,7 +87,7 @@ export function ProductCard({
 
       <div className="flex flex-col flex-1 px-3.5 pt-3.5 pb-4">
         {/* Nom en display : les références PC sont longues, deux lignes maximum */}
-        <h3 className="font-display text-[14.5px] tracking-[0.8px] text-[#EEF2F7] line-clamp-2 min-h-[2.4rem] leading-[1.2] group-hover:text-[#FDC700] transition-colors">
+        <h3 className="font-display text-[14.5px] text-[#EEF2F7] line-clamp-2 min-h-[2.4rem] leading-[1.2] group-hover:text-[#FDC700] transition-colors">
           {name}
         </h3>
 

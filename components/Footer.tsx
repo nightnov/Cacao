@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Facebook, Instagram, Youtube, Star, Mail, MapPin, ShieldCheck } from 'lucide-react'
+import { Facebook, Instagram, Youtube, Star, MapPin } from 'lucide-react'
 import { getSupabaseClient } from '@/lib/supabase'
 import { CATEGORIES } from '@/lib/categories'
 
@@ -13,7 +13,8 @@ interface SocialLinks {
   youtube?: string
 }
 
-const PAIEMENTS = ['Wave', 'Orange Money', 'MTN Money', 'Moov Money', 'Carte bancaire']
+/** Rayons mis en avant dans le pied de page : les trois principaux. */
+const FOOTER_RAYONS = ['portable', 'bureau', 'gaming']
 
 export function Footer() {
   const [social, setSocial] = useState<SocialLinks>({})
@@ -69,7 +70,7 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-11 grid grid-cols-2 lg:grid-cols-[1.4fr,1fr,1fr,1fr] gap-8 lg:gap-10">
         {/* Marque */}
         <div className="col-span-2 lg:col-span-1">
-          <Link href="/" className="font-display font-bold text-xl tracking-[3px] text-[#EEF2F7] hover:text-[#FDC700] transition-colors">
+          <Link href="/" className="font-display font-bold text-xl tracking-[2px] text-[#EEF2F7] hover:text-[#FDC700] transition-colors">
             CACAO
           </Link>
           <p className="text-[13px] text-[#8E959D] mt-3.5 leading-[1.65] max-w-xs">
@@ -116,33 +117,36 @@ export function Footer() {
           )}
         </div>
 
-        {/* Rayons */}
+        {/* Rayons : les trois principaux seulement, le catalogue complet
+            reste accessible depuis la navbar et la page catalogue. */}
         <div>
-          <h3 className="font-display text-[13px] tracking-[1.4px] text-[#EEF2F7] mb-4">RAYONS</h3>
+          <h3 className="font-display text-[13px] text-[#EEF2F7] mb-4">RAYONS</h3>
           <ul className="space-y-2.5">
-            {CATEGORIES.map(cat => (
-              <li key={cat.value}>
-                <Link href={`/products?category=${cat.value}`} className={colLink}>{cat.label}</Link>
-              </li>
-            ))}
+            {FOOTER_RAYONS.map(value => {
+              const cat = CATEGORIES.find(c => c.value === value)
+              if (!cat) return null
+              return (
+                <li key={value}>
+                  <Link href={`/products?category=${value}`} className={colLink}>{cat.label}</Link>
+                </li>
+              )
+            })}
           </ul>
         </div>
 
-        {/* Aide */}
+        {/* Support */}
         <div>
-          <h3 className="font-display text-[13px] tracking-[1.4px] text-[#EEF2F7] mb-4">AIDE</h3>
+          <h3 className="font-display text-[13px] text-[#EEF2F7] mb-4">SUPPORT</h3>
           <ul className="space-y-2.5">
+            <li><Link href="/about" className={colLink}>À propos</Link></li>
             <li><Link href="/faq" className={colLink}>Questions fréquentes</Link></li>
             <li><Link href="/contact" className={colLink}>Nous contacter</Link></li>
-            <li><Link href="/about" className={colLink}>À propos de CACAO</Link></li>
-            <li><Link href="/account" className={colLink}>Suivre ma commande</Link></li>
-            <li><Link href="/account/favorites" className={colLink}>Mes favoris</Link></li>
           </ul>
         </div>
 
         {/* Informations */}
         <div>
-          <h3 className="font-display text-[13px] tracking-[1.4px] text-[#EEF2F7] mb-4">INFORMATIONS</h3>
+          <h3 className="font-display text-[13px] text-[#EEF2F7] mb-4">INFORMATIONS</h3>
           <ul className="space-y-2.5">
             <li><Link href="/legal/terms" className={colLink}>Conditions générales</Link></li>
             <li><Link href="/legal/privacy" className={colLink}>Confidentialité</Link></li>
@@ -150,25 +154,7 @@ export function Footer() {
               <MapPin size={14} className="text-[#FDC700] flex-shrink-0 mt-0.5" />
               Abidjan, Côte d&apos;Ivoire
             </li>
-            <li className="flex items-start gap-2 text-[13px] text-[#8E959D]">
-              <Mail size={14} className="text-[#FDC700] flex-shrink-0 mt-0.5" />
-              <Link href="/contact" className="hover:text-[#FDC700] transition-colors">Écrire à l&apos;équipe</Link>
-            </li>
           </ul>
-        </div>
-      </div>
-
-      {/* Moyens de paiement réellement acceptés */}
-      <div className="border-t border-[#35383C]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-5 flex flex-wrap items-center gap-x-3 gap-y-2.5">
-          <span className="flex items-center gap-2 text-[11.5px] font-bold text-[#EEF2F7] mr-1">
-            <ShieldCheck size={15} className="text-[#FDC700]" /> PAIEMENT SÉCURISÉ
-          </span>
-          {PAIEMENTS.map(p => (
-            <span key={p} className="text-[11.5px] text-[#B3B8BE] bg-[#2A2D31] border border-[#3E4247] rounded-md px-2.5 py-1">
-              {p}
-            </span>
-          ))}
         </div>
       </div>
 

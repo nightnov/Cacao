@@ -119,7 +119,7 @@ function ProductsContent() {
   const FiltersPanel = (
     <div className="space-y-6">
       <div>
-        <p className="font-display text-[12px] tracking-[1.2px] text-[#EEF2F7] mb-3">PRIX (FCFA)</p>
+        <p className="font-display text-[12px] tracking-[0.6px] text-[#EEF2F7] mb-3">PRIX (FCFA)</p>
         <div className="flex items-center gap-2">
           <input type="number" placeholder="Min" value={priceMin} onChange={e => setPriceMin(e.target.value)} className={inputCls} />
           <span className="text-[#6F767E]" aria-hidden="true">-</span>
@@ -129,7 +129,7 @@ function ProductsContent() {
 
       {cpuOptions.length > 0 && (
         <div>
-          <p className="font-display text-[12px] tracking-[1.2px] text-[#EEF2F7] mb-3">PROCESSEUR</p>
+          <p className="font-display text-[12px] tracking-[0.6px] text-[#EEF2F7] mb-3">PROCESSEUR</p>
           <div className="flex flex-wrap gap-2">
             {cpuOptions.map(cpu => (
               <button
@@ -152,7 +152,7 @@ function ProductsContent() {
       {/* Rayons dans le panneau latéral : sur un catalogue, ils servent de
           navigation permanente plutôt que de rangée de pastilles isolée. */}
       <div className="hidden lg:block">
-        <p className="font-display text-[12px] tracking-[1.2px] text-[#EEF2F7] mb-3">RAYONS</p>
+        <p className="font-display text-[12px] tracking-[0.6px] text-[#EEF2F7] mb-3">RAYONS</p>
         <div className="flex flex-col">
           <Link
             href="/products"
@@ -206,7 +206,7 @@ function ProductsContent() {
             )}
           </nav>
 
-          <h1 className="font-display text-[24px] sm:text-[30px] tracking-[1px] text-[#EEF2F7]">
+          <h1 className="font-display text-[24px] sm:text-[30px] text-[#EEF2F7]">
             {search
               ? `RÉSULTATS POUR « ${search.toUpperCase()} »`
               : category

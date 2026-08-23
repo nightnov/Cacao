@@ -133,7 +133,7 @@ export function Navbar() {
         </button>
 
         {/* Le mot-symbole seul ramène toujours à l'accueil, depuis n'importe quelle page */}
-        <Link href="/" className="font-display font-bold text-xl sm:text-2xl tracking-[3px] text-[#EEF2F7] hover:text-[#FDC700] transition-colors flex-shrink-0">
+        <Link href="/" className="font-display font-bold text-xl sm:text-2xl tracking-[2px] text-[#EEF2F7] hover:text-[#FDC700] transition-colors flex-shrink-0">
           CACAO
         </Link>
 

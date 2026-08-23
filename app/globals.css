@@ -31,7 +31,12 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-play), system-ui, sans-serif;
-  letter-spacing: 0.5px;
+  /* Relevé sur le site de référence : letter-spacing normal sur tous ses
+     titres, et graisse légère sur les grands (300 pour un titre de 36 px).
+     Imposer 0.5 px d'interlettrage et une graisse 700-800 donnait un rendu
+     nettement plus lourd et plus étalé que l'original. */
+  letter-spacing: normal;
+  font-weight: 400;
 }
 
 a {

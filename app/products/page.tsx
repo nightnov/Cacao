@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Navbar } from '@/components/Navbar'
+import { TrustBar } from '@/components/TrustBar'
 import { Footer } from '@/components/Footer'
 import { ProductCard } from '@/components/ProductCard'
 import Link from 'next/link'
@@ -113,42 +114,32 @@ function ProductsContent() {
 
   const hasActiveFilters = !!priceMin || !!priceMax || !!selectedCpu
 
+  const inputCls = 'w-full px-3 py-2 text-[13px] bg-[#2A2D31] border border-[#3E4247] rounded-lg text-[#EEF2F7] outline-none focus:border-[#FDC700] transition-colors'
+
   const FiltersPanel = (
     <div className="space-y-6">
       <div>
-        <p className="text-sm font-semibold text-[#EEF2F7] mb-3">Prix (FCFA)</p>
+        <p className="font-display text-[12px] tracking-[1.2px] text-[#EEF2F7] mb-3">PRIX (FCFA)</p>
         <div className="flex items-center gap-2">
-          <input
-            type="number"
-            placeholder="Min"
-            value={priceMin}
-            onChange={e => setPriceMin(e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
-          />
-          <span className="text-[#8E959D]" aria-hidden="true">-</span>
-          <input
-            type="number"
-            placeholder="Max"
-            value={priceMax}
-            onChange={e => setPriceMax(e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
-          />
+          <input type="number" placeholder="Min" value={priceMin} onChange={e => setPriceMin(e.target.value)} className={inputCls} />
+          <span className="text-[#6F767E]" aria-hidden="true">-</span>
+          <input type="number" placeholder="Max" value={priceMax} onChange={e => setPriceMax(e.target.value)} className={inputCls} />
         </div>
       </div>
 
       {cpuOptions.length > 0 && (
         <div>
-          <p className="text-sm font-semibold text-[#EEF2F7] mb-3">Processeur</p>
+          <p className="font-display text-[12px] tracking-[1.2px] text-[#EEF2F7] mb-3">PROCESSEUR</p>
           <div className="flex flex-wrap gap-2">
             {cpuOptions.map(cpu => (
               <button
                 key={cpu}
                 type="button"
                 onClick={() => setSelectedCpu(selectedCpu === cpu ? '' : cpu)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-colors ${
                   selectedCpu === cpu
-                    ? 'bg-[#2A2D31] text-white border-[#4E5257]'
-                    : 'border-[#35383C] text-[#B3B8BE] hover:border-[#4E5257]'
+                    ? 'bg-[#FDC700]/10 text-[#FDC700] border-[#FDC700]'
+                    : 'bg-[#2A2D31] border-[#3E4247] text-[#B3B8BE] hover:border-[#4E5257]'
                 }`}
               >
                 {cpu}
@@ -158,11 +149,34 @@ function ProductsContent() {
         </div>
       )}
 
+      {/* Rayons dans le panneau latéral : sur un catalogue, ils servent de
+          navigation permanente plutôt que de rangée de pastilles isolée. */}
+      <div className="hidden lg:block">
+        <p className="font-display text-[12px] tracking-[1.2px] text-[#EEF2F7] mb-3">RAYONS</p>
+        <div className="flex flex-col">
+          <Link
+            href="/products"
+            className={`text-[13px] py-1.5 transition-colors ${!category ? 'text-[#FDC700] font-bold' : 'text-[#8E959D] hover:text-[#EEF2F7]'}`}
+          >
+            Tous les produits
+          </Link>
+          {CATEGORIES.map(cat => (
+            <Link
+              key={cat.value}
+              href={`/products?category=${cat.value}`}
+              className={`text-[13px] py-1.5 transition-colors ${category === cat.value ? 'text-[#FDC700] font-bold' : 'text-[#8E959D] hover:text-[#EEF2F7]'}`}
+            >
+              {cat.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {hasActiveFilters && (
         <button
           type="button"
           onClick={() => { setPriceMin(''); setPriceMax(''); setSelectedCpu('') }}
-          className="text-sm text-[#FDC700] font-semibold hover:underline"
+          className="text-[13px] text-[#FDC700] font-bold hover:underline"
         >
           Réinitialiser les filtres
         </button>
@@ -171,48 +185,59 @@ function ProductsContent() {
   )
 
   return (
-    <main className="min-h-screen bg-[#1C2021] flex flex-col">
+    <main className="min-h-screen bg-[#222427] flex flex-col">
       <Navbar />
+      <TrustBar />
 
-      <div className="flex-1 max-w-7xl mx-auto w-full px-5 sm:px-10 py-16">
-        <div className="text-sm text-[#8E959D] mb-6">
-          <Link href="/" className="hover:text-[#FDC700]">Accueil</Link>
-          {' / '}
-          <span className="text-[#EEF2F7]">Catalogue</span>
-        </div>
+      {/* En-tête de rayon : titre compact et compteur, façon page de série */}
+      <header className="border-b border-[#35383C] bg-gradient-to-b from-[#1C2021] to-[#222427]">
+        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-10 py-6">
+          <nav aria-label="Fil d'Ariane" className="flex items-center gap-2 text-[12px] text-[#8E959D] mb-3">
+            <Link href="/" className="hover:text-[#FDC700] transition-colors">Accueil</Link>
+            <span aria-hidden="true">/</span>
+            {category ? (
+              <>
+                <Link href="/products" className="hover:text-[#FDC700] transition-colors">Catalogue</Link>
+                <span aria-hidden="true">/</span>
+                <span className="text-[#EEF2F7]">{categoryLabel[category] || category}</span>
+              </>
+            ) : (
+              <span className="text-[#EEF2F7]">Catalogue</span>
+            )}
+          </nav>
 
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="font-serif font-semibold text-4xl mb-2 text-[#EEF2F7]">
-            {search ? `Résultats pour « ${search} »` : category ? categoryLabel[category] || category : 'Tous les produits'}
+          <h1 className="font-display text-[24px] sm:text-[30px] tracking-[1px] text-[#EEF2F7]">
+            {search
+              ? `RÉSULTATS POUR « ${search.toUpperCase()} »`
+              : category
+              ? (categoryLabel[category] || category).toUpperCase()
+              : 'TOUS LES PRODUITS'}
           </h1>
           {!loading && (
-            <p className="text-[#B3B8BE]">
-              {filteredProducts.length} produit{filteredProducts.length !== 1 ? 's' : ''} disponible{filteredProducts.length !== 1 ? 's' : ''}
+            <p className="text-[13px] text-[#8E959D] mt-1.5">
+              {filteredProducts.length} produit{filteredProducts.length !== 1 ? 's' : ''}
+              {hasActiveFilters ? ' correspondant à vos filtres' : ' au catalogue'}
             </p>
           )}
         </div>
+      </header>
 
-        {/* Catégories. Défilement horizontal sur mobile plutôt qu'un pavé de 9 pastilles
-            qui poussait les produits sous la ligne de flottaison. */}
+      <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-10 py-7">
+        {/* Rayons en défilement horizontal : visibles sous lg, où le panneau
+            latéral est masqué. */}
         {!search && (
-          <div className="mb-7 flex gap-2 overflow-x-auto no-scrollbar pb-1 sm:flex-wrap sm:overflow-visible">
+          <div className="lg:hidden mb-5 flex gap-2 overflow-x-auto no-scrollbar pb-1">
             <Link href="/products" className="flex-shrink-0">
-              <span className={`inline-block px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
-                !category
-                  ? 'bg-[#2A2D31] text-white border-[#4E5257]'
-                  : 'bg-[#1C2021] border-[#35383C] text-[#B3B8BE] hover:border-[#4E5257] hover:text-[#EEF2F7]'
+              <span className={`inline-block px-3.5 py-2 rounded-lg text-[13px] font-medium border transition-colors ${
+                !category ? 'bg-[#FDC700]/10 text-[#FDC700] border-[#FDC700]' : 'bg-[#1C2021] border-[#35383C] text-[#B3B8BE]'
               }`}>
                 Tous
               </span>
             </Link>
-
             {CATEGORIES.map(cat => (
               <Link key={cat.value} href={`/products?category=${cat.value}`} className="flex-shrink-0">
-                <span className={`inline-block px-4 py-2 rounded-full text-sm font-medium border transition-colors whitespace-nowrap ${
-                  category === cat.value
-                    ? 'bg-[#2A2D31] text-white border-[#4E5257]'
-                    : 'bg-[#1C2021] border-[#35383C] text-[#B3B8BE] hover:border-[#4E5257] hover:text-[#EEF2F7]'
+                <span className={`inline-block px-3.5 py-2 rounded-lg text-[13px] font-medium border whitespace-nowrap transition-colors ${
+                  category === cat.value ? 'bg-[#FDC700]/10 text-[#FDC700] border-[#FDC700]' : 'bg-[#1C2021] border-[#35383C] text-[#B3B8BE]'
                 }`}>
                   {cat.label}
                 </span>
@@ -222,27 +247,24 @@ function ProductsContent() {
         )}
 
         {/* Barre d'outils : filtres mobile + tri */}
-        <div className="flex items-center justify-between mb-8 gap-3">
+        <div className="flex items-center justify-between mb-6 gap-3">
           <button
             type="button"
             onClick={() => setShowFilters(!showFilters)}
             aria-expanded={showFilters}
-            className={`lg:hidden flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${
-              hasActiveFilters
-                ? 'bg-[#2A2D31] text-white border-[#4E5257]'
-                : 'bg-[#1C2021] border-[#35383C] text-[#EEF2F7]'
+            className={`lg:hidden flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-bold border transition-colors ${
+              hasActiveFilters ? 'bg-[#FDC700]/10 text-[#FDC700] border-[#FDC700]' : 'bg-[#1C2021] border-[#35383C] text-[#EEF2F7]'
             }`}
           >
             <SlidersHorizontal size={14} /> Filtrer
-            {hasActiveFilters && <span className="text-xs">•</span>}
           </button>
           <div className="hidden lg:block" />
-          <label className="flex items-center gap-2 text-sm text-[#8E959D]">
+          <label className="flex items-center gap-2 text-[13px] text-[#8E959D]">
             <span className="hidden sm:inline">Trier par</span>
             <select
               value={sort}
               onChange={e => setSort(e.target.value)}
-              className="px-4 py-2 bg-[#1C2021] border border-[#35383C] rounded-full text-sm text-[#EEF2F7] focus:outline-none focus:ring-2 focus:ring-[#FDC700] cursor-pointer"
+              className="px-3.5 py-2 bg-[#2A2D31] border border-[#3E4247] rounded-lg text-[13px] text-[#EEF2F7] outline-none focus:border-[#FDC700] cursor-pointer transition-colors"
             >
               {sortOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -252,16 +274,15 @@ function ProductsContent() {
         </div>
 
         {showFilters && (
-          <div className="lg:hidden mb-8 bg-[#1C2021] border border-[#35383C] rounded-2xl p-5">
+          <div className="lg:hidden mb-6 bg-[#1C2021] border border-[#35383C] rounded-xl p-5">
             {FiltersPanel}
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-[220px,1fr] gap-10">
-          {/* Filtres desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-[232px,1fr] gap-6 lg:gap-8">
+          {/* Panneau de filtres, en carte comme le reste de l'interface */}
           <aside className="hidden lg:block">
-            <div className="sticky top-6">
-              <p className="text-xs font-semibold text-[#8E959D] uppercase tracking-wide mb-4">Filtres</p>
+            <div className="sticky top-24 bg-[#1C2021] border border-[#35383C] rounded-xl p-5">
               {FiltersPanel}
             </div>
           </aside>
@@ -269,7 +290,7 @@ function ProductsContent() {
           {/* Grille produits */}
           <div>
             {loading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-9">
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="animate-pulse">
                     <div className="bg-[#2A2D31] aspect-square rounded-xl"></div>
@@ -282,7 +303,7 @@ function ProductsContent() {
               </div>
             ) : filteredProducts.length > 0 ? (
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-9">
+                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
                   {filteredProducts.map(product => (
                     <ProductCard key={product.id} {...product} />
                   ))}
@@ -291,7 +312,7 @@ function ProductsContent() {
                 {popularFallback.length > 0 && (
                   <div className="mt-16 pt-10 border-t border-[#35383C]">
                     <h2 className="font-serif font-semibold text-xl text-[#EEF2F7] mb-6">Vous pourriez aussi aimer</h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-9">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
                       {popularFallback.map(p => (
                         <ProductCard key={p.id} {...p} />
                       ))}

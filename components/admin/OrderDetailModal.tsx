@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Order, OrderItem } from '@/types/admin'
 import { formatAmount } from '@/lib/format'
+import { MapPin } from 'lucide-react'
 
 const nextStatus: Record<string, string> = {
   pending: 'confirmed',
@@ -111,6 +112,29 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
               <div className="bg-[#FAF7F4] rounded-lg p-4 border border-[#E8E0D8]">
                 <p className="text-[#241A14]">{order.shipping_address.address}</p>
                 <p className="text-[#5B4B41] text-sm">{order.shipping_address.city}</p>
+
+                {/* Position partagée par le client. À Abidjan, une adresse
+                    écrite suffit rarement à retrouver quelqu'un ; un point sur
+                    la carte, si. Absent si le client a refusé de la partager. */}
+                {order.delivery_lat != null && order.delivery_lng != null && (
+                  <div className="mt-3 pt-3 border-t border-[#E8E0D8]">
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${order.delivery_lat},${order.delivery_lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#C2410C] hover:underline"
+                    >
+                      <MapPin size={14} /> Ouvrir la position sur la carte
+                    </a>
+                    <p className="text-xs text-[#7D6A5D] mt-1">
+                      Partagée par le client
+                      {order.delivery_accuracy_m != null &&
+                        ` · précise à ${order.delivery_accuracy_m} m près`}
+                      {order.delivery_distance_km != null &&
+                        ` · ${order.delivery_distance_km} km depuis le retrait`}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           )}

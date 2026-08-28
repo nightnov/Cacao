@@ -10,6 +10,13 @@ import { useAuth } from '@/hooks/useAuth'
 import { getSupabaseClient } from '@/lib/supabase'
 import { getCart, clearCart, CartItem } from '@/lib/cart'
 import { formatAmount } from '@/lib/format'
+import {
+  quoteDelivery,
+  accuracyIsUsable,
+  DEFAULT_TARIFF,
+  type DeliveryTariff,
+} from '@/lib/delivery'
+import { MapPin, LocateFixed, Check } from 'lucide-react'
 
 interface ShippingFee {
   id: string
@@ -45,6 +52,13 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
+  const [tariff, setTariff] = useState<DeliveryTariff>(DEFAULT_TARIFF)
+  const [position, setPosition] = useState<{ lat: number; lng: number; accuracy: number } | null>(
+    null
+  )
+  const [locating, setLocating] = useState(false)
+  const [locationError, setLocationError] = useState('')
+
   const [promoInput, setPromoInput] = useState('')
   const [promo, setPromo] = useState<{ code: string; discount: number } | null>(null)
   const [promoError, setPromoError] = useState('')
@@ -74,14 +88,48 @@ export default function Checkout() {
     const fetchFees = async () => {
       try {
         const supabase = getSupabaseClient()
-        const { data, error: feesError } = await supabase
-          .from('shipping_fees')
-          .select('id, city, price_fcfa')
-          .order('city', { ascending: true })
+        const [feesRes, tariffRes] = await Promise.all([
+          supabase
+            .from('shipping_fees')
+            .select('id, city, price_fcfa, parent_city, is_active, sort_order')
+            .order('sort_order')
+            .order('city'),
+          supabase
+            .from('site_settings')
+            .select('key, value')
+            .in('key', [
+              'pickup_lat',
+              'pickup_lng',
+              'delivery_base_fcfa',
+              'delivery_per_km_fcfa',
+              'delivery_road_factor',
+              'delivery_min_fcfa',
+              'delivery_max_fcfa',
+            ]),
+        ])
 
-        if (feesError) throw feesError
-        setShippingFees(data || [])
-        if (data && data.length > 0) setCityId(data[0].id)
+        if (feesRes.error) throw feesRes.error
+
+        // `is_active` n'existe qu'après la migration 025 : tant qu'elle n'est
+        // pas passée, la colonne est absente et toutes les zones sont gardées.
+        const zones = (feesRes.data || []).filter(f => f.is_active !== false)
+        setShippingFees(zones)
+        if (zones.length > 0) setCityId(zones[0].id)
+
+        const s = Object.fromEntries((tariffRes.data || []).map(r => [r.key, r.value]))
+        const num = (v: unknown, fallback: number) => {
+          const n = Number(v)
+          return Number.isFinite(n) ? n : fallback
+        }
+        setTariff({
+          pickupLat: s.pickup_lat ? num(s.pickup_lat, NaN) : null,
+          pickupLng: s.pickup_lng ? num(s.pickup_lng, NaN) : null,
+          baseFcfa: num(s.delivery_base_fcfa, DEFAULT_TARIFF.baseFcfa),
+          perKmFcfa: num(s.delivery_per_km_fcfa, DEFAULT_TARIFF.perKmFcfa),
+          roadFactor: num(s.delivery_road_factor, DEFAULT_TARIFF.roadFactor),
+          minFcfa: num(s.delivery_min_fcfa, DEFAULT_TARIFF.minFcfa),
+          maxFcfa: num(s.delivery_max_fcfa, DEFAULT_TARIFF.maxFcfa),
+        })
       } catch (err) {
         console.error('Erreur chargement villes:', err)
       } finally {
@@ -136,9 +184,55 @@ export default function Checkout() {
     }
   }
 
+  /**
+   * Demande la position au navigateur.
+   *
+   * Rien n'est envoyé tant que le client n'a pas accepté : c'est lui qui voit
+   * la demande d'autorisation, et un refus n'empêche pas de commander — le
+   * tarif de la commune prend le relais.
+   */
+  const requestLocation = () => {
+    if (!('geolocation' in navigator)) {
+      setLocationError("Votre navigateur ne sait pas transmettre votre position.")
+      return
+    }
+    setLocating(true)
+    setLocationError('')
+
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const { latitude, longitude, accuracy } = pos.coords
+        setLocating(false)
+
+        // Une position à plus de deux kilomètres près désignerait une autre
+        // commune, donc un autre prix. Mieux vaut la refuser que facturer faux.
+        if (!accuracyIsUsable(accuracy)) {
+          setLocationError(
+            `Position trop imprécise (${Math.round(accuracy)} m). Activez le GPS de votre téléphone, ou choisissez votre commune ci-dessous.`
+          )
+          return
+        }
+        setPosition({ lat: latitude, lng: longitude, accuracy: Math.round(accuracy) })
+      },
+      err => {
+        setLocating(false)
+        setLocationError(
+          err.code === err.PERMISSION_DENIED
+            ? 'Position refusée. Choisissez simplement votre commune ci-dessous.'
+            : "Position indisponible. Choisissez votre commune ci-dessous."
+        )
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
+    )
+  }
+
   const productsTotal = cartItems.reduce((sum, item) => sum + item.price_fcfa * item.quantity, 0)
   const selectedCity = shippingFees.find(f => f.id === cityId)
-  const shippingCost = selectedCity?.price_fcfa || 0
+
+  // Le même calcul que le serveur, à titre d'affichage seulement : le montant
+  // réellement prélevé est recalculé au paiement à partir des données en base.
+  const quote = quoteDelivery(tariff, position, selectedCity?.price_fcfa ?? null)
+  const shippingCost = quote.fcfa
 
   // Ces montants ne servent qu'à l'affichage. Le total réellement prélevé est
   // recalculé par le serveur à partir des prix en base, dans
@@ -173,6 +267,11 @@ export default function Checkout() {
           total_fcfa: total,
           promo_code: promo?.code || null,
           discount_fcfa: discount,
+          delivery_lat: position?.lat ?? null,
+          delivery_lng: position?.lng ?? null,
+          delivery_accuracy_m: position?.accuracy ?? null,
+          delivery_distance_km: quote.km,
+          delivery_method: quote.method,
           payment_method: 'pending',
           delivery_code: deliveryCode,
           notes: notes.trim() || null,
@@ -277,25 +376,96 @@ export default function Checkout() {
                   />
                 </div>
 
+                {/* Position : proposée d'abord, parce qu'elle donne le prix le
+                    plus juste. Jamais imposée — le choix manuel reste visible
+                    en dessous, qu'on l'utilise ou non. */}
                 <div>
-                  <label className="block text-sm font-semibold text-ink mb-2">Ville *</label>
+                  <label className="block text-sm font-semibold text-ink mb-2">
+                    Votre position
+                  </label>
+
+                  {position ? (
+                    <div className="bg-green/10 border border-green rounded-lg p-3.5">
+                      <p className="text-sm text-ink flex items-center gap-2">
+                        <Check size={15} className="text-green-bright flex-shrink-0" />
+                        Position enregistrée
+                        <span className="text-ink-dimmer text-[12px]">
+                          (à {position.accuracy} m près)
+                        </span>
+                      </p>
+                      {quote.method === 'distance' && quote.km !== null && (
+                        <p className="text-[12px] text-ink-dim mt-1.5">
+                          Environ {quote.km} km de trajet — livraison{' '}
+                          {formatAmount(quote.fcfa)} FCFA
+                          {quote.capped && ' (tarif plafonné)'}
+                        </p>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setPosition(null)}
+                        className="text-[12px] text-ink-dimmer hover:text-ink underline mt-2"
+                      >
+                        Retirer ma position
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={requestLocation}
+                        disabled={locating}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-border-strong hover:border-gold disabled:opacity-50 text-ink rounded-lg font-semibold text-sm transition-colors"
+                      >
+                        <LocateFixed size={16} className="text-gold" />
+                        {locating ? 'Recherche…' : 'Utiliser ma position'}
+                      </button>
+                      <p className="text-[12px] text-ink-dimmer mt-1.5">
+                        Facultatif. Permet de calculer le prix exact de votre livraison et aide le
+                        livreur à vous trouver. Vous pouvez aussi choisir votre commune ci-dessous.
+                      </p>
+                    </>
+                  )}
+
+                  {locationError && (
+                    <p className="text-[12px] text-danger mt-1.5">{locationError}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-ink mb-2">
+                    Commune ou ville *
+                  </label>
                   {loadingFees ? (
                     <div className="h-11 bg-bg-sunken rounded-lg animate-pulse"></div>
                   ) : shippingFees.length > 0 ? (
-                    <select
-                      value={cityId}
-                      onChange={(e) => setCityId(e.target.value)}
-                      required
-                      className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
-                    >
-                      {shippingFees.map(fee => (
-                        <option key={fee.id} value={fee.id}>
-                          {fee.city} · {fee.price_fcfa.toLocaleString("fr-CI")} FCFA
-                        </option>
-                      ))}
-                    </select>
+                    <>
+                      <select
+                        value={cityId}
+                        onChange={(e) => setCityId(e.target.value)}
+                        required
+                        className="w-full px-4 py-2.5 bg-bg-raised border border-border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                      >
+                        {shippingFees.map(fee => (
+                          <option key={fee.id} value={fee.id}>
+                            {fee.city}
+                            {/* Le tarif de la commune n'a plus de sens à afficher
+                                quand le prix vient de la distance : il induirait
+                                en erreur sur ce qui sera facturé. */}
+                            {quote.method !== 'distance' &&
+                              ` · ${formatAmount(fee.price_fcfa)} FCFA`}
+                          </option>
+                        ))}
+                      </select>
+                      {quote.method === 'distance' && (
+                        <p className="text-[12px] text-ink-dimmer mt-1.5 flex items-start gap-1.5">
+                          <MapPin size={13} className="text-gold flex-shrink-0 mt-0.5" />
+                          Le prix est calculé sur la distance réelle depuis votre position, pas sur
+                          le tarif de la commune.
+                        </p>
+                      )}
+                    </>
                   ) : (
-                    <p className="text-sm text-ink-dimmer">Aucune ville de livraison configurée pour le moment.</p>
+                    <p className="text-sm text-ink-dimmer">Aucune zone de livraison configurée pour le moment.</p>
                   )}
                 </div>
 

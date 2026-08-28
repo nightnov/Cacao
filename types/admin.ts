@@ -49,6 +49,14 @@ export interface Order {
   created_at: string
   delivery_code?: string | null
   notes?: string | null
+  /** Position partagée par le client au moment de commander. Absente s'il a refusé. */
+  delivery_lat?: number | null
+  delivery_lng?: number | null
+  /** Précision annoncée par le navigateur, en mètres. */
+  delivery_accuracy_m?: number | null
+  /** Distance retenue par le serveur pour calculer les frais. */
+  delivery_distance_km?: number | null
+  delivery_method?: 'distance' | 'commune' | 'defaut' | null
   shipping_address?: {
     full_name: string
     phone: string

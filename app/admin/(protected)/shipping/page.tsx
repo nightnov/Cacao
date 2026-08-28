@@ -9,6 +9,7 @@ import { TableShell, Column } from '@/components/admin/TableShell'
 import { IconButton } from '@/components/admin/IconButton'
 import { Pagination } from '@/components/admin/Pagination'
 import { formatAmount } from '@/lib/format'
+import DeliveryTariffPanel from '@/components/admin/DeliveryTariffPanel'
 
 interface ShippingFee {
   id: string
@@ -105,6 +106,18 @@ export default function AdminShipping() {
           <Plus size={16} /> Ajouter tarif
         </Button>
       </div>
+
+      {/* La grille à la distance passe avant le tableau : c'est elle qui décide
+          du prix dès que le client partage sa position. Les tarifs par zone
+          ci-dessous ne servent que de repli. */}
+      <div className="mb-8">
+        <DeliveryTariffPanel />
+      </div>
+
+      <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-1">Tarifs par zone</h2>
+      <p className="text-sm text-[#7D6A5D] mb-4">
+        Appliqués quand le client ne partage pas sa position.
+      </p>
 
       <TableShell
         columns={columns}

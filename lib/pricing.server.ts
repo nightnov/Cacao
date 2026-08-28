@@ -1,5 +1,12 @@
 import 'server-only'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
+import {
+  quoteDelivery,
+  accuracyIsUsable,
+  DEFAULT_TARIFF,
+  type DeliveryTariff,
+  type DeliveryQuote,
+} from '@/lib/delivery'
 
 /**
  * Calcul du montant à payer, côté serveur, à partir des prix en base.
@@ -26,6 +33,8 @@ export interface PricedOrder {
   lines: PricedLine[]
   productsTotal: number
   shipping: number
+  /** Détail du calcul de livraison : distance retenue et méthode employée. */
+  deliveryQuote: DeliveryQuote
   discount: number
   promoCode: string | null
   total: number
@@ -129,7 +138,9 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
 
   const { data: order } = await supabase
     .from('orders')
-    .select('id, user_id, total_fcfa, shipping_address, promo_code')
+    .select(
+      'id, user_id, total_fcfa, shipping_address, promo_code, delivery_lat, delivery_lng, delivery_accuracy_m'
+    )
     .eq('id', orderId)
     .maybeSingle()
 
@@ -183,17 +194,57 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
     })
   }
 
-  // Frais de livraison relus depuis la ville enregistrée sur la commande.
+  // Frais de livraison entièrement recalculés : ni la distance ni le prix
+  // annoncés par le navigateur ne sont repris. Le point de départ vient des
+  // réglages, celui d'arrivée de la commande, et la grille de la base.
   const city = (order.shipping_address as any)?.city
-  let shipping = 0
-  if (city) {
-    const { data: fee } = await supabase
-      .from('shipping_fees')
-      .select('fee_fcfa')
-      .eq('city', city)
-      .maybeSingle()
-    shipping = fee?.fee_fcfa ?? 0
+  const [feeRes, tariffRes] = await Promise.all([
+    city
+      ? supabase.from('shipping_fees').select('price_fcfa').eq('city', city).maybeSingle()
+      : Promise.resolve({ data: null as any }),
+    supabase
+      .from('site_settings')
+      .select('key, value')
+      .in('key', [
+        'pickup_lat',
+        'pickup_lng',
+        'delivery_base_fcfa',
+        'delivery_per_km_fcfa',
+        'delivery_road_factor',
+        'delivery_min_fcfa',
+        'delivery_max_fcfa',
+      ]),
+  ])
+
+  const s = Object.fromEntries((tariffRes.data || []).map(r => [r.key, r.value]))
+  const num = (v: unknown, fallback: number) => {
+    const n = Number(v)
+    return Number.isFinite(n) ? n : fallback
   }
+
+  const tariff: DeliveryTariff = {
+    pickupLat: s.pickup_lat != null && s.pickup_lat !== '' ? num(s.pickup_lat, NaN) : null,
+    pickupLng: s.pickup_lng != null && s.pickup_lng !== '' ? num(s.pickup_lng, NaN) : null,
+    baseFcfa: num(s.delivery_base_fcfa, DEFAULT_TARIFF.baseFcfa),
+    perKmFcfa: num(s.delivery_per_km_fcfa, DEFAULT_TARIFF.perKmFcfa),
+    roadFactor: num(s.delivery_road_factor, DEFAULT_TARIFF.roadFactor),
+    minFcfa: num(s.delivery_min_fcfa, DEFAULT_TARIFF.minFcfa),
+    maxFcfa: num(s.delivery_max_fcfa, DEFAULT_TARIFF.maxFcfa),
+  }
+  if (!Number.isFinite(tariff.pickupLat as number)) tariff.pickupLat = null
+  if (!Number.isFinite(tariff.pickupLng as number)) tariff.pickupLng = null
+
+  // Une position trop imprécise est ignorée : elle ferait facturer une commune
+  // pour une autre.
+  const point =
+    order.delivery_lat != null &&
+    order.delivery_lng != null &&
+    accuracyIsUsable(order.delivery_accuracy_m)
+      ? { lat: order.delivery_lat, lng: order.delivery_lng }
+      : null
+
+  const quote = quoteDelivery(tariff, point, feeRes.data?.price_fcfa ?? null)
+  const shipping = quote.fcfa
 
   let discount = 0
   if (order.promo_code) {
@@ -207,6 +258,7 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
     lines,
     productsTotal,
     shipping,
+    deliveryQuote: quote,
     discount,
     promoCode: discount > 0 ? order.promo_code : null,
     total,

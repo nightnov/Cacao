@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Facebook, Instagram, Youtube, Star, MapPin } from 'lucide-react'
 import { getSupabaseClient } from '@/lib/supabase'
-import { CATEGORIES } from '@/lib/categories'
+import { useCategories } from '@/hooks/useCategories'
 
 interface SocialLinks {
   facebook?: string
@@ -13,10 +13,15 @@ interface SocialLinks {
   youtube?: string
 }
 
-/** Rayons mis en avant dans le pied de page : les trois principaux. */
-const FOOTER_RAYONS = ['portable', 'bureau', 'gaming']
+/**
+ * Nombre de rayons mis en avant dans le pied de page. Ce sont les premiers de
+ * l'ordre défini dans l'administration — plus une liste figée qui pouvait
+ * désigner un rayon supprimé ou masqué.
+ */
+const FOOTER_RAYON_COUNT = 3
 
 export function Footer() {
+  const footerRayons = useCategories().slice(0, FOOTER_RAYON_COUNT)
   const [social, setSocial] = useState<SocialLinks>({})
   const [rating, setRating] = useState<{ avg: number; count: number } | null>(null)
 
@@ -62,28 +67,28 @@ export function Footer() {
   }, [])
 
   const hasSocial = social.facebook || social.instagram || social.tiktok || social.youtube
-  const socialLink = 'w-9 h-9 rounded-lg bg-[#2A2D31] border border-[#3E4247] flex items-center justify-center text-[#B3B8BE] hover:text-[#FDC700] hover:border-[#FDC700] transition-colors'
-  const colLink = 'text-[13px] text-[#8E959D] hover:text-[#FDC700] transition-colors'
+  const socialLink = 'w-9 h-9 rounded-lg bg-bg-raised border border-border-mid flex items-center justify-center text-ink-dim hover:text-gold hover:border-gold transition-colors'
+  const colLink = 'text-[13px] text-ink-dimmer hover:text-gold transition-colors'
 
   return (
-    <footer className="bg-[#1C2021] border-t border-[#35383C] mt-14">
+    <footer className="bg-bg-panel border-t border-border mt-14">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-11 grid grid-cols-2 lg:grid-cols-[1.4fr,1fr,1fr,1fr] gap-8 lg:gap-10">
         {/* Marque */}
         <div className="col-span-2 lg:col-span-1">
-          <Link href="/" className="font-display font-bold text-xl tracking-[2px] text-[#EEF2F7] hover:text-[#FDC700] transition-colors">
+          <Link href="/" className="font-display font-bold text-xl tracking-[2px] text-ink hover:text-gold transition-colors">
             CACAO
           </Link>
-          <p className="text-[13px] text-[#8E959D] mt-3.5 leading-[1.65] max-w-xs">
+          <p className="text-[13px] text-ink-dimmer mt-3.5 leading-[1.65] max-w-xs">
             Ordinateurs portables, bureau, gaming et accessoires. Livraison suivie partout en Côte d&apos;Ivoire.
           </p>
 
           {rating && (
             <div className="flex items-center gap-2 mt-4">
-              <Star size={15} className="fill-[#FDC700] text-[#FDC700]" />
-              <span className="font-display text-[15px] text-[#EEF2F7] tabular-nums">
+              <Star size={15} className="fill-gold text-gold" />
+              <span className="font-display text-[15px] text-ink tabular-nums">
                 {rating.avg.toFixed(1).replace('.', ',')}/5
               </span>
-              <span className="text-[12px] text-[#8E959D]">
+              <span className="text-[12px] text-ink-dimmer">
                 ({rating.count} avis client{rating.count > 1 ? 's' : ''})
               </span>
             </div>
@@ -120,23 +125,21 @@ export function Footer() {
         {/* Rayons : les trois principaux seulement, le catalogue complet
             reste accessible depuis la navbar et la page catalogue. */}
         <div>
-          <h3 className="font-display text-[13px] text-[#EEF2F7] mb-4">RAYONS</h3>
+          <h3 className="font-display text-[13px] text-ink mb-4">RAYONS</h3>
           <ul className="space-y-2.5">
-            {FOOTER_RAYONS.map(value => {
-              const cat = CATEGORIES.find(c => c.value === value)
-              if (!cat) return null
-              return (
-                <li key={value}>
-                  <Link href={`/products?category=${value}`} className={colLink}>{cat.label}</Link>
-                </li>
-              )
-            })}
+            {footerRayons.map(cat => (
+              <li key={cat.value}>
+                <Link href={`/products?category=${cat.value}`} className={colLink}>
+                  {cat.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
 
         {/* Support */}
         <div>
-          <h3 className="font-display text-[13px] text-[#EEF2F7] mb-4">SUPPORT</h3>
+          <h3 className="font-display text-[13px] text-ink mb-4">SUPPORT</h3>
           <ul className="space-y-2.5">
             <li><Link href="/about" className={colLink}>À propos</Link></li>
             <li><Link href="/faq" className={colLink}>Questions fréquentes</Link></li>
@@ -146,20 +149,20 @@ export function Footer() {
 
         {/* Informations */}
         <div>
-          <h3 className="font-display text-[13px] text-[#EEF2F7] mb-4">INFORMATIONS</h3>
+          <h3 className="font-display text-[13px] text-ink mb-4">INFORMATIONS</h3>
           <ul className="space-y-2.5">
             <li><Link href="/legal/terms" className={colLink}>Conditions générales</Link></li>
             <li><Link href="/legal/privacy" className={colLink}>Confidentialité</Link></li>
-            <li className="flex items-start gap-2 text-[13px] text-[#8E959D] pt-1">
-              <MapPin size={14} className="text-[#FDC700] flex-shrink-0 mt-0.5" />
+            <li className="flex items-start gap-2 text-[13px] text-ink-dimmer pt-1">
+              <MapPin size={14} className="text-gold flex-shrink-0 mt-0.5" />
               Abidjan, Côte d&apos;Ivoire
             </li>
           </ul>
         </div>
       </div>
 
-      <div className="border-t border-[#35383C]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-5 flex flex-col sm:flex-row justify-between items-center gap-3 text-[11.5px] text-[#6F767E]">
+      <div className="border-t border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-5 flex flex-col sm:flex-row justify-between items-center gap-3 text-[11.5px] text-ink-faint">
           <p>© 2026 CACAO. Tous droits réservés.</p>
           <p>Transactions traitées par MoneyFusion</p>
         </div>

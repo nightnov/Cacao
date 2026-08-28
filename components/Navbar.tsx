@@ -10,7 +10,7 @@ import {
 import { getCartCount, CART_EVENT } from '@/lib/cart'
 import { useAuth } from '@/hooks/useAuth'
 import { getSupabaseClient } from '@/lib/supabase'
-import { CATEGORIES } from '@/lib/categories'
+import { useCategories } from '@/hooks/useCategories'
 import { CategoryNav } from '@/components/CategoryNav'
 
 const FALLBACK_SEARCH_SUGGESTIONS = ['PC portable', 'Écran', 'Clavier']
@@ -24,6 +24,7 @@ const helpLinks = [
 
 export function Navbar() {
   const router = useRouter()
+  const categories = useCategories()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false)
   const [cartCount, setCartCount] = useState(0)
@@ -117,15 +118,15 @@ export function Navbar() {
   const avatarLetter = (firstName || user?.email || '?').charAt(0).toUpperCase()
   const isAdmin = user?.id === ADMIN_UUID
 
-  const act = 'relative flex flex-col items-center gap-1 text-[10.5px] font-medium text-[#B3B8BE] hover:text-[#FDC700] transition-colors'
-  const badge = 'absolute -top-1.5 right-0 bg-[#FDC700] text-[#1A1A1A] text-[9px] font-extrabold rounded-full min-w-[15px] h-[15px] px-1 flex items-center justify-center'
+  const act = 'relative flex flex-col items-center gap-1 text-[10.5px] font-medium text-ink-dim hover:text-gold transition-colors'
+  const badge = 'absolute -top-1.5 right-0 bg-gold text-ink-invert text-[9px] font-extrabold rounded-full min-w-[15px] h-[15px] px-1 flex items-center justify-center'
 
   return (
-    <nav className="bg-[#1C2021] border-b border-[#35383C] sticky top-0 z-30">
+    <nav className="bg-bg-panel border-b border-border sticky top-0 z-30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-3 flex items-center gap-4 lg:gap-6">
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="lg:hidden text-[#EEF2F7] flex-shrink-0"
+          className="lg:hidden text-ink flex-shrink-0"
           aria-label={isMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
           aria-expanded={isMenuOpen}
         >
@@ -133,7 +134,7 @@ export function Navbar() {
         </button>
 
         {/* Le mot-symbole seul ramène toujours à l'accueil, depuis n'importe quelle page */}
-        <Link href="/" className="font-display font-bold text-xl sm:text-2xl tracking-[2px] text-[#EEF2F7] hover:text-[#FDC700] transition-colors flex-shrink-0">
+        <Link href="/" className="font-display font-bold text-xl sm:text-2xl tracking-[2px] text-ink hover:text-gold transition-colors flex-shrink-0">
           CACAO
         </Link>
 
@@ -142,8 +143,8 @@ export function Navbar() {
 
         {/* Recherche : occupe l'espace disponible entre la marque et les actions */}
         <div className="hidden sm:block relative flex-1 min-w-0 max-w-md ml-auto">
-          <div className="flex items-center gap-2 bg-[#2A2D31] border border-[#3E4247] rounded-lg px-3 py-2 focus-within:border-[#FDC700] transition-colors">
-            <Search size={16} className="text-[#8E959D] flex-shrink-0" />
+          <div className="flex items-center gap-2 bg-bg-raised border border-border-mid rounded-lg px-3 py-2 focus-within:border-gold transition-colors">
+            <Search size={16} className="text-ink-dimmer flex-shrink-0" />
             <input
               ref={searchInputRef}
               type="text"
@@ -153,20 +154,20 @@ export function Navbar() {
               onFocus={() => setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
               onKeyDown={e => { if (e.key === 'Enter') handleSearchSubmit() }}
-              className="text-[13px] bg-transparent outline-none text-[#EEF2F7] flex-1 min-w-0"
+              className="text-[13px] bg-transparent outline-none text-ink flex-1 min-w-0"
             />
-            <kbd className="hidden md:block bg-[#35383C] rounded px-1.5 text-[10px] text-[#B3B8BE] flex-shrink-0">Ctrl K</kbd>
+            <kbd className="hidden md:block bg-border rounded px-1.5 text-[10px] text-ink-dim flex-shrink-0">Ctrl K</kbd>
           </div>
 
           {showSuggestions && (
-            <div className="absolute left-0 top-12 w-full min-w-[280px] bg-[#1C2021] rounded-xl border border-[#35383C] shadow-card-hover p-4 z-50">
-              <p className="text-[11px] font-semibold text-[#8E959D] mb-3">Recherches fréquentes</p>
+            <div className="absolute left-0 top-12 w-full min-w-[280px] bg-bg-panel rounded-xl border border-border shadow-card-hover p-4 z-50">
+              <p className="text-[11px] font-semibold text-ink-dimmer mb-3">Recherches fréquentes</p>
               <div className="flex flex-wrap gap-2">
                 {suggestions.map(s => (
                   <button
                     key={s}
                     onClick={() => handleSearchSubmit(s)}
-                    className="px-3 py-1.5 bg-[#2A2D31] border border-[#3E4247] hover:border-[#FDC700] hover:text-[#FDC700] rounded-lg text-[13px] text-[#B3B8BE] transition-colors"
+                    className="px-3 py-1.5 bg-bg-raised border border-border-mid hover:border-gold hover:text-gold rounded-lg text-[13px] text-ink-dim transition-colors"
                   >
                     {s}
                   </button>
@@ -186,7 +187,7 @@ export function Navbar() {
             isLoggedIn ? (
               <div className="relative" ref={accountMenuRef}>
                 <button onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)} className={act} aria-expanded={isAccountMenuOpen}>
-                  <span className="w-[19px] h-[19px] rounded-full bg-[#FDC700] text-[#1A1A1A] text-[10px] font-bold flex items-center justify-center">
+                  <span className="w-[19px] h-[19px] rounded-full bg-gold text-ink-invert text-[10px] font-bold flex items-center justify-center">
                     {avatarLetter}
                   </span>
                   <span>Compte</span>
@@ -194,14 +195,14 @@ export function Navbar() {
                 </button>
 
                 {isAccountMenuOpen && (
-                  <div className="absolute right-0 top-12 w-64 bg-[#1C2021] rounded-xl border border-[#35383C] shadow-card-hover overflow-hidden z-50">
-                    <div className="px-4 py-3 border-b border-[#35383C] flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-[#FDC700] text-[#1A1A1A] font-bold flex items-center justify-center flex-shrink-0">
+                  <div className="absolute right-0 top-12 w-64 bg-bg-panel rounded-xl border border-border shadow-card-hover overflow-hidden z-50">
+                    <div className="px-4 py-3 border-b border-border flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gold text-ink-invert font-bold flex items-center justify-center flex-shrink-0">
                         {avatarLetter}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-[#EEF2F7] truncate">{displayName}</p>
-                        <Link href="/account" className="text-xs text-[#FDC700] hover:underline" onClick={() => setIsAccountMenuOpen(false)}>
+                        <p className="text-sm font-semibold text-ink truncate">{displayName}</p>
+                        <Link href="/account" className="text-xs text-gold hover:underline" onClick={() => setIsAccountMenuOpen(false)}>
                           Voir mon profil
                         </Link>
                       </div>
@@ -210,39 +211,39 @@ export function Navbar() {
                     {isAdmin && (
                       <>
                         <Link href="/admin" onClick={() => setIsAccountMenuOpen(false)}
-                          className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-[#FDC700] hover:bg-[#2A2D31] transition-colors">
+                          className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gold hover:bg-bg-raised transition-colors">
                           <LayoutDashboard size={16} strokeWidth={1.8} /> Tableau de bord admin
                         </Link>
-                        <div className="border-t border-[#35383C]" />
+                        <div className="border-t border-border" />
                       </>
                     )}
 
                     <Link href="/" onClick={() => setIsAccountMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 text-sm text-[#EEF2F7] hover:bg-[#2A2D31] transition-colors">
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-ink hover:bg-bg-raised transition-colors">
                       <Home size={16} strokeWidth={1.8} /> Retour à l&apos;accueil
                     </Link>
                     <Link href="/account" onClick={() => setIsAccountMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 text-sm text-[#EEF2F7] hover:bg-[#2A2D31] transition-colors">
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-ink hover:bg-bg-raised transition-colors">
                       <Package size={16} strokeWidth={1.8} /> Mes commandes
                     </Link>
                     <Link href="/account/messages" onClick={() => setIsAccountMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 text-sm text-[#EEF2F7] hover:bg-[#2A2D31] transition-colors">
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-ink hover:bg-bg-raised transition-colors">
                       <MessageSquare size={16} strokeWidth={1.8} /> Messages
                       {unreadCount > 0 && (
-                        <span className="ml-auto bg-[#FDC700] text-[#1A1A1A] text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                        <span className="ml-auto bg-gold text-ink-invert text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                           {unreadCount}
                         </span>
                       )}
                     </Link>
                     <Link href="/account/favorites" onClick={() => setIsAccountMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 text-sm text-[#EEF2F7] hover:bg-[#2A2D31] transition-colors">
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-ink hover:bg-bg-raised transition-colors">
                       <Heart size={16} strokeWidth={1.8} /> Mes favoris
                     </Link>
 
-                    <div className="border-t border-[#35383C]" />
+                    <div className="border-t border-border" />
                     <button
                       onClick={() => { setIsAccountMenuOpen(false); logout() }}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-[#F87171] hover:bg-[#2A2D31] transition-colors text-left"
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-danger hover:bg-bg-raised transition-colors text-left"
                     >
                       <LogOut size={16} strokeWidth={1.8} /> Se déconnecter
                     </button>
@@ -267,67 +268,67 @@ export function Navbar() {
 
       {/* Menu mobile */}
       {isMenuOpen && (
-        <div className="lg:hidden border-t border-[#35383C] bg-[#1C2021]">
+        <div className="lg:hidden border-t border-border bg-bg-panel">
           <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col">
-            <div className="flex items-center gap-2 bg-[#2A2D31] border border-[#3E4247] rounded-lg px-3 py-2.5 mb-4">
-              <Search size={16} className="text-[#8E959D] flex-shrink-0" />
+            <div className="flex items-center gap-2 bg-bg-raised border border-border-mid rounded-lg px-3 py-2.5 mb-4">
+              <Search size={16} className="text-ink-dimmer flex-shrink-0" />
               <input
                 type="text"
                 placeholder="Rechercher un produit…"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleSearchSubmit() }}
-                className="text-sm bg-transparent outline-none text-[#EEF2F7] flex-1 min-w-0"
+                className="text-sm bg-transparent outline-none text-ink flex-1 min-w-0"
               />
             </div>
 
-            <Link href="/" className="flex items-center gap-3 py-2.5 text-sm font-semibold text-[#EEF2F7]" onClick={() => setIsMenuOpen(false)}>
-              <Home size={17} strokeWidth={1.8} className="text-[#FDC700]" /> Accueil
+            <Link href="/" className="flex items-center gap-3 py-2.5 text-sm font-semibold text-ink" onClick={() => setIsMenuOpen(false)}>
+              <Home size={17} strokeWidth={1.8} className="text-gold" /> Accueil
             </Link>
 
-            <p className="text-[11px] font-semibold text-[#8E959D] mt-3 mb-1">RAYONS</p>
-            <Link href="/products" className="py-2 text-sm font-semibold text-[#EEF2F7]" onClick={() => setIsMenuOpen(false)}>
+            <p className="text-[11px] font-semibold text-ink-dimmer mt-3 mb-1">RAYONS</p>
+            <Link href="/products" className="py-2 text-sm font-semibold text-ink" onClick={() => setIsMenuOpen(false)}>
               Tous les produits
             </Link>
-            {CATEGORIES.map(cat => {
+            {categories.map(cat => {
               const Icon = cat.icon
               return (
                 <Link
                   key={cat.value}
                   href={`/products?category=${cat.value}`}
-                  className="flex items-center gap-3 py-2 text-sm text-[#B3B8BE] hover:text-[#FDC700] transition-colors"
+                  className="flex items-center gap-3 py-2 text-sm text-ink-dim hover:text-gold transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <Icon size={17} strokeWidth={1.8} className="text-[#FDC700]" />
+                  <Icon size={17} strokeWidth={1.8} className="text-gold" />
                   {cat.label}
                 </Link>
               )
             })}
 
-            <div className="border-t border-[#35383C] my-3" />
+            <div className="border-t border-border my-3" />
 
             {!authLoading && (isLoggedIn ? (
               <>
-                <Link href="/account" className="py-2 text-sm text-[#B3B8BE]" onClick={() => setIsMenuOpen(false)}>Mon compte</Link>
-                <Link href="/account/favorites" className="py-2 text-sm text-[#B3B8BE]" onClick={() => setIsMenuOpen(false)}>Mes favoris</Link>
+                <Link href="/account" className="py-2 text-sm text-ink-dim" onClick={() => setIsMenuOpen(false)}>Mon compte</Link>
+                <Link href="/account/favorites" className="py-2 text-sm text-ink-dim" onClick={() => setIsMenuOpen(false)}>Mes favoris</Link>
                 {isAdmin && (
-                  <Link href="/admin" className="py-2 text-sm font-semibold text-[#FDC700]" onClick={() => setIsMenuOpen(false)}>
+                  <Link href="/admin" className="py-2 text-sm font-semibold text-gold" onClick={() => setIsMenuOpen(false)}>
                     Tableau de bord admin
                   </Link>
                 )}
-                <button onClick={() => { setIsMenuOpen(false); logout() }} className="py-2 text-sm text-[#F87171] text-left">
+                <button onClick={() => { setIsMenuOpen(false); logout() }} className="py-2 text-sm text-danger text-left">
                   Se déconnecter
                 </button>
               </>
             ) : (
-              <Link href="/account/login" className="py-2 text-sm font-semibold text-[#EEF2F7]" onClick={() => setIsMenuOpen(false)}>
+              <Link href="/account/login" className="py-2 text-sm font-semibold text-ink" onClick={() => setIsMenuOpen(false)}>
                 Connexion
               </Link>
             ))}
 
-            <div className="border-t border-[#35383C] my-3" />
+            <div className="border-t border-border my-3" />
             {helpLinks.map(l => (
-              <Link key={l.href} href={l.href} className="py-2 text-sm text-[#B3B8BE]" onClick={() => setIsMenuOpen(false)}>
+              <Link key={l.href} href={l.href} className="py-2 text-sm text-ink-dim" onClick={() => setIsMenuOpen(false)}>
                 {l.label}
               </Link>
             ))}

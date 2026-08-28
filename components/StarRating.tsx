@@ -14,12 +14,12 @@ export function StarRating({ rating, reviewCount, size = 14, showCount = true, c
 
   return (
     <div className="flex items-center gap-1">
-      <Star size={size} className="fill-[#FDC700] text-[#FDC700] flex-shrink-0" aria-hidden="true" />
-      <span className={`${textSize} font-semibold text-[#EEF2F7] tabular-nums`}>
+      <Star size={size} className="fill-gold text-gold flex-shrink-0" aria-hidden="true" />
+      <span className={`${textSize} font-semibold text-ink tabular-nums`}>
         {rating.toFixed(1).replace('.', ',')}
       </span>
       {showCount && typeof reviewCount === 'number' && (
-        <span className={`${textSize} text-[#FDC700] font-semibold tabular-nums`}>
+        <span className={`${textSize} text-gold font-semibold tabular-nums`}>
           ({reviewCount} avis)
         </span>
       )}

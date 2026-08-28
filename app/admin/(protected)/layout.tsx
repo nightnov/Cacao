@@ -7,11 +7,15 @@ import { useState } from 'react'
 import {
   LayoutDashboard,
   Package,
+  Layers,
+  LayoutGrid,
   ShoppingCart,
   MessageSquare,
   Truck,
   Users,
   Settings,
+  BadgePercent,
+  Palette,
   BookOpen,
   Menu,
   LogOut,
@@ -22,10 +26,14 @@ import { Avatar } from '@/components/admin/Avatar'
 const adminLinks = [
   { label: 'Tableau de bord', href: '/admin', icon: LayoutDashboard },
   { label: 'Produits', href: '/admin/products', icon: Package },
+  { label: 'Stock', href: '/admin/stock', icon: Layers },
+  { label: 'Rayons', href: '/admin/categories', icon: LayoutGrid },
   { label: 'Commandes', href: '/admin/orders', icon: ShoppingCart },
   { label: 'Messages', href: '/admin/messages', icon: MessageSquare },
   { label: 'Frais livraison', href: '/admin/shipping', icon: Truck },
   { label: 'Clients', href: '/admin/customers', icon: Users },
+  { label: 'Promotions', href: '/admin/promotions', icon: BadgePercent },
+  { label: 'Apparence', href: '/admin/appearance', icon: Palette },
   { label: 'Réglages', href: '/admin/settings', icon: Settings },
   { label: 'Guide', href: '/admin/guide', icon: BookOpen }
 ]

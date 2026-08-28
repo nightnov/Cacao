@@ -2,6 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Thème « Nuit » par défaut. Chaque couleur est exprimée en canaux R G B, pas en
+  hexadécimal : c'est la forme qu'attend `rgb(var(--x) / <alpha-value>)` dans
+  tailwind.config.ts, et c'est ce qui garde `bg-gold/10` fonctionnel.
+
+  L'administration (Apparence) peut réécrire ces mêmes variables sur <html> pour
+  habiller le site aux couleurs d'une saison. Ce bloc reste le filet de sécurité :
+  si aucun thème n'est enregistré, ou si la lecture en base échoue, le site
+  s'affiche en Nuit plutôt qu'en noir sur noir.
+*/
+:root {
+  --c-bg: 34 36 39;              /* #222427 */
+  --c-bg-panel: 28 32 33;        /* #1C2021 */
+  --c-bg-sunken: 23 26 28;       /* #171A1C */
+  --c-bg-raised: 42 45 49;       /* #2A2D31 */
+  --c-ink: 238 242 247;          /* #EEF2F7 */
+  --c-ink-dim: 179 184 190;      /* #B3B8BE */
+  --c-ink-dimmer: 142 149 157;   /* #8E959D */
+  --c-ink-faint: 111 118 126;    /* #6F767E */
+  --c-ink-invert: 26 26 26;      /* #1A1A1A */
+  --c-border: 53 56 60;          /* #35383C */
+  --c-border-mid: 62 66 71;      /* #3E4247 */
+  --c-border-strong: 78 82 87;   /* #4E5257 */
+  --c-gold: 253 199 0;           /* #FDC700 */
+  --c-gold-dim: 224 176 0;       /* #E0B000 */
+  --c-green: 0 166 62;           /* #00A63E */
+  --c-green-bright: 63 206 122;  /* #3FCE7A */
+  --c-info: 60 164 255;          /* #3CA4FF */
+  --c-danger: 248 113 113;       /* #F87171 */
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -19,8 +50,8 @@ html {
 }
 
 body {
-  background-color: #222427;
-  color: #EEF2F7;
+  background-color: rgb(var(--c-bg));
+  color: rgb(var(--c-ink));
   font-family: var(--font-inter), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -50,7 +81,7 @@ button {
 
 /* Anneau de focus clavier, indispensable pour un tunnel d'achat accessible */
 :focus-visible {
-  outline: 2px solid #FDC700;
+  outline: 2px solid rgb(var(--c-gold));
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -62,14 +93,14 @@ input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 textarea:-webkit-autofill,
 select:-webkit-autofill {
-  -webkit-text-fill-color: #EEF2F7;
-  -webkit-box-shadow: 0 0 0 1000px #2A2D31 inset;
-  caret-color: #EEF2F7;
+  -webkit-text-fill-color: rgb(var(--c-ink));
+  -webkit-box-shadow: 0 0 0 1000px rgb(var(--c-bg-raised)) inset;
+  caret-color: rgb(var(--c-ink));
   transition: background-color 9999s ease-in-out 0s;
 }
 
 ::placeholder {
-  color: #6F767E;
+  color: rgb(var(--c-ink-faint));
 }
 
 ::-webkit-scrollbar {
@@ -78,16 +109,16 @@ select:-webkit-autofill {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1C2021;
+  background: rgb(var(--c-bg-panel));
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3E4247;
+  background: rgb(var(--c-border-mid));
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4E5257;
+  background: rgb(var(--c-border-strong));
 }
 
 /* Conteneurs à défilement horizontal (rayons, vignettes) sans barre visible */

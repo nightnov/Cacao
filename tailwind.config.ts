@@ -12,7 +12,18 @@ import type { Config } from 'tailwindcss'
  *
  * Le doré est très clair : tout texte posé DESSUS doit être `ink-invert`
  * (#1A1A1A, 12.9:1). Du blanc sur doré tomberait à 1.6:1 et serait illisible.
+ *
+ * Les valeurs elles-mêmes ne vivent plus ici mais dans `app/globals.css`, sous
+ * forme de variables CSS. C'est ce qui permet à l'administration de changer la
+ * teinte du site (Noël, Halloween…) sans recompilation : le serveur réécrit les
+ * variables, Tailwind n'a pas besoin de savoir ce qu'elles valent.
+ *
+ * Les variables contiennent des CANAUX (« 253 199 0 ») et non un hexadécimal,
+ * pour que les modificateurs d'opacité de Tailwind (`bg-gold/10`) continuent de
+ * fonctionner — avec un simple `var(--x)` contenant « #FDC700 », ils casseraient.
  */
+const c = (name: string) => `rgb(var(--c-${name}) / <alpha-value>)`
+
 const config: Config = {
   content: [
     './app/**/*.{js,ts,jsx,tsx,mdx}',
@@ -21,21 +32,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        bg: '#222427',
-        'bg-panel': '#1C2021',
-        'bg-sunken': '#171A1C',
-        'bg-raised': '#2A2D31',
-        ink: '#EEF2F7',
-        'ink-dim': '#B3B8BE',
-        'ink-dimmer': '#8E959D',
-        'ink-invert': '#1A1A1A',
-        border: '#35383C',
-        'border-strong': '#4E5257',
-        gold: '#FDC700',
-        'gold-dim': '#E0B000',
-        green: '#00A63E',
-        'green-bright': '#3FCE7A',
-        info: '#3CA4FF',
+        bg: c('bg'),
+        'bg-panel': c('bg-panel'),
+        'bg-sunken': c('bg-sunken'),
+        'bg-raised': c('bg-raised'),
+        ink: c('ink'),
+        'ink-dim': c('ink-dim'),
+        'ink-dimmer': c('ink-dimmer'),
+        'ink-faint': c('ink-faint'),
+        'ink-invert': c('ink-invert'),
+        border: c('border'),
+        'border-mid': c('border-mid'),
+        'border-strong': c('border-strong'),
+        gold: c('gold'),
+        'gold-dim': c('gold-dim'),
+        green: c('green'),
+        'green-bright': c('green-bright'),
+        info: c('info'),
+        danger: c('danger'),
       },
       fontFamily: {
         // `serif` est conservé comme alias : ~100 composants l'utilisent pour

@@ -41,3 +41,8 @@ scratch
 
 # Artefact de build TypeScript
 tsconfig.tsbuildinfo
+
+# Maquettes HTML ayant servi à valider la direction de l'administration.
+# Les pages réelles existent désormais dans app/admin/ ; on les garde en local
+# comme référence visuelle sans les versionner.
+maquettes-admin/

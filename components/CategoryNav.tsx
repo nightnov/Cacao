@@ -3,7 +3,8 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { CATEGORIES } from '@/lib/categories'
+import { useCategories } from '@/hooks/useCategories'
+import { FALLBACK_CATEGORIES } from '@/lib/categories'
 
 /**
  * Bande des rayons de la navbar.
@@ -19,19 +20,20 @@ import { CATEGORIES } from '@/lib/categories'
 function CategoryNavInner() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const categories = useCategories()
   const active = pathname === '/products' ? searchParams.get('category') : null
 
   return (
     <>
-      {CATEGORIES.slice(0, 5).map(cat => (
+      {categories.slice(0, 5).map(cat => (
         <Link
           key={cat.value}
           href={`/products?category=${cat.value}`}
           aria-current={active === cat.value ? 'page' : undefined}
           className={
             active === cat.value
-              ? 'text-[#FDC700] font-bold'
-              : 'text-[#B3B8BE] hover:text-[#EEF2F7] transition-colors'
+              ? 'text-gold font-bold'
+              : 'text-ink-dim hover:text-ink transition-colors'
           }
         >
           {cat.label}
@@ -41,12 +43,17 @@ function CategoryNavInner() {
   )
 }
 
-/** Repli rendu côté serveur : mêmes libellés, sans état actif. */
+/**
+ * Repli rendu côté serveur : mêmes libellés, sans état actif.
+ *
+ * Il utilise volontairement la liste figée et non le hook : ce rendu se produit
+ * avant toute requête, il n'y aurait rien à afficher.
+ */
 function CategoryNavFallback() {
   return (
     <>
-      {CATEGORIES.slice(0, 5).map(cat => (
-        <Link key={cat.value} href={`/products?category=${cat.value}`} className="text-[#B3B8BE]">
+      {FALLBACK_CATEGORIES.slice(0, 5).map(cat => (
+        <Link key={cat.value} href={`/products?category=${cat.value}`} className="text-ink-dim">
           {cat.label}
         </Link>
       ))}

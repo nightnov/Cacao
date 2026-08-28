@@ -26,13 +26,13 @@ export default function Cart() {
 
   if (items.length === 0) {
     return (
-      <main className="min-h-screen bg-[#1C2021] flex flex-col">
+      <main className="min-h-screen bg-bg-panel flex flex-col">
         <Navbar />
 
         <div className="flex-1 max-w-4xl mx-auto px-5 sm:px-10 py-16 w-full">
           <h1 className="font-serif font-semibold text-4xl mb-8">Votre panier</h1>
 
-          <div className="bg-[#1C2021] rounded-lg border border-[#35383C] p-8 text-center">
+          <div className="bg-bg-panel rounded-lg border border-border p-8 text-center">
             <div className="mb-6">
               <svg
                 width="48"
@@ -48,8 +48,8 @@ export default function Cart() {
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
               </svg>
             </div>
-            <h2 className="font-serif font-semibold text-2xl text-[#EEF2F7] mb-3">Panier vide</h2>
-            <p className="text-[#B3B8BE] mb-8">Explorez notre catalogue et ajoutez vos produits préférés.</p>
+            <h2 className="font-serif font-semibold text-2xl text-ink mb-3">Panier vide</h2>
+            <p className="text-ink-dim mb-8">Explorez notre catalogue et ajoutez vos produits préférés.</p>
             <Link href="/products">
               <Button variant="primary">Continuer les achats</Button>
             </Link>
@@ -62,7 +62,7 @@ export default function Cart() {
   }
 
   return (
-    <main className="min-h-screen bg-[#1C2021] flex flex-col">
+    <main className="min-h-screen bg-bg-panel flex flex-col">
       <Navbar />
 
       <div className="flex-1 max-w-5xl mx-auto px-5 sm:px-10 py-16 w-full">
@@ -72,8 +72,8 @@ export default function Cart() {
           {/* Items */}
           <div className="md:col-span-2 space-y-4">
             {items.map(item => (
-              <div key={`${item.id}-${item.variant_id || 'default'}`} className="bg-[#1C2021] rounded-lg border border-[#35383C] p-4 flex gap-4 items-center">
-                <Link href={`/products/${item.slug}`} className="w-20 h-20 rounded-lg bg-[#171A1C] border border-[#35383C] overflow-hidden flex items-center justify-center flex-shrink-0">
+              <div key={`${item.id}-${item.variant_id || 'default'}`} className="bg-bg-panel rounded-lg border border-border p-4 flex gap-4 items-center">
+                <Link href={`/products/${item.slug}`} className="w-20 h-20 rounded-lg bg-bg-sunken border border-border overflow-hidden flex items-center justify-center flex-shrink-0">
                   {item.image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
@@ -87,38 +87,38 @@ export default function Cart() {
                 </Link>
 
                 <div className="flex-1 min-w-0">
-                  <Link href={`/products/${item.slug}`} className="font-semibold text-[#EEF2F7] hover:text-[#FDC700] transition-colors line-clamp-1">
+                  <Link href={`/products/${item.slug}`} className="font-semibold text-ink hover:text-gold transition-colors line-clamp-1">
                     {item.name}
                   </Link>
                   {item.variant_label && (
-                    <p className="text-xs text-[#8E959D] mt-0.5">{item.variant_label}</p>
+                    <p className="text-xs text-ink-dimmer mt-0.5">{item.variant_label}</p>
                   )}
-                  <p className="text-sm text-[#8E959D] mt-1">{formatAmount(item.price_fcfa)} FCFA</p>
+                  <p className="text-sm text-ink-dimmer mt-1">{formatAmount(item.price_fcfa)} FCFA</p>
                 </div>
 
-                <div className="flex items-center border-2 border-[#4E5257] rounded-full flex-shrink-0">
+                <div className="flex items-center border-2 border-border-strong rounded-full flex-shrink-0">
                   <button
                     onClick={() => updateCartItemQuantity(item.id, item.quantity - 1, item.variant_id)}
-                    className="w-8 h-8 flex items-center justify-center text-[#EEF2F7] hover:text-[#FDC700]"
+                    className="w-8 h-8 flex items-center justify-center text-ink hover:text-gold"
                   >
                     −
                   </button>
                   <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
                   <button
                     onClick={() => updateCartItemQuantity(item.id, item.quantity + 1, item.variant_id)}
-                    className="w-8 h-8 flex items-center justify-center text-[#EEF2F7] hover:text-[#FDC700]"
+                    className="w-8 h-8 flex items-center justify-center text-ink hover:text-gold"
                   >
                     +
                   </button>
                 </div>
 
-                <div className="w-24 text-right font-semibold text-[#EEF2F7] flex-shrink-0">
+                <div className="w-24 text-right font-semibold text-ink flex-shrink-0">
                   {(formatAmount(item.price_fcfa * item.quantity))} FCFA
                 </div>
 
                 <button
                   onClick={() => removeFromCart(item.id, item.variant_id)}
-                  className="text-[#8E959D] hover:text-red-600 transition-colors flex-shrink-0"
+                  className="text-ink-dimmer hover:text-red-600 transition-colors flex-shrink-0"
                   aria-label="Retirer du panier"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -132,25 +132,25 @@ export default function Cart() {
 
           {/* Summary */}
           <div>
-            <div className="bg-[#1C2021] rounded-lg border border-[#35383C] p-6 sticky top-6">
-              <h2 className="font-serif font-semibold text-xl text-[#EEF2F7] mb-6">Résumé</h2>
-              <div className="flex justify-between text-[#B3B8BE] mb-2">
+            <div className="bg-bg-panel rounded-lg border border-border p-6 sticky top-6">
+              <h2 className="font-serif font-semibold text-xl text-ink mb-6">Résumé</h2>
+              <div className="flex justify-between text-ink-dim mb-2">
                 <span>Produits</span>
                 <span>{formatAmount(total)} FCFA</span>
               </div>
-              <p className="text-xs text-[#8E959D] mb-6">
+              <p className="text-xs text-ink-dimmer mb-6">
                 Frais de livraison calculés à l&apos;étape suivante selon votre ville.
               </p>
-              <div className="flex justify-between text-lg font-bold text-[#EEF2F7] pt-4 border-t border-[#35383C] mb-6">
+              <div className="flex justify-between text-lg font-bold text-ink pt-4 border-t border-border mb-6">
                 <span>Total</span>
-                <span className="text-[#FDC700]">{formatAmount(total)} FCFA</span>
+                <span className="text-gold">{formatAmount(total)} FCFA</span>
               </div>
               <Link href="/checkout">
                 <Button variant="primary" className="w-full">
                   Passer commande
                 </Button>
               </Link>
-              <Link href="/products" className="block text-center text-sm text-[#FDC700] hover:underline mt-4">
+              <Link href="/products" className="block text-center text-sm text-gold hover:underline mt-4">
                 Continuer les achats
               </Link>
             </div>

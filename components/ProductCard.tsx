@@ -65,9 +65,9 @@ export function ProductCard({
   return (
     <Link
       href={`/products/${slug}`}
-      className="group flex flex-col bg-[#1C2021] border border-[#35383C] rounded-xl overflow-hidden transition-all duration-200 hover:border-[#4E5257] hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FDC700] focus-visible:ring-offset-2 focus-visible:ring-offset-[#222427]"
+      className="group flex flex-col bg-bg-panel border border-border rounded-xl overflow-hidden transition-all duration-200 hover:border-border-strong hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
     >
-      <div className="relative h-[132px] sm:h-[158px] bg-[#171A1C] flex items-center justify-center overflow-hidden flex-shrink-0">
+      <div className="relative h-[132px] sm:h-[158px] bg-bg-sunken flex items-center justify-center overflow-hidden flex-shrink-0">
         {displayImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -86,11 +86,11 @@ export function ProductCard({
 
         {/* Un seul badge : la remise chiffrée prime sur la nouveauté */}
         {hasPromo ? (
-          <span className="absolute top-2.5 left-2.5 text-[9.5px] font-extrabold px-2 py-[3px] rounded text-white bg-[#00A63E] tabular-nums tracking-wide">
+          <span className="absolute top-2.5 left-2.5 text-[9.5px] font-extrabold px-2 py-[3px] rounded text-white bg-green tabular-nums tracking-wide">
             -{discount}%
           </span>
         ) : isNew ? (
-          <span className="absolute top-2.5 left-2.5 text-[9.5px] font-extrabold px-2 py-[3px] rounded text-[#1A1A1A] bg-[#FDC700] tracking-wide">
+          <span className="absolute top-2.5 left-2.5 text-[9.5px] font-extrabold px-2 py-[3px] rounded text-ink-invert bg-gold tracking-wide">
             NOUVEAU
           </span>
         ) : null}
@@ -98,18 +98,18 @@ export function ProductCard({
         <FavoriteButton
           productId={id}
           size={14}
-          className="absolute top-2 right-2 w-7 h-7 bg-black/45 border border-[#45484C] text-[#B3B8BE]"
+          className="absolute top-2 right-2 w-7 h-7 bg-black/45 border border-border-strong text-ink-dim"
         />
       </div>
 
       <div className="flex flex-col flex-1 px-3.5 pt-3.5 pb-4">
         {/* Nom en display : les références PC sont longues, deux lignes maximum */}
-        <h3 className="font-display text-[14.5px] text-[#EEF2F7] line-clamp-2 min-h-[2.4rem] leading-[1.2] group-hover:text-[#FDC700] transition-colors">
+        <h3 className="font-display text-[14.5px] text-ink line-clamp-2 min-h-[2.4rem] leading-[1.2] group-hover:text-gold transition-colors">
           {name}
         </h3>
 
         {summary && (
-          <p className="text-[10.5px] text-[#8E959D] leading-[1.5] mt-1.5 line-clamp-2">{summary}</p>
+          <p className="text-[10.5px] text-ink-dimmer leading-[1.5] mt-1.5 line-clamp-2">{summary}</p>
         )}
 
         {!!review_count && avg_rating != null && (
@@ -135,7 +135,7 @@ export function ProductCard({
                   aria-pressed={active}
                   onClick={() => setSelectedColor(active ? null : c)}
                   className={`w-5 h-5 rounded-full border-2 flex-shrink-0 transition-transform ${
-                    active ? 'border-[#FDC700] scale-110' : 'border-[#35383C] hover:border-[#4E5257]'
+                    active ? 'border-gold scale-110' : 'border-border hover:border-border-strong'
                   }`}
                   style={{ backgroundColor: hex || '#45484C' }}
                 />
@@ -145,11 +145,11 @@ export function ProductCard({
         )}
 
         <div className="mt-auto pt-2.5 flex items-baseline gap-2 flex-wrap">
-          <span className="font-display text-[17px] text-[#EEF2F7] tabular-nums leading-tight">
+          <span className="font-display text-[17px] text-ink tabular-nums leading-tight">
             {formatAmount(price_fcfa)} FCFA
           </span>
           {hasPromo && (
-            <span className="text-[11px] text-[#6F767E] line-through tabular-nums">
+            <span className="text-[11px] text-ink-faint line-through tabular-nums">
               {formatAmount(compare_at_price_fcfa!)}
             </span>
           )}

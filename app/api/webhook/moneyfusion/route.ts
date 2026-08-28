@@ -52,6 +52,34 @@ export async function POST(request: Request) {
         .eq('id', orderId)
     }
 
+    // Déduction du stock à la confirmation du paiement.
+    //
+    // L'appel est volontairement fait à chaque notification « completed » et
+    // non uniquement quand le statut change : si la mise à jour ci-dessus a
+    // échoué au passage précédent, le stock serait sinon perdu pour toujours.
+    // La fonction est idempotente — déduire deux fois la même commande est
+    // sans effet — donc la répétition ne coûte rien.
+    if (newStatus === 'confirmed') {
+      const { error: stockError } = await supabaseAdmin.rpc('apply_order_stock', {
+        p_order_id: orderId,
+      })
+      // Un échec ici ne doit pas empêcher l'enregistrement du paiement : la
+      // commande est payée, c'est le fait le plus important à conserver.
+      if (stockError) {
+        console.error('Déduction du stock impossible pour la commande', orderId, stockError)
+      }
+
+      // Un code promo n'est décompté qu'ici, et non à la création de la
+      // commande : un panier abandonné avant paiement ne doit pas consommer
+      // une place sur un code à nombre d'utilisations limité.
+      const { error: promoError } = await supabaseAdmin.rpc('apply_order_promotion', {
+        p_order_id: orderId,
+      })
+      if (promoError) {
+        console.error('Comptage du code promo impossible pour', orderId, promoError)
+      }
+    }
+
     await supabaseAdmin.from('payment_logs').insert([{
       order_id: orderId,
       moneyfusion_transaction_id: payload.tokenPay,

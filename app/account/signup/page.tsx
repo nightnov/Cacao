@@ -49,12 +49,12 @@ export default function Signup() {
 
   if (needsConfirmation) {
     return (
-      <main className="min-h-screen bg-[#1C2021] flex flex-col">
+      <main className="min-h-screen bg-bg-panel flex flex-col">
         <Navbar />
         <div className="flex-1 flex items-center justify-center px-5 sm:px-10 py-16">
-          <div className="w-full max-w-md bg-[#1C2021] rounded-lg border border-[#35383C] p-8 text-center">
-            <h1 className="font-serif font-semibold text-2xl text-[#EEF2F7] mb-3">Vérifiez votre email</h1>
-            <p className="text-[#B3B8BE]">
+          <div className="w-full max-w-md bg-bg-panel rounded-lg border border-border p-8 text-center">
+            <h1 className="font-serif font-semibold text-2xl text-ink mb-3">Vérifiez votre email</h1>
+            <p className="text-ink-dim">
               Un lien de confirmation a été envoyé à <strong>{email}</strong>. Cliquez dessus pour activer votre compte.
             </p>
           </div>
@@ -65,58 +65,58 @@ export default function Signup() {
   }
 
   return (
-    <main className="min-h-screen bg-[#1C2021] flex flex-col">
+    <main className="min-h-screen bg-bg-panel flex flex-col">
       <Navbar />
 
       <div className="flex-1 flex items-center justify-center px-5 sm:px-10 py-16">
         <div className="w-full max-w-md">
-          <div className="bg-[#1C2021] rounded-lg border border-[#35383C] p-8">
-            <h1 className="font-serif font-semibold text-2xl text-[#EEF2F7] mb-2">Créer un compte</h1>
-            <p className="text-[#B3B8BE] text-sm mb-8">Rejoignez Cacao pour suivre vos commandes.</p>
+          <div className="bg-bg-panel rounded-lg border border-border p-8">
+            <h1 className="font-serif font-semibold text-2xl text-ink mb-2">Créer un compte</h1>
+            <p className="text-ink-dim text-sm mb-8">Rejoignez Cacao pour suivre vos commandes.</p>
 
             <form onSubmit={handleSignup} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold text-[#EEF2F7] mb-2">Prénom</label>
+                  <label className="block text-sm font-semibold text-ink mb-2">Prénom</label>
                   <input
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
+                    className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-[#EEF2F7] mb-2">Nom</label>
+                  <label className="block text-sm font-semibold text-ink mb-2">Nom</label>
                   <input
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="w-full px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
+                    className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-[#EEF2F7] mb-2">Email</label>
+                <label className="block text-sm font-semibold text-ink mb-2">Email</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
+                  className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                   placeholder="vous@exemple.com"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-[#EEF2F7] mb-2">Mot de passe</label>
+                <label className="block text-sm font-semibold text-ink mb-2">Mot de passe</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
+                  className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                   placeholder="6 caractères minimum"
                 />
               </div>
@@ -132,9 +132,9 @@ export default function Signup() {
               </Button>
             </form>
 
-            <p className="text-xs text-[#8E959D] text-center mt-6">
+            <p className="text-xs text-ink-dimmer text-center mt-6">
               Déjà un compte ?{' '}
-              <Link href="/account/login" className="text-[#FDC700] hover:underline font-semibold">
+              <Link href="/account/login" className="text-gold hover:underline font-semibold">
                 Se connecter
               </Link>
             </p>

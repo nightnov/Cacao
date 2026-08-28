@@ -2,14 +2,22 @@
 
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { getSupabaseClient } from '@/lib/supabase'
 
 interface FAQItem {
   question: string
   answer: string
 }
 
-const faqs: FAQItem[] = [
+/**
+ * Questions de secours.
+ *
+ * Les vraies vivent en base (migration 023) pour être modifiables depuis
+ * l'administration. Cette liste sert le temps du chargement, et si la base ne
+ * répond pas — une page d'aide vide serait pire qu'une page un peu datée.
+ */
+const FALLBACK_FAQS: FAQItem[] = [
   {
     question: 'Comment passer une commande ?',
     answer: 'Consultez notre catalogue, sélectionnez un produit, ajoutez-le au panier et procédez au paiement. Vous recevrez une confirmation par email.'
@@ -48,19 +56,19 @@ function FAQAccordion({ item }: { item: FAQItem }) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <div className="border border-[#35383C] rounded-lg mb-3">
+    <div className="border border-border rounded-lg mb-3">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-6 py-4 flex justify-between items-center hover:bg-[#FFF9F3] transition-colors"
+        className="w-full px-6 py-4 flex justify-between items-center hover:bg-bg-raised transition-colors"
       >
-        <span className="text-left font-semibold text-[#EEF2F7]">{item.question}</span>
-        <span className={`text-[#FDC700] text-xl transform transition-transform ${isOpen ? 'rotate-45' : ''}`}>
+        <span className="text-left font-semibold text-ink">{item.question}</span>
+        <span className={`text-gold text-xl transform transition-transform ${isOpen ? 'rotate-45' : ''}`}>
           +
         </span>
       </button>
 
       {isOpen && (
-        <div className="px-6 py-4 border-t border-[#35383C] bg-[#FFF9F3] text-[#B3B8BE]">
+        <div className="px-6 py-4 border-t border-border bg-bg-raised text-ink-dim">
           {item.answer}
         </div>
       )}
@@ -69,13 +77,32 @@ function FAQAccordion({ item }: { item: FAQItem }) {
 }
 
 export default function FAQ() {
+  const [faqs, setFaqs] = useState<FAQItem[]>(FALLBACK_FAQS)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const supabase = getSupabaseClient()
+        const { data, error } = await supabase
+          .from('faq_items')
+          .select('question, answer')
+          .eq('is_visible', true)
+          .order('sort_order')
+        if (!error && data?.length) setFaqs(data as FAQItem[])
+      } catch {
+        // On garde la liste de secours : afficher une page d'aide vide serait pire.
+      }
+    }
+    load()
+  }, [])
+
   return (
-    <main className="min-h-screen bg-[#1C2021] flex flex-col">
+    <main className="min-h-screen bg-bg-panel flex flex-col">
       <Navbar />
 
       <div className="flex-1 max-w-4xl mx-auto px-5 sm:px-10 py-16 w-full">
         <h1 className="font-serif font-semibold text-4xl mb-4">Questions fréquentes</h1>
-        <p className="text-[#B3B8BE] mb-12">Trouvez réponse à vos questions sur Cacao, nos produits et services.</p>
+        <p className="text-ink-dim mb-12">Trouvez réponse à vos questions sur Cacao, nos produits et services.</p>
 
         <div>
           {faqs.map((faq, index) => (
@@ -83,10 +110,10 @@ export default function FAQ() {
           ))}
         </div>
 
-        <div className="mt-16 p-8 bg-[#1C2021] rounded-lg border border-[#35383C]">
+        <div className="mt-16 p-8 bg-bg-panel rounded-lg border border-border">
           <h2 className="font-serif font-semibold text-xl mb-2">Vous ne trouvez pas votre réponse ?</h2>
-          <p className="text-[#B3B8BE] mb-4">Contactez-nous directement via le formulaire de contact ou par email.</p>
-          <a href="/contact" className="text-[#FDC700] font-semibold hover:underline">
+          <p className="text-ink-dim mb-4">Contactez-nous directement via le formulaire de contact ou par email.</p>
+          <a href="/contact" className="text-gold font-semibold hover:underline">
             Aller au formulaire de contact →
           </a>
         </div>

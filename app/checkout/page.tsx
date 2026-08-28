@@ -45,6 +45,11 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
+  const [promoInput, setPromoInput] = useState('')
+  const [promo, setPromo] = useState<{ code: string; discount: number } | null>(null)
+  const [promoError, setPromoError] = useState('')
+  const [checkingPromo, setCheckingPromo] = useState(false)
+
   useEffect(() => {
     if (!authLoading && !isLoggedIn) {
       router.push('/account/login')
@@ -87,10 +92,59 @@ export default function Checkout() {
     fetchFees()
   }, [])
 
+  /**
+   * Vérifie le code auprès du serveur. La réponse ne sert qu'à afficher la
+   * remise : le montant prélevé est recalculé indépendamment au paiement, donc
+   * une réponse truquée ici ne ferait pas payer moins.
+   */
+  const applyPromo = async () => {
+    const code = promoInput.trim()
+    if (!code) return
+    setCheckingPromo(true)
+    setPromoError('')
+    try {
+      const supabase = getSupabaseClient()
+      const { data: session } = await supabase.auth.getSession()
+      const res = await fetch('/api/promotions/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.session?.access_token || ''}`,
+        },
+        body: JSON.stringify({
+          code,
+          city: selectedCity?.city || null,
+          items: cartItems.map(i => ({
+            product_id: i.id,
+            variant_id: i.variant_id || null,
+            quantity: i.quantity,
+          })),
+        }),
+      })
+      const json = await res.json()
+      if (!json.ok) {
+        setPromo(null)
+        setPromoError(json.reason || "Ce code n'est pas valable.")
+        return
+      }
+      setPromo({ code: json.code, discount: json.discount })
+      setPromoInput('')
+    } catch {
+      setPromoError('Vérification impossible pour le moment.')
+    } finally {
+      setCheckingPromo(false)
+    }
+  }
+
   const productsTotal = cartItems.reduce((sum, item) => sum + item.price_fcfa * item.quantity, 0)
   const selectedCity = shippingFees.find(f => f.id === cityId)
   const shippingCost = selectedCity?.price_fcfa || 0
-  const total = productsTotal + shippingCost
+
+  // Ces montants ne servent qu'à l'affichage. Le total réellement prélevé est
+  // recalculé par le serveur à partir des prix en base, dans
+  // app/api/payment/initiate/route.ts.
+  const discount = promo?.discount || 0
+  const total = Math.max(0, productsTotal + shippingCost - discount)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -117,6 +171,8 @@ export default function Checkout() {
           total_products_fcfa: productsTotal,
           shipping_cost_fcfa: shippingCost,
           total_fcfa: total,
+          promo_code: promo?.code || null,
+          discount_fcfa: discount,
           payment_method: 'pending',
           delivery_code: deliveryCode,
           notes: notes.trim() || null,
@@ -152,7 +208,6 @@ export default function Checkout() {
         body: JSON.stringify({
           orderId: order.id,
           orderNumber,
-          totalFcfa: total,
           items: cartItems.map(item => ({
             name: item.variant_label ? `${item.name} (${item.variant_label})` : item.name,
             price_fcfa: item.price_fcfa,
@@ -179,14 +234,14 @@ export default function Checkout() {
 
   if (authLoading || cartItems.length === 0) {
     return (
-      <main className="min-h-screen bg-[#1C2021] flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#FDC700] border-t-transparent rounded-full animate-spin"></div>
+      <main className="min-h-screen bg-bg-panel flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-gold border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-[#1C2021] flex flex-col">
+    <main className="min-h-screen bg-bg-panel flex flex-col">
       <Navbar />
 
       <div className="flex-1 max-w-5xl mx-auto px-5 sm:px-10 py-16 w-full">
@@ -195,43 +250,43 @@ export default function Checkout() {
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Shipping form */}
           <div className="md:col-span-2 space-y-6">
-            <div className="bg-[#1C2021] rounded-lg border border-[#35383C] p-6">
-              <h2 className="font-serif font-semibold text-xl text-[#EEF2F7] mb-6">Livraison</h2>
+            <div className="bg-bg-panel rounded-lg border border-border p-6">
+              <h2 className="font-serif font-semibold text-xl text-ink mb-6">Livraison</h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-[#EEF2F7] mb-2">Nom complet *</label>
+                  <label className="block text-sm font-semibold text-ink mb-2">Nom complet *</label>
                   <input
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
-                    className="w-full px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
+                    className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-[#EEF2F7] mb-2">Téléphone *</label>
+                  <label className="block text-sm font-semibold text-ink mb-2">Téléphone *</label>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     required
                     placeholder="07 00 00 00 00"
-                    className="w-full px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
+                    className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-[#EEF2F7] mb-2">Ville *</label>
+                  <label className="block text-sm font-semibold text-ink mb-2">Ville *</label>
                   {loadingFees ? (
-                    <div className="h-11 bg-[#171A1C] rounded-lg animate-pulse"></div>
+                    <div className="h-11 bg-bg-sunken rounded-lg animate-pulse"></div>
                   ) : shippingFees.length > 0 ? (
                     <select
                       value={cityId}
                       onChange={(e) => setCityId(e.target.value)}
                       required
-                      className="w-full px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
+                      className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                     >
                       {shippingFees.map(fee => (
                         <option key={fee.id} value={fee.id}>
@@ -240,40 +295,40 @@ export default function Checkout() {
                       ))}
                     </select>
                   ) : (
-                    <p className="text-sm text-[#8E959D]">Aucune ville de livraison configurée pour le moment.</p>
+                    <p className="text-sm text-ink-dimmer">Aucune ville de livraison configurée pour le moment.</p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-[#EEF2F7] mb-2">Adresse détaillée *</label>
+                  <label className="block text-sm font-semibold text-ink mb-2">Adresse détaillée *</label>
                   <textarea
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     required
                     rows={3}
                     placeholder="Quartier, rue, repère..."
-                    className="w-full px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
+                    className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-[#EEF2F7] mb-2">
-                    Notes de commande <span className="font-normal text-[#8E959D]">(optionnel)</span>
+                  <label className="block text-sm font-semibold text-ink mb-2">
+                    Notes de commande <span className="font-normal text-ink-dimmer">(optionnel)</span>
                   </label>
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     rows={2}
                     placeholder="Instructions spéciales, informations complémentaires..."
-                    className="w-full px-4 py-2.5 border border-[#35383C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FDC700]"
+                    className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="bg-[#1C2021] rounded-lg border border-[#35383C] p-6">
-              <h2 className="font-serif font-semibold text-xl text-[#EEF2F7] mb-3">Paiement</h2>
-              <p className="text-sm text-[#B3B8BE]">
+            <div className="bg-bg-panel rounded-lg border border-border p-6">
+              <h2 className="font-serif font-semibold text-xl text-ink mb-3">Paiement</h2>
+              <p className="text-sm text-ink-dim">
                 Le paiement par Mobile Money (MoneyFusion) arrive très prochainement. Votre commande sera enregistrée et notre équipe vous contactera pour organiser le règlement et la livraison.
               </p>
             </div>
@@ -281,32 +336,82 @@ export default function Checkout() {
 
           {/* Order summary */}
           <div>
-            <div className="bg-[#1C2021] rounded-lg border border-[#35383C] p-6 sticky top-6">
-              <h2 className="font-serif font-semibold text-xl text-[#EEF2F7] mb-6">Votre commande</h2>
+            <div className="bg-bg-panel rounded-lg border border-border p-6 sticky top-6">
+              <h2 className="font-serif font-semibold text-xl text-ink mb-6">Votre commande</h2>
 
               <div className="space-y-3 mb-6">
                 {cartItems.map(item => (
                   <div key={item.id} className="flex justify-between text-sm">
-                    <span className="text-[#B3B8BE]">{item.name} × {item.quantity}</span>
-                    <span className="text-[#EEF2F7] font-medium">
+                    <span className="text-ink-dim">{item.name} × {item.quantity}</span>
+                    <span className="text-ink font-medium">
                       {(formatAmount(item.price_fcfa * item.quantity))} FCFA
                     </span>
                   </div>
                 ))}
               </div>
 
-              <div className="border-t border-[#35383C] pt-4 space-y-2">
-                <div className="flex justify-between text-sm text-[#B3B8BE]">
+              <div className="border-t border-border pt-4 space-y-2">
+                <div className="flex justify-between text-sm text-ink-dim">
                   <span>Produits</span>
                   <span>{formatAmount(productsTotal)} FCFA</span>
                 </div>
-                <div className="flex justify-between text-sm text-[#B3B8BE]">
+                <div className="flex justify-between text-sm text-ink-dim">
                   <span>Livraison</span>
                   <span>{formatAmount(shippingCost)} FCFA</span>
                 </div>
-                <div className="flex justify-between text-lg font-bold text-[#EEF2F7] pt-2 border-t border-[#35383C]">
+
+                {promo && (
+                  <div className="flex justify-between text-sm text-green-bright">
+                    <span className="flex items-center gap-2">
+                      Remise ({promo.code})
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPromo(null)
+                          setPromoError('')
+                        }}
+                        className="text-ink-dimmer hover:text-ink underline text-[12px]"
+                      >
+                        retirer
+                      </button>
+                    </span>
+                    <span>−{formatAmount(promo.discount)} FCFA</span>
+                  </div>
+                )}
+
+                {!promo && (
+                  <div className="pt-1">
+                    <div className="flex gap-2">
+                      <input
+                        value={promoInput}
+                        onChange={e => setPromoInput(e.target.value.toUpperCase())}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault()
+                            applyPromo()
+                          }
+                        }}
+                        placeholder="Code de réduction"
+                        className="flex-1 min-w-0 px-3 py-2 text-[13px] bg-bg-raised border border-border-mid rounded-lg text-ink outline-none focus:border-gold transition-colors"
+                      />
+                      <button
+                        type="button"
+                        onClick={applyPromo}
+                        disabled={checkingPromo || !promoInput.trim()}
+                        className="px-4 py-2 text-[13px] font-bold rounded-lg border border-border-strong text-ink hover:border-gold disabled:opacity-40 transition-colors whitespace-nowrap"
+                      >
+                        {checkingPromo ? '…' : 'Appliquer'}
+                      </button>
+                    </div>
+                    {promoError && (
+                      <p className="text-[12px] text-danger mt-1.5">{promoError}</p>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex justify-between text-lg font-bold text-ink pt-2 border-t border-border">
                   <span>Total</span>
-                  <span className="text-[#FDC700]">{formatAmount(total)} FCFA</span>
+                  <span className="text-gold">{formatAmount(total)} FCFA</span>
                 </div>
               </div>
 
@@ -325,7 +430,7 @@ export default function Checkout() {
                 {submitting ? 'Envoi en cours...' : 'Confirmer la commande'}
               </Button>
 
-              <Link href="/cart" className="block text-center text-sm text-[#FDC700] hover:underline mt-4">
+              <Link href="/cart" className="block text-center text-sm text-gold hover:underline mt-4">
                 Retour au panier
               </Link>
             </div>

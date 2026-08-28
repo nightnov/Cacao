@@ -11,7 +11,7 @@ import {
   Laptop, MapPin, ShieldCheck, Truck, RotateCcw, Headphones,
   Keyboard, Mouse, HardDrive, CreditCard
 } from 'lucide-react'
-import { CATEGORIES } from '@/lib/categories'
+import { useCategories } from '@/hooks/useCategories'
 import { formatAmount } from '@/lib/format'
 
 interface Product {
@@ -32,7 +32,12 @@ interface Product {
 }
 
 /** Gammes mises en avant. Le prix « à partir de » est calculé sur les vrais produits. */
-const GAMMES = ['portable', 'bureau', 'gaming', 'accessoire'] as const
+/**
+ * Nombre de gammes présentées en bloc sur l'accueil. Ce sont les premières de
+ * l'ordre défini dans l'administration, et non une liste figée qui pouvait
+ * pointer vers un rayon supprimé.
+ */
+const GAMMES_COUNT = 4
 const GAMME_PITCH: Record<string, string> = {
   portable: 'Mobilité et autonomie pour le travail et les études.',
   bureau: 'Puissance stable pour un poste fixe au quotidien.',
@@ -44,12 +49,12 @@ function GridSkeleton({ count = 4 }: { count?: number }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
       {[...Array(count)].map((_, i) => (
-        <div key={i} className="animate-pulse bg-[#1C2021] border border-[#35383C] rounded-xl overflow-hidden">
-          <div className="h-[132px] sm:h-[158px] bg-[#171A1C]" />
+        <div key={i} className="animate-pulse bg-bg-panel border border-border rounded-xl overflow-hidden">
+          <div className="h-[132px] sm:h-[158px] bg-bg-sunken" />
           <div className="p-3.5 space-y-2">
-            <div className="h-3.5 bg-[#2A2D31] rounded w-4/5" />
-            <div className="h-3 bg-[#2A2D31] rounded w-3/5" />
-            <div className="h-4 bg-[#2A2D31] rounded w-2/5 mt-3" />
+            <div className="h-3.5 bg-bg-raised rounded w-4/5" />
+            <div className="h-3 bg-bg-raised rounded w-3/5" />
+            <div className="h-4 bg-bg-raised rounded w-2/5 mt-3" />
           </div>
         </div>
       ))}
@@ -62,9 +67,9 @@ function ProductSection({ title, products, href }: { title: string; products: Pr
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-11">
       <div className="flex items-end justify-between gap-4 mb-5">
-        <h2 className="font-display text-[19px] sm:text-[22px] text-[#EEF2F7]">{title}</h2>
+        <h2 className="font-display text-[19px] sm:text-[22px] text-ink">{title}</h2>
         {href && (
-          <Link href={href} className="text-[12.5px] font-bold text-[#FDC700] hover:underline whitespace-nowrap">
+          <Link href={href} className="text-[12.5px] font-bold text-gold hover:underline whitespace-nowrap">
             Voir tout →
           </Link>
         )}
@@ -77,6 +82,7 @@ function ProductSection({ title, products, href }: { title: string; products: Pr
 }
 
 export default function Home() {
+  const categories = useCategories()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [bannerUrl, setBannerUrl] = useState<string | null>(null)
@@ -132,57 +138,56 @@ export default function Home() {
   // dans « meilleures ventes » est masqué : sur un petit catalogue, il
   // affichait exactement la même grille juste en dessous.
   const popularIds = new Set(popular.map(p => p.id))
-  const topCategories = CATEGORIES
+  const topCategories = categories
     .map(cat => ({ cat, items: products.filter(p => p.category === cat.value).slice(0, 4) }))
     .filter(({ items }) => items.length > 0 && items.some(p => !popularIds.has(p.id)))
     .sort((a, b) => b.items.length - a.items.length)
     .slice(0, 4)
 
-  const gammes = GAMMES.map(value => {
-    const cat = CATEGORIES.find(c => c.value === value)!
-    const items = products.filter(p => p.category === value)
+  const gammes = categories.slice(0, GAMMES_COUNT).map(cat => {
+    const items = products.filter(p => p.category === cat.value)
     const min = items.length > 0 ? Math.min(...items.map(p => p.price_fcfa)) : null
     return { cat, min, count: items.length }
   })
 
   return (
-    <main className="min-h-screen bg-[#222427]">
+    <main className="min-h-screen bg-bg">
       <Navbar />
       <TrustBar />
 
       {/* Hero : texte à gauche, grande vitrine promotionnelle à droite */}
-      <section className="border-b border-[#35383C] bg-gradient-to-b from-[#1C2021] to-[#222427]">
+      <section className="border-b border-border bg-gradient-to-b from-bg-panel to-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-8 lg:py-10 grid grid-cols-1 lg:grid-cols-[355px,1fr] gap-7 items-stretch">
           <div className="flex flex-col justify-center">
-            <span className="inline-flex self-start items-center gap-2 border border-[#FDC700]/40 text-[#FDC700] text-[10px] font-bold tracking-[0.6px] px-3 py-1.5 rounded-full mb-4">
+            <span className="inline-flex self-start items-center gap-2 border border-gold/40 text-gold text-[10px] font-bold tracking-[0.6px] px-3 py-1.5 rounded-full mb-4">
               <MapPin size={12} strokeWidth={2} /> LIVRAISON PARTOUT EN CÔTE D&apos;IVOIRE
             </span>
-            <h1 className="font-display text-[28px] sm:text-[34px] lg:text-[38px] leading-[1.06] text-[#EEF2F7] mb-3">
-              LA PERFORMANCE,<br />SANS <span className="text-[#FDC700]">COMPROMIS.</span>
+            <h1 className="font-display text-[28px] sm:text-[34px] lg:text-[38px] leading-[1.06] text-ink mb-3">
+              LA PERFORMANCE,<br />SANS <span className="text-gold">COMPROMIS.</span>
             </h1>
-            <p className="text-[13.5px] text-[#B3B8BE] leading-[1.65] mb-6">
+            <p className="text-[13.5px] text-ink-dim leading-[1.65] mb-6">
               Ordinateurs portables, bureau et gaming. Commandez en ligne, payez en mobile money, recevez chez vous.
             </p>
             <div className="flex gap-2.5 flex-wrap">
-              <Link href="/products" className="px-6 py-3 bg-[#FDC700] hover:bg-[#E0B000] text-[#1A1A1A] rounded-lg font-bold text-[13px] transition-colors active:scale-[0.98]">
+              <Link href="/products" className="px-6 py-3 bg-gold hover:bg-gold-dim text-ink-invert rounded-lg font-bold text-[13px] transition-colors active:scale-[0.98]">
                 Voir le catalogue
               </Link>
-              <Link href="/products?category=accessoire" className="px-6 py-3 border border-[#4E5257] hover:border-[#FDC700] text-[#EEF2F7] rounded-lg font-bold text-[13px] transition-colors active:scale-[0.98]">
+              <Link href="/products?category=accessoire" className="px-6 py-3 border border-border-strong hover:border-gold text-ink rounded-lg font-bold text-[13px] transition-colors active:scale-[0.98]">
                 Nos accessoires
               </Link>
             </div>
 
-            <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-4 sm:gap-6 mt-7 pt-5 border-t border-[#35383C]">
+            <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-4 sm:gap-6 mt-7 pt-5 border-t border-border">
               {[
                 { icon: ShieldCheck, t: 'Paiement sécurisé', s: 'Mobile money ou carte' },
                 { icon: Truck, t: 'Moins de 5 jours', s: 'Livraison suivie' },
                 { icon: RotateCcw, t: 'Retour 14 jours', s: 'Sans justification' }
               ].map(({ icon: Icon, t, s }) => (
                 <div key={t} className="flex gap-2.5 items-start">
-                  <Icon size={17} strokeWidth={1.9} className="text-[#FDC700] flex-shrink-0 mt-0.5" />
+                  <Icon size={17} strokeWidth={1.9} className="text-gold flex-shrink-0 mt-0.5" />
                   <span>
-                    <span className="block text-[12px] font-bold text-[#EEF2F7]">{t}</span>
-                    <span className="block text-[10.5px] text-[#8E959D]">{s}</span>
+                    <span className="block text-[12px] font-bold text-ink">{t}</span>
+                    <span className="block text-[10.5px] text-ink-dimmer">{s}</span>
                   </span>
                 </div>
               ))}
@@ -194,19 +199,19 @@ export default function Home() {
               une image sans hauteur imposée se dimensionne sur son ratio et
               atteignait 805 px, entraînant toute la section avec elle. */}
           {bannerUrl ? (
-            <Link href="/products" className="group relative rounded-xl overflow-hidden border border-[#3A3E42] bg-[#171A1C] h-[220px] sm:h-[280px] lg:h-[330px]">
+            <Link href="/products" className="group relative rounded-xl overflow-hidden border border-border-mid bg-bg-sunken h-[220px] sm:h-[280px] lg:h-[330px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={bannerUrl} alt="Offre en cours" className="w-full h-full object-cover" />
-              <span className="absolute top-4 left-4 bg-[#FDC700] text-[#1A1A1A] text-[10px] font-extrabold px-3 py-1.5 rounded">
+              <span className="absolute top-4 left-4 bg-gold text-ink-invert text-[10px] font-extrabold px-3 py-1.5 rounded">
                 EN CE MOMENT
               </span>
             </Link>
           ) : heroProduct ? (
             <Link
               href={`/products/${heroProduct.slug}`}
-              className="group relative rounded-xl overflow-hidden border border-[#3A3E42] bg-[#171A1C] h-[220px] sm:h-[280px] lg:h-[330px] flex items-center justify-center"
+              className="group relative rounded-xl overflow-hidden border border-border-mid bg-bg-sunken h-[220px] sm:h-[280px] lg:h-[330px] flex items-center justify-center"
             >
-              <span className="absolute top-4 left-4 z-10 bg-[#FDC700] text-[#1A1A1A] text-[10px] font-extrabold px-3 py-1.5 rounded">
+              <span className="absolute top-4 left-4 z-10 bg-gold text-ink-invert text-[10px] font-extrabold px-3 py-1.5 rounded">
                 EN CE MOMENT
               </span>
               {heroProduct.image_urls?.[0] ? (
@@ -217,23 +222,23 @@ export default function Home() {
                   className="max-w-full max-h-full object-contain p-6 pb-16 transition-transform duration-500 group-hover:scale-[1.03]"
                 />
               ) : (
-                <Laptop size={80} strokeWidth={1} className="text-[#3E4247]" />
+                <Laptop size={80} strokeWidth={1} className="text-border-mid" />
               )}
               <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/95 via-black/70 to-transparent flex items-end justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="font-display text-[15px] text-[#EEF2F7] line-clamp-1">{heroProduct.name}</p>
-                  <p className="text-[11px] text-[#B3B8BE] mt-0.5">Voir la fiche produit</p>
+                  <p className="font-display text-[15px] text-ink line-clamp-1">{heroProduct.name}</p>
+                  <p className="text-[11px] text-ink-dim mt-0.5">Voir la fiche produit</p>
                 </div>
-                <p className="font-display text-[19px] text-[#FDC700] whitespace-nowrap tabular-nums flex-shrink-0">
+                <p className="font-display text-[19px] text-gold whitespace-nowrap tabular-nums flex-shrink-0">
                   {formatAmount(heroProduct.price_fcfa)} FCFA
                 </p>
               </div>
             </Link>
           ) : (
-            <div className="rounded-xl border border-dashed border-[#3A3E42] bg-[#171A1C] h-[220px] lg:h-[330px] flex flex-col items-center justify-center text-center p-8">
-              <Laptop size={44} strokeWidth={1} className="text-[#3E4247] mb-4" />
-              <p className="font-display text-[15px] text-[#B3B8BE]">CATALOGUE EN PRÉPARATION</p>
-              <p className="text-[12px] text-[#6F767E] mt-2 max-w-xs">
+            <div className="rounded-xl border border-dashed border-border-mid bg-bg-sunken h-[220px] lg:h-[330px] flex flex-col items-center justify-center text-center p-8">
+              <Laptop size={44} strokeWidth={1} className="text-border-mid mb-4" />
+              <p className="font-display text-[15px] text-ink-dim">CATALOGUE EN PRÉPARATION</p>
+              <p className="text-[12px] text-ink-faint mt-2 max-w-xs">
                 Les premiers produits seront mis en ligne très prochainement.
               </p>
             </div>
@@ -244,8 +249,8 @@ export default function Home() {
       {/* Gammes : prix « à partir de » calculé sur les vrais produits en ligne */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-11">
         <div className="text-center mb-7">
-          <h2 className="font-display text-[21px] sm:text-[25px] text-[#EEF2F7] mb-2">CHOISISSEZ VOTRE GAMME</h2>
-          <p className="text-[13px] text-[#8E959D]">Quatre familles, un même niveau d&apos;exigence sur la sélection.</p>
+          <h2 className="font-display text-[21px] sm:text-[25px] text-ink mb-2">CHOISISSEZ VOTRE GAMME</h2>
+          <p className="text-[13px] text-ink-dimmer">Quatre familles, un même niveau d&apos;exigence sur la sélection.</p>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {gammes.map(({ cat, min, count }) => {
@@ -254,30 +259,30 @@ export default function Home() {
 
             const inner = (
               <>
-                <span className={`absolute inset-x-0 top-0 h-[3px] ${empty ? 'bg-[#3E4247]' : 'bg-[#FDC700]'}`} />
-                <span className={`w-12 h-12 mx-auto mt-1.5 mb-3.5 rounded-xl bg-[#2A2D31] border border-[#3E4247] flex items-center justify-center ${empty ? 'text-[#6F767E]' : 'text-[#FDC700]'}`}>
+                <span className={`absolute inset-x-0 top-0 h-[3px] ${empty ? 'bg-border-mid' : 'bg-gold'}`} />
+                <span className={`w-12 h-12 mx-auto mt-1.5 mb-3.5 rounded-xl bg-bg-raised border border-border-mid flex items-center justify-center ${empty ? 'text-ink-faint' : 'text-gold'}`}>
                   <Icon size={21} strokeWidth={1.7} />
                 </span>
-                <h3 className={`font-display text-[15px] mb-1.5 ${empty ? 'text-[#8E959D]' : 'text-[#EEF2F7]'}`}>
+                <h3 className={`font-display text-[15px] mb-1.5 ${empty ? 'text-ink-dimmer' : 'text-ink'}`}>
                   {cat.short.toUpperCase()}
                 </h3>
-                <p className="text-[11.5px] text-[#8E959D] leading-[1.5] min-h-[34px]">{GAMME_PITCH[cat.value]}</p>
+                <p className="text-[11.5px] text-ink-dimmer leading-[1.5] min-h-[34px]">{GAMME_PITCH[cat.value]}</p>
                 {min !== null ? (
                   <>
-                    <p className="text-[11px] text-[#B3B8BE] mt-3">
+                    <p className="text-[11px] text-ink-dim mt-3">
                       À partir de
-                      <span className="block font-display text-[15px] text-[#FDC700] tabular-nums mt-0.5">
+                      <span className="block font-display text-[15px] text-gold tabular-nums mt-0.5">
                         {formatAmount(min)} FCFA
                       </span>
                     </p>
-                    <span className="block mt-3 text-[11.5px] font-bold text-[#FDC700] group-hover:underline">
+                    <span className="block mt-3 text-[11.5px] font-bold text-gold group-hover:underline">
                       Découvrir →
                     </span>
                   </>
                 ) : (
                   /* Aucun produit dans ce rayon : la carte n'est pas cliquable et
                      n'annonce aucune alerte, qui n'existe pas. */
-                  <p className="text-[11px] text-[#6F767E] mt-3 min-h-[62px] flex items-center justify-center">
+                  <p className="text-[11px] text-ink-faint mt-3 min-h-[62px] flex items-center justify-center">
                     Bientôt disponible
                   </p>
                 )}
@@ -287,14 +292,14 @@ export default function Home() {
             const base = 'relative rounded-xl p-5 text-center overflow-hidden transition-colors border'
 
             return empty ? (
-              <div key={cat.value} className={`${base} bg-[#1C2021]/60 border-[#2E3236] cursor-default`}>
+              <div key={cat.value} className={`${base} bg-bg-panel/60 border-border cursor-default`}>
                 {inner}
               </div>
             ) : (
               <Link
                 key={cat.value}
                 href={`/products?category=${cat.value}`}
-                className={`group ${base} bg-[#1C2021] border-[#35383C] hover:border-[#4E5257]`}
+                className={`group ${base} bg-bg-panel border-border hover:border-border-strong`}
               >
                 {inner}
               </Link>
@@ -306,7 +311,7 @@ export default function Home() {
       {/* Meilleures ventes */}
       {loading ? (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-11">
-          <h2 className="font-display text-[19px] sm:text-[22px] text-[#EEF2F7] mb-5">NOS MEILLEURES VENTES</h2>
+          <h2 className="font-display text-[19px] sm:text-[22px] text-ink mb-5">NOS MEILLEURES VENTES</h2>
           <GridSkeleton />
         </section>
       ) : (
@@ -329,19 +334,19 @@ export default function Home() {
 
       {/* Accessoires */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-11">
-        <div className="bg-gradient-to-r from-[#1C2021] to-[#2A2118] border border-[#4A4126] rounded-xl p-6 sm:p-8 flex flex-col lg:flex-row items-start lg:items-center gap-6">
+        <div className="bg-gradient-to-r from-bg-panel to-gold/5 border border-gold/25 rounded-xl p-6 sm:p-8 flex flex-col lg:flex-row items-start lg:items-center gap-6">
           <div className="flex-1">
-            <h3 className="font-display text-[19px] sm:text-[21px] text-[#EEF2F7] mb-2">COMPLÉTEZ VOTRE ÉQUIPEMENT</h3>
-            <p className="text-[13px] text-[#B3B8BE] leading-[1.6] max-w-lg mb-4">
+            <h3 className="font-display text-[19px] sm:text-[21px] text-ink mb-2">COMPLÉTEZ VOTRE ÉQUIPEMENT</h3>
+            <p className="text-[13px] text-ink-dim leading-[1.6] max-w-lg mb-4">
               Claviers, souris, casques, sacoches, câbles et adaptateurs. Tout ce qu&apos;il faut autour de votre machine, au même endroit.
             </p>
-            <Link href="/products?category=accessoire" className="inline-block px-6 py-3 bg-[#FDC700] hover:bg-[#E0B000] text-[#1A1A1A] rounded-lg font-bold text-[13px] transition-colors">
+            <Link href="/products?category=accessoire" className="inline-block px-6 py-3 bg-gold hover:bg-gold-dim text-ink-invert rounded-lg font-bold text-[13px] transition-colors">
               Voir les accessoires
             </Link>
           </div>
           <div className="flex gap-2.5 lg:ml-auto flex-shrink-0">
             {[Keyboard, Mouse, Headphones, HardDrive].map((Icon, i) => (
-              <span key={i} className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-[#2A2D31] border border-[#45484C] flex items-center justify-center text-[#FDC700]">
+              <span key={i} className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-bg-raised border border-border-strong flex items-center justify-center text-gold">
                 <Icon size={21} strokeWidth={1.7} />
               </span>
             ))}
@@ -352,7 +357,7 @@ export default function Home() {
       {/* Pourquoi CACAO */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-11">
         <div className="text-center mb-7">
-          <h2 className="font-display text-[21px] sm:text-[25px] text-[#EEF2F7]">POURQUOI CACAO ?</h2>
+          <h2 className="font-display text-[21px] sm:text-[25px] text-ink">POURQUOI CACAO ?</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           {[
@@ -361,12 +366,12 @@ export default function Home() {
             { icon: RotateCcw, t: 'Retour 14 jours', p: 'Si la machine ne correspond pas à votre usage, elle vous est reprise.' },
             { icon: Headphones, t: 'Conseil avant achat', p: 'Une question sur une configuration ? On répond avant que vous commandiez.' }
           ].map(({ icon: Icon, t, p }) => (
-            <div key={t} className="bg-[#1C2021] border border-[#35383C] rounded-xl p-5">
-              <span className="w-9 h-9 rounded-lg bg-[#FDC700]/12 text-[#FDC700] flex items-center justify-center mb-3">
+            <div key={t} className="bg-bg-panel border border-border rounded-xl p-5">
+              <span className="w-9 h-9 rounded-lg bg-gold/12 text-gold flex items-center justify-center mb-3">
                 <Icon size={17} strokeWidth={1.9} />
               </span>
-              <h4 className="text-[13px] font-bold text-[#EEF2F7] mb-1.5">{t}</h4>
-              <p className="text-[11.5px] text-[#8E959D] leading-[1.55]">{p}</p>
+              <h4 className="text-[13px] font-bold text-ink mb-1.5">{t}</h4>
+              <p className="text-[11.5px] text-ink-dimmer leading-[1.55]">{p}</p>
             </div>
           ))}
         </div>
@@ -374,13 +379,13 @@ export default function Home() {
 
       {/* Newsletter */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-14">
-        <div className="bg-[#1C2021] border border-[#35383C] rounded-xl p-7 sm:p-9 text-center">
-          <h2 className="font-display text-[19px] sm:text-[22px] text-[#EEF2F7] mb-2">NE MANQUEZ AUCUNE OFFRE</h2>
-          <p className="text-[13px] text-[#8E959D] mb-6 max-w-md mx-auto">
+        <div className="bg-bg-panel border border-border rounded-xl p-7 sm:p-9 text-center">
+          <h2 className="font-display text-[19px] sm:text-[22px] text-ink mb-2">NE MANQUEZ AUCUNE OFFRE</h2>
+          <p className="text-[13px] text-ink-dimmer mb-6 max-w-md mx-auto">
             Recevez les nouveautés et les bonnes affaires CACAO.
           </p>
           {newsletterStatus === 'success' ? (
-            <p className="text-[#3FCE7A] font-bold text-sm">✓ Merci, vous êtes inscrit(e) !</p>
+            <p className="text-green-bright font-bold text-sm">✓ Merci, vous êtes inscrit(e) !</p>
           ) : (
             <form onSubmit={handleNewsletterSubmit} className="flex items-center justify-center gap-2.5 max-w-md mx-auto flex-wrap">
               <input
@@ -389,19 +394,19 @@ export default function Home() {
                 value={newsletterEmail}
                 onChange={e => setNewsletterEmail(e.target.value)}
                 placeholder="Votre adresse e-mail"
-                className="flex-1 min-w-[200px] px-4 py-3 bg-[#2A2D31] border border-[#3E4247] focus:border-[#FDC700] rounded-lg text-[13px] text-[#EEF2F7] outline-none transition-colors"
+                className="flex-1 min-w-[200px] px-4 py-3 bg-bg-raised border border-border-mid focus:border-gold rounded-lg text-[13px] text-ink outline-none transition-colors"
               />
               <button
                 type="submit"
                 disabled={newsletterStatus === 'loading'}
-                className="px-6 py-3 bg-[#FDC700] hover:bg-[#E0B000] text-[#1A1A1A] rounded-lg font-bold text-[13px] transition-colors disabled:opacity-45 disabled:cursor-not-allowed"
+                className="px-6 py-3 bg-gold hover:bg-gold-dim text-ink-invert rounded-lg font-bold text-[13px] transition-colors disabled:opacity-45 disabled:cursor-not-allowed"
               >
                 {newsletterStatus === 'loading' ? 'Envoi…' : 'S’abonner'}
               </button>
             </form>
           )}
           {newsletterStatus === 'error' && (
-            <p className="text-[#F87171] text-[12.5px] mt-3">Une erreur est survenue, réessayez.</p>
+            <p className="text-danger text-[12.5px] mt-3">Une erreur est survenue, réessayez.</p>
           )}
         </div>
       </section>

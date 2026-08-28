@@ -5,7 +5,7 @@ import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/Button'
 import { Product, ProductVariant, VariantOption } from '@/types/admin'
 import { generateVariantCombinations, variantLabel } from '@/lib/variants'
-import { CATEGORIES } from '@/lib/categories'
+import { useCategories } from '@/hooks/useCategories'
 
 interface ProductFormProps {
   product?: Product | null
@@ -48,6 +48,9 @@ function parseOptionRows(rows: VariantOptionRow[]): VariantOption[] {
 }
 
 export default function ProductForm({ product, onClose }: ProductFormProps) {
+  // `false` : l'administration doit pouvoir classer un produit dans un rayon
+  // masqué. Le masquage ne retire le rayon que des menus de la boutique.
+  const categories = useCategories(false)
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
@@ -601,7 +604,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                 onChange={handleChange}
                 className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
               >
-                {CATEGORIES.map(cat => (
+                {categories.map(cat => (
                   <option key={cat.value} value={cat.value}>{cat.label}</option>
                 ))}
               </select>

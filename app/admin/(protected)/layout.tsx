@@ -16,6 +16,8 @@ import {
   Settings,
   BadgePercent,
   FileText,
+  Star,
+  Hourglass,
   History,
   Palette,
   BookOpen,
@@ -25,21 +27,54 @@ import {
 } from 'lucide-react'
 import { Avatar } from '@/components/admin/Avatar'
 
-const adminLinks = [
-  { label: 'Tableau de bord', href: '/admin', icon: LayoutDashboard },
-  { label: 'Produits', href: '/admin/products', icon: Package },
-  { label: 'Stock', href: '/admin/stock', icon: Layers },
-  { label: 'Rayons', href: '/admin/categories', icon: LayoutGrid },
-  { label: 'Commandes', href: '/admin/orders', icon: ShoppingCart },
-  { label: 'Messages', href: '/admin/messages', icon: MessageSquare },
-  { label: 'Frais livraison', href: '/admin/shipping', icon: Truck },
-  { label: 'Clients', href: '/admin/customers', icon: Users },
-  { label: 'Promotions', href: '/admin/promotions', icon: BadgePercent },
-  { label: 'Contenu', href: '/admin/content', icon: FileText },
-  { label: 'Apparence', href: '/admin/appearance', icon: Palette },
-  { label: 'Journal', href: '/admin/activity', icon: History },
-  { label: 'Réglages', href: '/admin/settings', icon: Settings },
-  { label: 'Guide', href: '/admin/guide', icon: BookOpen }
+/**
+ * Navigation groupée. À seize entrées, une liste à plat devenait impossible à
+ * parcourir : les intitulés se ressemblent (« Produits », « Stock »,
+ * « Rayons ») et rien n'indiquait ce qui relevait de la vente ou du site.
+ */
+const adminGroups: {
+  title: string | null
+  links: { label: string; href: string; icon: typeof LayoutDashboard }[]
+}[] = [
+  {
+    title: null,
+    links: [{ label: 'Tableau de bord', href: '/admin', icon: LayoutDashboard }],
+  },
+  {
+    title: 'VENTES',
+    links: [
+      { label: 'Commandes', href: '/admin/orders', icon: ShoppingCart },
+      { label: 'Non réglées', href: '/admin/abandoned', icon: Hourglass },
+      { label: 'Clients', href: '/admin/customers', icon: Users },
+      { label: 'Messages', href: '/admin/messages', icon: MessageSquare },
+      { label: 'Avis', href: '/admin/reviews', icon: Star },
+    ],
+  },
+  {
+    title: 'CATALOGUE',
+    links: [
+      { label: 'Produits', href: '/admin/products', icon: Package },
+      { label: 'Stock', href: '/admin/stock', icon: Layers },
+      { label: 'Rayons', href: '/admin/categories', icon: LayoutGrid },
+    ],
+  },
+  {
+    title: 'SITE',
+    links: [
+      { label: 'Promotions', href: '/admin/promotions', icon: BadgePercent },
+      { label: 'Contenu', href: '/admin/content', icon: FileText },
+      { label: 'Apparence', href: '/admin/appearance', icon: Palette },
+      { label: 'Frais livraison', href: '/admin/shipping', icon: Truck },
+    ],
+  },
+  {
+    title: 'SYSTÈME',
+    links: [
+      { label: 'Journal', href: '/admin/activity', icon: History },
+      { label: 'Réglages', href: '/admin/settings', icon: Settings },
+      { label: 'Guide', href: '/admin/guide', icon: BookOpen },
+    ],
+  },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -96,25 +131,41 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1">
-          {adminLinks.map(link => {
-            const active = isLinkActive(link.href)
-            const Icon = link.icon
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileSidebarOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors text-sm font-medium ${
-                  active ? 'bg-orange-50 text-[#C2410C] font-semibold' : 'text-[#5B4B41] hover:bg-gray-50'
-                }`}
-                title={link.label}
-              >
-                <Icon size={18} className="flex-shrink-0" />
-                {(sidebarOpen || mobileSidebarOpen) && <span>{link.label}</span>}
-              </Link>
-            )
-          })}
+        <nav className="flex-1 p-3 overflow-y-auto">
+          {adminGroups.map((group, gi) => (
+            <div key={group.title || `g${gi}`} className="mb-1">
+              {/* Le titre de groupe disparaît en barre réduite : il n'y aurait
+                  pas la place, et les icônes suffisent à s'y retrouver. */}
+              {group.title && (sidebarOpen || mobileSidebarOpen) && (
+                <p className="text-[10px] font-bold tracking-wider text-[#A89684] px-4 pt-3 pb-1.5">
+                  {group.title}
+                </p>
+              )}
+              {group.title && !sidebarOpen && !mobileSidebarOpen && (
+                <div className="border-t border-[#E8E0D8] my-2 mx-3" />
+              )}
+              {group.links.map(link => {
+                const active = isLinkActive(link.href)
+                const Icon = link.icon
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileSidebarOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-colors text-sm font-medium ${
+                      active
+                        ? 'bg-orange-50 text-[#C2410C] font-semibold'
+                        : 'text-[#5B4B41] hover:bg-gray-50'
+                    }`}
+                    title={link.label}
+                  >
+                    <Icon size={18} className="flex-shrink-0" />
+                    {(sidebarOpen || mobileSidebarOpen) && <span>{link.label}</span>}
+                  </Link>
+                )
+              })}
+            </div>
+          ))}
         </nav>
 
         {/* User Info & Logout */}

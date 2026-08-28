@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/Button'
 import { useAdminAuth } from '@/hooks/useAdminAuth'
+import { SHOP_INFO_KEYS, invalidateShopInfoCache } from '@/hooks/useShopInfo'
 
 export default function AdminSettings() {
   const { user } = useAdminAuth()
@@ -24,6 +25,10 @@ export default function AdminSettings() {
   const [passwordLoading, setPasswordLoading] = useState(false)
   const [passwordError, setPasswordError] = useState('')
   const [passwordSuccess, setPasswordSuccess] = useState(false)
+
+  const [shopInfo, setShopInfo] = useState({ email: '', phone: '', whatsapp: '', address: '' })
+  const [savingShop, setSavingShop] = useState(false)
+  const [shopSuccess, setShopSuccess] = useState(false)
 
   const [socialLinks, setSocialLinks] = useState({ facebook: '', instagram: '', tiktok: '', youtube: '' })
   const [savingSocial, setSavingSocial] = useState(false)
@@ -62,7 +67,45 @@ export default function AdminSettings() {
       })
     }
     fetchSocial()
+
+    const fetchShop = async () => {
+      const supabase = getSupabaseClient()
+      const { data } = await supabase
+        .from('site_settings')
+        .select('key, value')
+        .in('key', SHOP_INFO_KEYS as unknown as string[])
+
+      const map = Object.fromEntries((data || []).map(row => [row.key, row.value || '']))
+      setShopInfo({
+        email: map.shop_email || '',
+        phone: map.shop_phone || '',
+        whatsapp: map.shop_whatsapp || '',
+        address: map.shop_address || '',
+      })
+    }
+    fetchShop()
   }, [])
+
+  const handleSaveShop = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSavingShop(true)
+    setShopSuccess(false)
+    const supabase = getSupabaseClient()
+    await supabase.from('site_settings').upsert(
+      [
+        { key: 'shop_email', value: shopInfo.email.trim() || null },
+        { key: 'shop_phone', value: shopInfo.phone.trim() || null },
+        { key: 'shop_whatsapp', value: shopInfo.whatsapp.trim() || null },
+        { key: 'shop_address', value: shopInfo.address.trim() || null },
+      ],
+      { onConflict: 'key' }
+    )
+    // Le cache est vidé pour que la page contact reprenne les nouvelles valeurs
+    // sans attendre un rechargement complet du site.
+    invalidateShopInfoCache()
+    setSavingShop(false)
+    setShopSuccess(true)
+  }
 
   const handleSaveSocial = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -204,6 +247,73 @@ export default function AdminSettings() {
       <div>
         <h1 className="font-serif font-semibold text-3xl text-[#241A14] mb-1">Réglages</h1>
         <p className="text-[#7D6A5D]">Personnalisation du site et sécurité du compte admin</p>
+      </div>
+
+      {/* Coordonnées de la boutique */}
+      <div className="bg-white rounded-lg border border-[#E8E0D8] p-6">
+        <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-1">Coordonnées</h2>
+        <p className="text-sm text-[#7D6A5D] mb-4">
+          Affichées sur la page contact. Un champ laissé vide n&apos;apparaît pas — la page
+          affichait auparavant « +225 07 XX XX XX XX », un texte de remplacement resté en ligne.
+        </p>
+
+        {shopSuccess && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4 text-sm font-semibold">
+            ✓ Coordonnées enregistrées
+          </div>
+        )}
+
+        <form onSubmit={handleSaveShop} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-[#241A14] mb-1.5">E-mail</label>
+              <input
+                type="email"
+                value={shopInfo.email}
+                onChange={e => setShopInfo({ ...shopInfo, email: e.target.value })}
+                placeholder="contact@votre-domaine.ci"
+                className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14]"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-[#241A14] mb-1.5">Téléphone</label>
+              <input
+                type="tel"
+                value={shopInfo.phone}
+                onChange={e => setShopInfo({ ...shopInfo, phone: e.target.value })}
+                placeholder="+225 07 00 00 00 00"
+                className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14]"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-[#241A14] mb-1.5">WhatsApp</label>
+              <input
+                type="tel"
+                value={shopInfo.whatsapp}
+                onChange={e => setShopInfo({ ...shopInfo, whatsapp: e.target.value })}
+                placeholder="Laissez vide pour utiliser le téléphone"
+                className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14]"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-[#241A14] mb-1.5">Adresse</label>
+              <input
+                type="text"
+                value={shopInfo.address}
+                onChange={e => setShopInfo({ ...shopInfo, address: e.target.value })}
+                placeholder="Abidjan, Côte d'Ivoire"
+                className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14]"
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
+            disabled={savingShop}
+            className="px-5 py-2 bg-[#C2410C] hover:bg-[#9A3412] disabled:opacity-50 text-white rounded-lg font-semibold text-sm"
+          >
+            {savingShop ? 'Enregistrement…' : 'Enregistrer'}
+          </button>
+        </form>
       </div>
 
       {/* Bannière homepage */}

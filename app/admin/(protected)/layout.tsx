@@ -15,6 +15,8 @@ import {
   Users,
   Settings,
   BadgePercent,
+  FileText,
+  History,
   Palette,
   BookOpen,
   Menu,
@@ -33,7 +35,9 @@ const adminLinks = [
   { label: 'Frais livraison', href: '/admin/shipping', icon: Truck },
   { label: 'Clients', href: '/admin/customers', icon: Users },
   { label: 'Promotions', href: '/admin/promotions', icon: BadgePercent },
+  { label: 'Contenu', href: '/admin/content', icon: FileText },
   { label: 'Apparence', href: '/admin/appearance', icon: Palette },
+  { label: 'Journal', href: '/admin/activity', icon: History },
   { label: 'Réglages', href: '/admin/settings', icon: Settings },
   { label: 'Guide', href: '/admin/guide', icon: BookOpen }
 ]

@@ -2,14 +2,22 @@
 
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { getSupabaseClient } from '@/lib/supabase'
 
 interface FAQItem {
   question: string
   answer: string
 }
 
-const faqs: FAQItem[] = [
+/**
+ * Questions de secours.
+ *
+ * Les vraies vivent en base (migration 023) pour être modifiables depuis
+ * l'administration. Cette liste sert le temps du chargement, et si la base ne
+ * répond pas — une page d'aide vide serait pire qu'une page un peu datée.
+ */
+const FALLBACK_FAQS: FAQItem[] = [
   {
     question: 'Comment passer une commande ?',
     answer: 'Consultez notre catalogue, sélectionnez un produit, ajoutez-le au panier et procédez au paiement. Vous recevrez une confirmation par email.'
@@ -69,6 +77,25 @@ function FAQAccordion({ item }: { item: FAQItem }) {
 }
 
 export default function FAQ() {
+  const [faqs, setFaqs] = useState<FAQItem[]>(FALLBACK_FAQS)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const supabase = getSupabaseClient()
+        const { data, error } = await supabase
+          .from('faq_items')
+          .select('question, answer')
+          .eq('is_visible', true)
+          .order('sort_order')
+        if (!error && data?.length) setFaqs(data as FAQItem[])
+      } catch {
+        // On garde la liste de secours : afficher une page d'aide vide serait pire.
+      }
+    }
+    load()
+  }, [])
+
   return (
     <main className="min-h-screen bg-bg-panel flex flex-col">
       <Navbar />

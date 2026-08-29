@@ -52,9 +52,9 @@ export async function POST(request: Request) {
           shipping_cost_fcfa: priced.shipping,
           discount_fcfa: priced.discount,
           total_fcfa: priced.total,
-          // Poids retenu par le serveur, pas celui annoncé par le navigateur :
-          // c'est lui qui explique la tranche tarifaire appliquée.
-          delivery_weight_kg: priced.weightKg,
+          // Taille retenue par le serveur, pas celle annoncée par le navigateur :
+          // c'est elle qui explique le tarif appliqué.
+          delivery_parcel_size: priced.parcelSize,
         })
         .eq('id', orderId)
     }

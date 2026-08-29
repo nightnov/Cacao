@@ -11,12 +11,13 @@ import { getSupabaseClient } from '@/lib/supabase'
 import { getCart, clearCart, CartItem } from '@/lib/cart'
 import { formatAmount } from '@/lib/format'
 import {
-  cartWeightKg,
+  cartParcelSize,
   deliveryOptions,
   accuracyIsUsable,
-  formatKg,
-  DEFAULT_WEIGHT_KG,
-  type WeightBracket,
+  isParcelSize,
+  DEFAULT_PARCEL_SIZE,
+  type ParcelSize,
+  type ZoneRates,
   type PickupSettings,
 } from '@/lib/delivery'
 import { MapPin, LocateFixed, Check } from 'lucide-react'
@@ -55,9 +56,9 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
-  const [brackets, setBrackets] = useState<WeightBracket[]>([])
-  const [weights, setWeights] = useState<Record<string, number | null>>({})
-  const [defaultWeight, setDefaultWeight] = useState(DEFAULT_WEIGHT_KG)
+  const [zoneRates, setZoneRates] = useState<ZoneRates>({})
+  const [sizes, setSizes] = useState<Record<string, string | null>>({})
+  const [defaultSize, setDefaultSize] = useState<ParcelSize>(DEFAULT_PARCEL_SIZE)
   const [pickup, setPickup] = useState<PickupSettings>({
     enabled: false,
     address: null,
@@ -108,7 +109,7 @@ export default function Checkout() {
           supabase
             .from('site_settings')
             .select('key, value')
-            .in('key', ['default_weight_kg', 'pickup_enabled', 'pickup_address', 'pickup_hours']),
+            .in('key', ['default_parcel_size', 'pickup_enabled', 'pickup_address', 'pickup_hours']),
         ])
 
         if (feesRes.error) throw feesRes.error
@@ -120,8 +121,7 @@ export default function Checkout() {
         if (zones.length > 0) setCityId(zones[0].id)
 
         const s = Object.fromEntries((tariffRes.data || []).map(r => [r.key, r.value]))
-        const dw = Number(s.default_weight_kg)
-        if (Number.isFinite(dw) && dw > 0) setDefaultWeight(dw)
+        if (isParcelSize(s.default_parcel_size)) setDefaultSize(s.default_parcel_size)
         setPickup({
           enabled: s.pickup_enabled === 'true',
           address: s.pickup_address || null,
@@ -137,42 +137,40 @@ export default function Checkout() {
     fetchFees()
   }, [])
 
-  // Poids des produits du panier. Le panier vit dans le navigateur et ne porte
-  // que des prix : le poids doit être relu en base.
+  // Taille de colis des produits du panier. Le panier vit dans le navigateur et
+  // ne porte que des prix : la taille doit être relue en base.
   useEffect(() => {
     if (cartItems.length === 0) return
     const load = async () => {
       const supabase = getSupabaseClient()
       const ids = [...new Set(cartItems.map(i => i.id))]
-      const { data } = await supabase.from('products').select('id, weight_kg').in('id', ids)
-      setWeights(Object.fromEntries((data || []).map(p => [p.id, p.weight_kg])))
+      const { data } = await supabase.from('products').select('id, parcel_size').in('id', ids)
+      setSizes(Object.fromEntries((data || []).map(p => [p.id, p.parcel_size])))
     }
     load()
   }, [cartItems])
 
-  // Tranches tarifaires de la zone choisie.
+  // Tarifs de la zone choisie, par taille de colis.
   useEffect(() => {
     if (!cityId) return
     const load = async () => {
       const supabase = getSupabaseClient()
       const { data, error } = await supabase
         .from('shipping_rates')
-        .select('max_weight_kg, price_fcfa, extra_per_kg_fcfa')
+        .select('parcel_size, price_fcfa')
         .eq('zone_id', cityId)
 
       // Table absente tant que la migration 025 n'est pas passée : on laisse la
-      // liste vide, le prix fixe de la zone prend alors le relais.
+      // grille vide, le prix fixe de la zone prend alors le relais.
       if (error) {
-        setBrackets([])
+        setZoneRates({})
         return
       }
-      setBrackets(
-        (data || []).map(r => ({
-          maxKg: r.max_weight_kg === null ? null : Number(r.max_weight_kg),
-          priceFcfa: r.price_fcfa,
-          extraPerKgFcfa: r.extra_per_kg_fcfa,
-        }))
-      )
+      const map: ZoneRates = {}
+      for (const r of data || []) {
+        if (isParcelSize(r.parcel_size)) map[r.parcel_size] = r.price_fcfa
+      }
+      setZoneRates(map)
     }
     load()
   }, [cityId])
@@ -268,17 +266,18 @@ export default function Checkout() {
 
   // Le même calcul que le serveur, à titre d'affichage seulement : le montant
   // réellement prélevé est recalculé au paiement à partir des données en base.
-  const weightKg = cartWeightKg(
-    cartItems.map(i => ({ weight_kg: weights[i.id], quantity: i.quantity })),
-    defaultWeight
+  const parcelSize = cartParcelSize(
+    cartItems.map(i => ({ parcel_size: sizes[i.id] })),
+    defaultSize
   )
-  const options = deliveryOptions(brackets, weightKg, pickup)
+  const options = deliveryOptions(
+    zoneRates,
+    parcelSize,
+    pickup,
+    selectedCity?.price_fcfa ?? null
+  )
   const chosen = options.find(o => o.mode === mode) || options[0]
-
-  // Sans tranche définie pour la zone, on retombe sur son prix fixe plutôt que
-  // d'annoncer une livraison gratuite.
-  const shippingCost =
-    mode === 'retrait' ? 0 : (chosen?.fcfa ?? selectedCity?.price_fcfa ?? 0)
+  const shippingCost = mode === 'retrait' ? 0 : (chosen?.fcfa ?? 0)
 
   // Ces montants ne servent qu'à l'affichage. Le total réellement prélevé est
   // recalculé par le serveur à partir des prix en base, dans
@@ -316,7 +315,7 @@ export default function Checkout() {
           delivery_lat: position?.lat ?? null,
           delivery_lng: position?.lng ?? null,
           delivery_accuracy_m: position?.accuracy ?? null,
-          delivery_weight_kg: weightKg,
+          delivery_parcel_size: parcelSize,
           delivery_mode: mode,
           payment_method: 'pending',
           delivery_code: deliveryCode,

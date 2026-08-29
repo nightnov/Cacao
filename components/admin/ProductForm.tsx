@@ -63,7 +63,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     category: 'portable',
     price_fcfa: 0,
     compare_at_price_fcfa: '' as string | number,
-    weight_kg: '' as string | number,
+    parcel_size: '' as string,
     availability: 'in_stock',
     specs_cpu: '',
     specs_ram: '',
@@ -94,7 +94,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         category: product.category,
         price_fcfa: product.price_fcfa,
         compare_at_price_fcfa: product.compare_at_price_fcfa ?? '',
-        weight_kg: product.weight_kg ?? '',
+        parcel_size: product.parcel_size ?? '',
         availability: product.availability,
         specs_cpu: (product.specs?.cpu as string) || '',
         specs_ram: (product.specs?.ram as string) || '',
@@ -146,11 +146,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     const numericFields = ['price_fcfa', 'compare_at_price_fcfa', 'supplier_cost_fcfa']
     setFormData(prev => ({
       ...prev,
-      // Le poids est le seul champ à décimales : `parseInt` ramènerait un
-      // portable de 2,5 kg à 2 kg, et fausserait la tranche de livraison.
-      [name]: name === 'weight_kg'
-        ? (value === '' ? '' : parseFloat(value) || 0)
-        : name === 'price_fcfa'
+      [name]: name === 'price_fcfa'
         ? parseInt(value) || 0
         : numericFields.includes(name)
         ? (value === '' ? '' : parseInt(value) || 0)
@@ -330,7 +326,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         category: formData.category,
         price_fcfa: finalPriceFcfa,
         compare_at_price_fcfa: formData.compare_at_price_fcfa === '' ? null : Number(formData.compare_at_price_fcfa),
-        weight_kg: formData.weight_kg === '' ? null : Number(formData.weight_kg),
+        parcel_size: formData.parcel_size || null,
         availability: finalAvailability,
         specs,
         tags,
@@ -648,22 +644,24 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               <p className="text-xs text-[#7D6A5D] mt-1">Doit être supérieur au prix actuel pour s&apos;afficher comme promo.</p>
             </div>
 
-            {/* Poids : il détermine la tranche tarifaire de la livraison. */}
+            {/* Taille de colis : elle détermine le tarif de livraison. */}
             <div>
               <label className="block text-sm font-semibold text-[#241A14] mb-2">
-                Poids emballé (kg)
+                Taille de colis
               </label>
-              <input
-                type="number"
-                step="0.1"
-                name="weight_kg"
-                value={formData.weight_kg}
+              <select
+                name="parcel_size"
+                value={formData.parcel_size}
                 onChange={handleChange}
-                placeholder="Ex. 2.5"
                 className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
-              />
+              >
+                <option value="">Non renseignée</option>
+                <option value="petit">Petit colis — clavier, souris, casque, câbles</option>
+                <option value="moyen">Moyen colis — ordinateur portable</option>
+                <option value="grand">Grand colis — écran, tour, config gamer</option>
+              </select>
               <p className="text-xs text-[#7D6A5D] mt-1">
-                Détermine le prix de la livraison. Laissé vide, le produit compte pour le poids par
+                Détermine le prix de la livraison. Non renseignée, le produit prend la taille par
                 défaut des réglages — et la livraison peut vous coûter plus cher que ce que le
                 client paie.
               </p>

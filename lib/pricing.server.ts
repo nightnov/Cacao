@@ -1,10 +1,11 @@
 import 'server-only'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 import {
-  cartWeightKg,
-  priceForWeight,
-  DEFAULT_WEIGHT_KG,
-  type WeightBracket,
+  cartParcelSize,
+  isParcelSize,
+  DEFAULT_PARCEL_SIZE,
+  type ParcelSize,
+  type ZoneRates,
 } from '@/lib/delivery'
 
 /**
@@ -32,8 +33,8 @@ export interface PricedOrder {
   lines: PricedLine[]
   productsTotal: number
   shipping: number
-  /** Poids total retenu pour la livraison, en kilogrammes. */
-  weightKg: number
+  /** Taille de colis retenue pour la livraison. */
+  parcelSize: ParcelSize
   deliveryMode: 'livraison' | 'retrait'
   discount: number
   promoCode: string | null
@@ -156,7 +157,7 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
 
   const [productsRes, variantsRes] = await Promise.all([
     productIds.length
-      ? supabase.from('products').select('id, price_fcfa, weight_kg').in('id', productIds)
+      ? supabase.from('products').select('id, price_fcfa, parcel_size').in('id', productIds)
       : Promise.resolve({ data: [] as any[] }),
     variantIds.length
       ? supabase.from('product_variants').select('id, price_fcfa').in('id', variantIds)
@@ -164,7 +165,7 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
   ])
 
   const productPrice = new Map((productsRes.data || []).map(p => [p.id, p.price_fcfa]))
-  const productWeight = new Map((productsRes.data || []).map(p => [p.id, p.weight_kg]))
+  const productSize = new Map((productsRes.data || []).map(p => [p.id, p.parcel_size]))
   const variantPrice = new Map((variantsRes.data || []).map(v => [v.id, v.price_fcfa]))
 
   let productsTotal = 0
@@ -193,25 +194,25 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
     })
   }
 
-  // Frais de livraison entièrement recalculés : ni la distance ni le prix
-  // annoncés par le navigateur ne sont repris. Le point de départ vient des
-  // réglages, celui d'arrivée de la commande, et la grille de la base.
+  // Frais de livraison entièrement recalculés : ni la taille de colis ni le
+  // prix annoncés par le navigateur ne sont repris. La zone vient de la
+  // commande, la taille des produits en base, et le prix de la grille.
   const city = (order.shipping_address as any)?.city
   const [zoneRes, settingsRes] = await Promise.all([
     city
       ? supabase.from('shipping_fees').select('id, price_fcfa').eq('city', city).maybeSingle()
       : Promise.resolve({ data: null as any }),
-    supabase.from('site_settings').select('key, value').in('key', ['default_weight_kg']),
+    supabase.from('site_settings').select('key, value').in('key', ['default_parcel_size']),
   ])
 
   const settings = Object.fromEntries((settingsRes.data || []).map(r => [r.key, r.value]))
-  const defaultWeight = Number(settings.default_weight_kg)
-  const weightKg = cartWeightKg(
-    items.map(i => ({
-      weight_kg: productWeight.get(i.product_id),
-      quantity: Math.max(1, Number(i.quantity) || 1),
-    })),
-    Number.isFinite(defaultWeight) && defaultWeight > 0 ? defaultWeight : DEFAULT_WEIGHT_KG
+  const defaultSize = isParcelSize(settings.default_parcel_size)
+    ? settings.default_parcel_size
+    : DEFAULT_PARCEL_SIZE
+
+  const parcelSize = cartParcelSize(
+    items.map(i => ({ parcel_size: productSize.get(i.product_id) })),
+    defaultSize
   )
 
   let shipping = 0
@@ -222,20 +223,17 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
   } else if (zoneRes.data?.id) {
     const { data: rates } = await supabase
       .from('shipping_rates')
-      .select('max_weight_kg, price_fcfa, extra_per_kg_fcfa')
+      .select('parcel_size, price_fcfa')
       .eq('zone_id', zoneRes.data.id)
 
-    const brackets: WeightBracket[] = (rates || []).map(r => ({
-      maxKg: r.max_weight_kg === null ? null : Number(r.max_weight_kg),
-      priceFcfa: r.price_fcfa,
-      extraPerKgFcfa: r.extra_per_kg_fcfa,
-    }))
+    const zoneRates: ZoneRates = {}
+    for (const r of rates || []) {
+      if (isParcelSize(r.parcel_size)) zoneRates[r.parcel_size] = r.price_fcfa
+    }
 
-    const priced = priceForWeight(brackets, weightKg)
-
-    // Aucune tranche définie pour cette zone : on retombe sur le prix fixe
-    // historique plutôt que de livrer gratuitement sans s'en apercevoir.
-    shipping = priced ? priced.fcfa : (zoneRes.data.price_fcfa ?? 0)
+    // Aucun tarif pour cette taille : on retombe sur le prix fixe historique
+    // de la zone plutôt que de livrer gratuitement sans s'en apercevoir.
+    shipping = zoneRates[parcelSize] ?? zoneRes.data.price_fcfa ?? 0
   } else {
     shipping = 0
   }
@@ -252,7 +250,7 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
     lines,
     productsTotal,
     shipping,
-    weightKg,
+    parcelSize,
     deliveryMode: order.delivery_mode === 'retrait' ? 'retrait' : 'livraison',
     discount,
     promoCode: discount > 0 ? order.promo_code : null,

@@ -1,95 +1,61 @@
 /**
- * Calcul du prix de livraison : zone × poids.
+ * Calcul du prix de livraison : zone × taille de colis.
  *
  * Aucun transporteur n'est nommé, ici comme côté client. Le site affiche
  * « Livraison » et un prix ; qui porte réellement le colis se décide commande
  * par commande, en dehors du site. C'est volontaire : le prestataire peut
  * changer sans qu'une ligne de code bouge.
  *
- * Le prix vient d'une grille en base — une liste de tranches de poids par zone.
- * C'est le modèle qu'emploient les transporteurs locaux, et il a l'avantage
- * d'être vérifiable : on peut comparer une ligne de la grille à un vrai devis.
+ * Le modèle reprend celui des transporteurs locaux — une grille de tailles de
+ * colis (petit, moyen, grand) croisée avec des zones. Il a l'avantage d'être
+ * vérifiable : chaque case se compare à une ligne de leur tarif officiel.
  */
 
-/** Une tranche de poids pour une zone. `maxKg` à null = tranche ouverte. */
-export interface WeightBracket {
-  maxKg: number | null
-  priceFcfa: number
-  /** Supplément par kilo au-delà de la tranche, quand elle est ouverte. */
-  extraPerKgFcfa: number
-}
+export const PARCEL_SIZES = ['petit', 'moyen', 'grand'] as const
+export type ParcelSize = (typeof PARCEL_SIZES)[number]
 
-export interface DeliveryOption {
-  mode: 'livraison' | 'retrait'
-  label: string
-  fcfa: number
-  /** Détail affiché sous le prix : poids retenu, tranche, horaires du retrait. */
-  detail: string
-  available: boolean
+/** Du moins au plus encombrant. Sert à départager un panier mixte. */
+const SIZE_RANK: Record<ParcelSize, number> = { petit: 1, moyen: 2, grand: 3 }
+
+/**
+ * Taille retenue pour un produit qui n'en a pas.
+ *
+ * « moyen » plutôt que « petit » : mieux vaut surfacturer une souris que
+ * sous-facturer un écran. Une erreur dans ce sens se voit et se corrige ; dans
+ * l'autre, elle se paie sur chaque commande sans que rien ne l'indique.
+ */
+export const DEFAULT_PARCEL_SIZE: ParcelSize = 'moyen'
+
+export function isParcelSize(value: unknown): value is ParcelSize {
+  return typeof value === 'string' && (PARCEL_SIZES as readonly string[]).includes(value)
 }
 
 /**
- * Poids retenu quand un produit n'a pas de poids renseigné.
+ * Taille du colis pour un panier entier.
  *
- * Sans repli, un produit sans poids ne pèserait rien et tomberait dans la
- * tranche la moins chère — la livraison serait sous-facturée sans que personne
- * le remarque. Trois kilos correspondent à un portable dans son carton.
- */
-export const DEFAULT_WEIGHT_KG = 3
-
-/** Poids total d'un panier, en kilogrammes. */
-export function cartWeightKg(
-  items: { weight_kg?: number | null; quantity: number }[],
-  defaultWeightKg = DEFAULT_WEIGHT_KG
-): number {
-  const total = items.reduce((sum, item) => {
-    const unit = item.weight_kg != null && item.weight_kg > 0 ? item.weight_kg : defaultWeightKg
-    return sum + unit * Math.max(1, item.quantity)
-  }, 0)
-  return Math.round(total * 100) / 100
-}
-
-/**
- * Prix de la livraison pour un poids donné.
+ * C'est l'article le plus encombrant qui commande : un écran expédié avec un
+ * clavier reste un grand colis.
  *
- * Les tranches sont parcourues de la plus légère à la plus lourde ; la première
- * dont la borne couvre le poids l'emporte. La tranche ouverte (`maxKg` null)
- * ferme la marche et facture le surplus au kilo, pour qu'un colis très lourd
- * produise un prix au lieu de bloquer la commande.
+ * Limite assumée : plusieurs articles volumineux tiennent rarement dans un seul
+ * colis, et le transporteur en facturera alors plusieurs. Le cas est trop rare
+ * pour justifier un calcul de volume ; il se traite à la main, la commande
+ * affichant la taille retenue.
  */
-export function priceForWeight(
-  brackets: WeightBracket[],
-  weightKg: number
-): { fcfa: number; bracket: WeightBracket } | null {
-  if (!brackets.length) return null
+export function cartParcelSize(
+  items: { parcel_size?: string | null }[],
+  defaultSize: ParcelSize = DEFAULT_PARCEL_SIZE
+): ParcelSize {
+  let biggest: ParcelSize = items.length ? 'petit' : defaultSize
 
-  // Les tranches fermées d'abord, dans l'ordre croissant ; l'ouverte en dernier.
-  const sorted = [...brackets].sort((a, b) => {
-    if (a.maxKg === null) return 1
-    if (b.maxKg === null) return -1
-    return a.maxKg - b.maxKg
-  })
-
-  for (const bracket of sorted) {
-    if (bracket.maxKg === null) {
-      const last = sorted[sorted.length - 2]
-      const from = last?.maxKg ?? 0
-      const extra = Math.max(0, weightKg - from)
-      return {
-        fcfa: bracket.priceFcfa + Math.ceil(extra) * bracket.extraPerKgFcfa,
-        bracket,
-      }
-    }
-    if (weightKg <= bracket.maxKg) {
-      return { fcfa: bracket.priceFcfa, bracket }
-    }
+  for (const item of items) {
+    const size = isParcelSize(item.parcel_size) ? item.parcel_size : defaultSize
+    if (SIZE_RANK[size] > SIZE_RANK[biggest]) biggest = size
   }
-
-  // Aucune tranche ouverte et poids au-delà de la dernière : on retient la plus
-  // chère plutôt que de renvoyer zéro.
-  const heaviest = sorted[sorted.length - 1]
-  return { fcfa: heaviest.priceFcfa, bracket: heaviest }
+  return biggest
 }
+
+/** Grille d'une zone : un prix par taille de colis. */
+export type ZoneRates = Partial<Record<ParcelSize, number>>
 
 export interface PickupSettings {
   enabled: boolean
@@ -97,33 +63,45 @@ export interface PickupSettings {
   hours: string | null
 }
 
+export interface DeliveryOption {
+  mode: 'livraison' | 'retrait'
+  label: string
+  fcfa: number
+  /** Détail affiché sous le prix : taille du colis, adresse et horaires. */
+  detail: string
+}
+
+export const SIZE_LABELS: Record<ParcelSize, string> = {
+  petit: 'Petit colis',
+  moyen: 'Moyen colis',
+  grand: 'Grand colis',
+}
+
 /**
  * Options proposées au client.
  *
  * Le retrait sur place est la seule échappatoire au coût du transport : dès
- * qu'un colis lourd fait grimper la livraison, c'est lui qui évite de perdre
- * la vente. Il n'est proposé que si une adresse de retrait est renseignée —
+ * qu'un colis encombrant fait grimper la livraison, c'est lui qui évite de
+ * perdre la vente. Il n'est proposé que si une adresse est renseignée —
  * annoncer un retrait sans dire où reviendrait à promettre dans le vide.
  */
 export function deliveryOptions(
-  brackets: WeightBracket[],
-  weightKg: number,
-  pickup: PickupSettings
+  rates: ZoneRates,
+  size: ParcelSize,
+  pickup: PickupSettings,
+  fallbackFcfa: number | null
 ): DeliveryOption[] {
   const options: DeliveryOption[] = []
 
-  const priced = priceForWeight(brackets, weightKg)
-  if (priced) {
-    const b = priced.bracket
+  // Sans tarif pour cette taille, on retombe sur le prix fixe de la zone
+  // plutôt que d'annoncer une livraison gratuite.
+  const price = rates[size] ?? fallbackFcfa
+  if (price != null) {
     options.push({
       mode: 'livraison',
       label: 'Livraison à votre adresse',
-      fcfa: priced.fcfa,
-      detail:
-        b.maxKg === null
-          ? `Colis de ${formatKg(weightKg)}`
-          : `Colis de ${formatKg(weightKg)} — tranche jusqu’à ${formatKg(b.maxKg)}`,
-      available: true,
+      fcfa: price,
+      detail: SIZE_LABELS[size],
     })
   }
 
@@ -133,16 +111,10 @@ export function deliveryOptions(
       label: 'Retrait sur place — gratuit',
       fcfa: 0,
       detail: pickup.hours ? `${pickup.address} · ${pickup.hours}` : pickup.address,
-      available: true,
     })
   }
 
   return options
-}
-
-export function formatKg(kg: number): string {
-  const rounded = Math.round(kg * 10) / 10
-  return `${rounded.toString().replace('.', ',')} kg`
 }
 
 /** Lien de carte à transmettre au livreur. */

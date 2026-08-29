@@ -52,10 +52,9 @@ export async function POST(request: Request) {
           shipping_cost_fcfa: priced.shipping,
           discount_fcfa: priced.discount,
           total_fcfa: priced.total,
-          // Distance et méthode retenues par le serveur, pas celles annoncées
-          // par le navigateur : c'est ce qui explique le prix facturé.
-          delivery_distance_km: priced.deliveryQuote.km,
-          delivery_method: priced.deliveryQuote.method,
+          // Poids retenu par le serveur, pas celui annoncé par le navigateur :
+          // c'est lui qui explique la tranche tarifaire appliquée.
+          delivery_weight_kg: priced.weightKg,
         })
         .eq('id', orderId)
     }

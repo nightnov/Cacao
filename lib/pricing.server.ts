@@ -1,11 +1,10 @@
 import 'server-only'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 import {
-  quoteDelivery,
-  accuracyIsUsable,
-  DEFAULT_TARIFF,
-  type DeliveryTariff,
-  type DeliveryQuote,
+  cartWeightKg,
+  priceForWeight,
+  DEFAULT_WEIGHT_KG,
+  type WeightBracket,
 } from '@/lib/delivery'
 
 /**
@@ -33,8 +32,9 @@ export interface PricedOrder {
   lines: PricedLine[]
   productsTotal: number
   shipping: number
-  /** Détail du calcul de livraison : distance retenue et méthode employée. */
-  deliveryQuote: DeliveryQuote
+  /** Poids total retenu pour la livraison, en kilogrammes. */
+  weightKg: number
+  deliveryMode: 'livraison' | 'retrait'
   discount: number
   promoCode: string | null
   total: number
@@ -138,9 +138,7 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
 
   const { data: order } = await supabase
     .from('orders')
-    .select(
-      'id, user_id, total_fcfa, shipping_address, promo_code, delivery_lat, delivery_lng, delivery_accuracy_m'
-    )
+    .select('id, user_id, total_fcfa, shipping_address, promo_code, delivery_mode')
     .eq('id', orderId)
     .maybeSingle()
 
@@ -158,7 +156,7 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
 
   const [productsRes, variantsRes] = await Promise.all([
     productIds.length
-      ? supabase.from('products').select('id, price_fcfa').in('id', productIds)
+      ? supabase.from('products').select('id, price_fcfa, weight_kg').in('id', productIds)
       : Promise.resolve({ data: [] as any[] }),
     variantIds.length
       ? supabase.from('product_variants').select('id, price_fcfa').in('id', variantIds)
@@ -166,6 +164,7 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
   ])
 
   const productPrice = new Map((productsRes.data || []).map(p => [p.id, p.price_fcfa]))
+  const productWeight = new Map((productsRes.data || []).map(p => [p.id, p.weight_kg]))
   const variantPrice = new Map((variantsRes.data || []).map(v => [v.id, v.price_fcfa]))
 
   let productsTotal = 0
@@ -198,53 +197,48 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
   // annoncés par le navigateur ne sont repris. Le point de départ vient des
   // réglages, celui d'arrivée de la commande, et la grille de la base.
   const city = (order.shipping_address as any)?.city
-  const [feeRes, tariffRes] = await Promise.all([
+  const [zoneRes, settingsRes] = await Promise.all([
     city
-      ? supabase.from('shipping_fees').select('price_fcfa').eq('city', city).maybeSingle()
+      ? supabase.from('shipping_fees').select('id, price_fcfa').eq('city', city).maybeSingle()
       : Promise.resolve({ data: null as any }),
-    supabase
-      .from('site_settings')
-      .select('key, value')
-      .in('key', [
-        'pickup_lat',
-        'pickup_lng',
-        'delivery_base_fcfa',
-        'delivery_per_km_fcfa',
-        'delivery_road_factor',
-        'delivery_min_fcfa',
-        'delivery_max_fcfa',
-      ]),
+    supabase.from('site_settings').select('key, value').in('key', ['default_weight_kg']),
   ])
 
-  const s = Object.fromEntries((tariffRes.data || []).map(r => [r.key, r.value]))
-  const num = (v: unknown, fallback: number) => {
-    const n = Number(v)
-    return Number.isFinite(n) ? n : fallback
+  const settings = Object.fromEntries((settingsRes.data || []).map(r => [r.key, r.value]))
+  const defaultWeight = Number(settings.default_weight_kg)
+  const weightKg = cartWeightKg(
+    items.map(i => ({
+      weight_kg: productWeight.get(i.product_id),
+      quantity: Math.max(1, Number(i.quantity) || 1),
+    })),
+    Number.isFinite(defaultWeight) && defaultWeight > 0 ? defaultWeight : DEFAULT_WEIGHT_KG
+  )
+
+  let shipping = 0
+
+  if (order.delivery_mode === 'retrait') {
+    // Le client vient chercher : rien à transporter, rien à facturer.
+    shipping = 0
+  } else if (zoneRes.data?.id) {
+    const { data: rates } = await supabase
+      .from('shipping_rates')
+      .select('max_weight_kg, price_fcfa, extra_per_kg_fcfa')
+      .eq('zone_id', zoneRes.data.id)
+
+    const brackets: WeightBracket[] = (rates || []).map(r => ({
+      maxKg: r.max_weight_kg === null ? null : Number(r.max_weight_kg),
+      priceFcfa: r.price_fcfa,
+      extraPerKgFcfa: r.extra_per_kg_fcfa,
+    }))
+
+    const priced = priceForWeight(brackets, weightKg)
+
+    // Aucune tranche définie pour cette zone : on retombe sur le prix fixe
+    // historique plutôt que de livrer gratuitement sans s'en apercevoir.
+    shipping = priced ? priced.fcfa : (zoneRes.data.price_fcfa ?? 0)
+  } else {
+    shipping = 0
   }
-
-  const tariff: DeliveryTariff = {
-    pickupLat: s.pickup_lat != null && s.pickup_lat !== '' ? num(s.pickup_lat, NaN) : null,
-    pickupLng: s.pickup_lng != null && s.pickup_lng !== '' ? num(s.pickup_lng, NaN) : null,
-    baseFcfa: num(s.delivery_base_fcfa, DEFAULT_TARIFF.baseFcfa),
-    perKmFcfa: num(s.delivery_per_km_fcfa, DEFAULT_TARIFF.perKmFcfa),
-    roadFactor: num(s.delivery_road_factor, DEFAULT_TARIFF.roadFactor),
-    minFcfa: num(s.delivery_min_fcfa, DEFAULT_TARIFF.minFcfa),
-    maxFcfa: num(s.delivery_max_fcfa, DEFAULT_TARIFF.maxFcfa),
-  }
-  if (!Number.isFinite(tariff.pickupLat as number)) tariff.pickupLat = null
-  if (!Number.isFinite(tariff.pickupLng as number)) tariff.pickupLng = null
-
-  // Une position trop imprécise est ignorée : elle ferait facturer une commune
-  // pour une autre.
-  const point =
-    order.delivery_lat != null &&
-    order.delivery_lng != null &&
-    accuracyIsUsable(order.delivery_accuracy_m)
-      ? { lat: order.delivery_lat, lng: order.delivery_lng }
-      : null
-
-  const quote = quoteDelivery(tariff, point, feeRes.data?.price_fcfa ?? null)
-  const shipping = quote.fcfa
 
   let discount = 0
   if (order.promo_code) {
@@ -258,7 +252,8 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
     lines,
     productsTotal,
     shipping,
-    deliveryQuote: quote,
+    weightKg,
+    deliveryMode: order.delivery_mode === 'retrait' ? 'retrait' : 'livraison',
     discount,
     promoCode: discount > 0 ? order.promo_code : null,
     total,

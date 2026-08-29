@@ -1,129 +1,148 @@
 /**
- * Calcul du prix de livraison.
+ * Calcul du prix de livraison : zone × poids.
  *
- * Yango facture à la distance parcourue. Son API B2B sait renvoyer un devis,
- * mais elle exige une clé obtenue par contrat partenaire
- * (integration-support@yango.com) : tant qu'elle n'est pas là, on reproduit la
- * même logique localement.
+ * Aucun transporteur n'est nommé, ici comme côté client. Le site affiche
+ * « Livraison » et un prix ; qui porte réellement le colis se décide commande
+ * par commande, en dehors du site. C'est volontaire : le prestataire peut
+ * changer sans qu'une ligne de code bouge.
  *
- * Tout est concentré ici pour que le remplacement par un vrai devis Yango se
- * fasse en un seul endroit, sans toucher au tunnel de commande ni à l'admin.
+ * Le prix vient d'une grille en base — une liste de tranches de poids par zone.
+ * C'est le modèle qu'emploient les transporteurs locaux, et il a l'avantage
+ * d'être vérifiable : on peut comparer une ligne de la grille à un vrai devis.
  */
 
-export interface DeliveryTariff {
-  /** Point de retrait : le domicile ou le dépôt d'où part le livreur. */
-  pickupLat: number | null
-  pickupLng: number | null
-  /** Prise en charge, avant même le premier kilomètre. */
-  baseFcfa: number
-  perKmFcfa: number
-  /**
-   * La distance à vol d'oiseau sous-estime toujours le trajet réel : le livreur
-   * suit des rues, contourne la lagune, traverse par un pont. Ce coefficient
-   * rapproche l'estimation de la distance routière. 1,4 est une valeur de
-   * départ courante en ville ; à ajuster en comparant avec de vraies courses.
-   */
-  roadFactor: number
-  minFcfa: number
-  /** Plafond : au-delà, le client renoncerait à commander. */
-  maxFcfa: number
+/** Une tranche de poids pour une zone. `maxKg` à null = tranche ouverte. */
+export interface WeightBracket {
+  maxKg: number | null
+  priceFcfa: number
+  /** Supplément par kilo au-delà de la tranche, quand elle est ouverte. */
+  extraPerKgFcfa: number
 }
 
-/**
- * Valeurs calibrées sur la géographie réelle d'Abidjan, depuis Yopougon.
- *
- * Le district s'étale sur une trentaine de kilomètres de route : d'Attécoubé
- * (6 km) à Bingerville (31 km). Une grille plus raide — 1 000 + 100 F/km, par
- * exemple — envoie dix communes sur douze contre le plafond de 2 000, ce qui
- * revient à un tarif unique et rend le calcul inutile.
- *
- * 1 300 + 20 F/km étale correctement : Attécoubé 1 500, Plateau 1 600,
- * Abobo 1 700, Koumassi 1 800, Bingerville 2 000, sans jamais plafonner.
- *
- * Ce sont des valeurs de départ, pas des coûts constatés. À corriger après
- * comparaison avec de vraies courses Yango.
- */
-export const DEFAULT_TARIFF: DeliveryTariff = {
-  pickupLat: null,
-  pickupLng: null,
-  baseFcfa: 1300,
-  perKmFcfa: 20,
-  roadFactor: 1.4,
-  minFcfa: 1500,
-  maxFcfa: 2000,
-}
-
-/**
- * Distance à vol d'oiseau entre deux points, en kilomètres.
- *
- * Formule de haversine : elle tient compte de la courbure de la Terre. Sur les
- * quelques kilomètres d'une ville, une simple différence de coordonnées
- * suffirait presque, mais la longitude se resserre en s'éloignant de
- * l'équateur et l'erreur deviendrait visible sur les longues courses.
- */
-export function haversineKm(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number
-): number {
-  const R = 6371 // rayon moyen de la Terre, en km
-  const toRad = (d: number) => (d * Math.PI) / 180
-  const dLat = toRad(lat2 - lat1)
-  const dLng = toRad(lng2 - lng1)
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2
-  return 2 * R * Math.asin(Math.sqrt(a))
-}
-
-export interface DeliveryQuote {
+export interface DeliveryOption {
+  mode: 'livraison' | 'retrait'
+  label: string
   fcfa: number
-  /** Distance routière estimée, en km. Nulle si la position est inconnue. */
-  km: number | null
-  /** Comment le prix a été obtenu — affiché au client et gardé en commande. */
-  method: 'distance' | 'commune' | 'defaut'
-  /** Vrai si le plafond a été atteint : la course coûte peut-être plus cher. */
-  capped: boolean
+  /** Détail affiché sous le prix : poids retenu, tranche, horaires du retrait. */
+  detail: string
+  available: boolean
 }
 
 /**
- * Prix de la livraison.
+ * Poids retenu quand un produit n'a pas de poids renseigné.
  *
- * Deux sources, dans cet ordre :
- *   1. la position exacte du client, quand il l'a partagée → prix à la distance ;
- *   2. le tarif fixe de sa commune, sinon.
- *
- * Le repli par commune n'est pas un détail : beaucoup de clients refusent la
- * géolocalisation, et une commande ne doit jamais être bloquée pour ça.
+ * Sans repli, un produit sans poids ne pèserait rien et tomberait dans la
+ * tranche la moins chère — la livraison serait sous-facturée sans que personne
+ * le remarque. Trois kilos correspondent à un portable dans son carton.
  */
-export function quoteDelivery(
-  tariff: DeliveryTariff,
-  point: { lat: number; lng: number } | null,
-  communeFcfa: number | null
-): DeliveryQuote {
-  if (point && tariff.pickupLat !== null && tariff.pickupLng !== null) {
-    const straight = haversineKm(tariff.pickupLat, tariff.pickupLng, point.lat, point.lng)
-    const km = straight * tariff.roadFactor
-    const raw = tariff.baseFcfa + km * tariff.perKmFcfa
+export const DEFAULT_WEIGHT_KG = 3
 
-    // Arrondi à la centaine supérieure : personne n'annonce « 1 743 FCFA ».
-    const rounded = Math.ceil(raw / 100) * 100
-    const clamped = Math.min(tariff.maxFcfa, Math.max(tariff.minFcfa, rounded))
+/** Poids total d'un panier, en kilogrammes. */
+export function cartWeightKg(
+  items: { weight_kg?: number | null; quantity: number }[],
+  defaultWeightKg = DEFAULT_WEIGHT_KG
+): number {
+  const total = items.reduce((sum, item) => {
+    const unit = item.weight_kg != null && item.weight_kg > 0 ? item.weight_kg : defaultWeightKg
+    return sum + unit * Math.max(1, item.quantity)
+  }, 0)
+  return Math.round(total * 100) / 100
+}
 
-    return {
-      fcfa: clamped,
-      km: Math.round(km * 10) / 10,
-      method: 'distance',
-      capped: rounded > tariff.maxFcfa,
+/**
+ * Prix de la livraison pour un poids donné.
+ *
+ * Les tranches sont parcourues de la plus légère à la plus lourde ; la première
+ * dont la borne couvre le poids l'emporte. La tranche ouverte (`maxKg` null)
+ * ferme la marche et facture le surplus au kilo, pour qu'un colis très lourd
+ * produise un prix au lieu de bloquer la commande.
+ */
+export function priceForWeight(
+  brackets: WeightBracket[],
+  weightKg: number
+): { fcfa: number; bracket: WeightBracket } | null {
+  if (!brackets.length) return null
+
+  // Les tranches fermées d'abord, dans l'ordre croissant ; l'ouverte en dernier.
+  const sorted = [...brackets].sort((a, b) => {
+    if (a.maxKg === null) return 1
+    if (b.maxKg === null) return -1
+    return a.maxKg - b.maxKg
+  })
+
+  for (const bracket of sorted) {
+    if (bracket.maxKg === null) {
+      const last = sorted[sorted.length - 2]
+      const from = last?.maxKg ?? 0
+      const extra = Math.max(0, weightKg - from)
+      return {
+        fcfa: bracket.priceFcfa + Math.ceil(extra) * bracket.extraPerKgFcfa,
+        bracket,
+      }
+    }
+    if (weightKg <= bracket.maxKg) {
+      return { fcfa: bracket.priceFcfa, bracket }
     }
   }
 
-  if (communeFcfa != null) {
-    return { fcfa: communeFcfa, km: null, method: 'commune', capped: false }
+  // Aucune tranche ouverte et poids au-delà de la dernière : on retient la plus
+  // chère plutôt que de renvoyer zéro.
+  const heaviest = sorted[sorted.length - 1]
+  return { fcfa: heaviest.priceFcfa, bracket: heaviest }
+}
+
+export interface PickupSettings {
+  enabled: boolean
+  address: string | null
+  hours: string | null
+}
+
+/**
+ * Options proposées au client.
+ *
+ * Le retrait sur place est la seule échappatoire au coût du transport : dès
+ * qu'un colis lourd fait grimper la livraison, c'est lui qui évite de perdre
+ * la vente. Il n'est proposé que si une adresse de retrait est renseignée —
+ * annoncer un retrait sans dire où reviendrait à promettre dans le vide.
+ */
+export function deliveryOptions(
+  brackets: WeightBracket[],
+  weightKg: number,
+  pickup: PickupSettings
+): DeliveryOption[] {
+  const options: DeliveryOption[] = []
+
+  const priced = priceForWeight(brackets, weightKg)
+  if (priced) {
+    const b = priced.bracket
+    options.push({
+      mode: 'livraison',
+      label: 'Livraison à votre adresse',
+      fcfa: priced.fcfa,
+      detail:
+        b.maxKg === null
+          ? `Colis de ${formatKg(weightKg)}`
+          : `Colis de ${formatKg(weightKg)} — tranche jusqu’à ${formatKg(b.maxKg)}`,
+      available: true,
+    })
   }
 
-  return { fcfa: tariff.minFcfa, km: null, method: 'defaut', capped: false }
+  if (pickup.enabled && pickup.address) {
+    options.push({
+      mode: 'retrait',
+      label: 'Retrait sur place — gratuit',
+      fcfa: 0,
+      detail: pickup.hours ? `${pickup.address} · ${pickup.hours}` : pickup.address,
+      available: true,
+    })
+  }
+
+  return options
+}
+
+export function formatKg(kg: number): string {
+  const rounded = Math.round(kg * 10) / 10
+  return `${rounded.toString().replace('.', ',')} kg`
 }
 
 /** Lien de carte à transmettre au livreur. */
@@ -132,11 +151,11 @@ export function mapsLink(lat: number, lng: number): string {
 }
 
 /**
- * Une position trop imprécise ne doit pas servir à facturer.
+ * Une position trop imprécise ne sert à rien au livreur.
  *
- * Un téléphone avec le GPS actif donne 10 à 50 m. Un ordinateur qui se repère
- * au Wi-Fi ou à l'adresse IP peut se tromper de plusieurs kilomètres — soit
- * plusieurs communes d'écart à Abidjan, et un prix faux.
+ * Un téléphone dont le GPS est actif donne 10 à 50 m. Un ordinateur qui se
+ * repère au Wi-Fi ou à l'adresse IP peut se tromper de plusieurs kilomètres :
+ * autant ne rien transmettre que d'envoyer le livreur dans une autre commune.
  */
 export const MAX_ACCURACY_M = 2000
 

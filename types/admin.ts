@@ -24,6 +24,8 @@ export interface Product {
   compare_at_price_fcfa: number | null
   /** Taille de colis. Détermine le tarif de livraison appliqué. */
   parcel_size?: 'petit' | 'moyen' | 'grand' | null
+  /** Poids emballé en kg. Sert à proposer la taille, sans la remplacer. */
+  weight_kg?: number | null
   availability: string
   specs: Record<string, unknown>
   tags: string[]

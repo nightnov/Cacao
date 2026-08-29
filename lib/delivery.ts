@@ -31,6 +31,35 @@ export function isParcelSize(value: unknown): value is ParcelSize {
 }
 
 /**
+ * Bornes de poids des tailles de colis, relevées sur la grille du transporteur.
+ * Un poids strictement supérieur à la borne passe à la taille suivante.
+ */
+export const SIZE_WEIGHT_LIMITS: { size: ParcelSize; maxKg: number | null }[] = [
+  { size: 'petit', maxKg: 5 },
+  { size: 'moyen', maxKg: 15 },
+  { size: 'grand', maxKg: null },
+]
+
+/**
+ * Taille déduite d'un poids.
+ *
+ * Sert à pré-remplir la fiche produit : saisir « 2,3 kg » propose « petit
+ * colis » sans avoir à retenir les seuils.
+ *
+ * Ce n'est qu'une proposition. Le transporteur retient le poids OU
+ * l'encombrement, selon ce qui est le plus contraignant : un écran de
+ * 27 pouces pèse 5 kg mais ne rentre dans aucune boîte de moyen colis. La
+ * taille reste donc modifiable à la main.
+ */
+export function sizeFromWeight(kg: number | null | undefined): ParcelSize | null {
+  if (kg == null || !Number.isFinite(kg) || kg <= 0) return null
+  for (const { size, maxKg } of SIZE_WEIGHT_LIMITS) {
+    if (maxKg === null || kg <= maxKg) return size
+  }
+  return 'grand'
+}
+
+/**
  * Taille du colis pour un panier entier.
  *
  * C'est l'article le plus encombrant qui commande : un écran expédié avec un

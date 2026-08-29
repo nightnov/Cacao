@@ -6,6 +6,7 @@ import { Button } from '@/components/Button'
 import { Product, ProductVariant, VariantOption } from '@/types/admin'
 import { generateVariantCombinations, variantLabel } from '@/lib/variants'
 import { useCategories } from '@/hooks/useCategories'
+import { sizeFromWeight, SIZE_LABELS } from '@/lib/delivery'
 
 interface ProductFormProps {
   product?: Product | null
@@ -64,6 +65,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     price_fcfa: 0,
     compare_at_price_fcfa: '' as string | number,
     parcel_size: '' as string,
+    weight_kg: '' as string | number,
     availability: 'in_stock',
     specs_cpu: '',
     specs_ram: '',
@@ -81,6 +83,14 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     meta_description: ''
   })
 
+  /**
+   * Taille que le poids suggère. N'est affichée que si elle diffère du choix
+   * en place : signaler un accord n'apprendrait rien et ajouterait du bruit.
+   */
+  const suggestedSize = sizeFromWeight(
+    typeof formData.weight_kg === 'number' ? formData.weight_kg : null
+  )
+
   const [hasVariants, setHasVariants] = useState(false)
   const [variantOptionRows, setVariantOptionRows] = useState<VariantOptionRow[]>([{ name: '', valuesText: '' }])
   const [variantRows, setVariantRows] = useState<VariantRow[]>([])
@@ -95,6 +105,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         price_fcfa: product.price_fcfa,
         compare_at_price_fcfa: product.compare_at_price_fcfa ?? '',
         parcel_size: product.parcel_size ?? '',
+        weight_kg: product.weight_kg ?? '',
         availability: product.availability,
         specs_cpu: (product.specs?.cpu as string) || '',
         specs_ram: (product.specs?.ram as string) || '',
@@ -144,6 +155,24 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     const numericFields = ['price_fcfa', 'compare_at_price_fcfa', 'supplier_cost_fcfa']
+
+    // Saisir un poids remplit la taille de colis dans la foulée : c'est elle
+    // qui fixe le prix, et personne n'a à retenir les seuils du transporteur.
+    // Le choix reste modifiable ensuite — un poids ne dit rien de
+    // l'encombrement.
+    if (name === 'weight_kg') {
+      // `parseFloat` et non `parseInt` : un portable de 2,5 kg deviendrait
+      // 2 kg et pourrait changer de tranche.
+      const kg = value === '' ? '' : parseFloat(value) || 0
+      const suggestion = sizeFromWeight(typeof kg === 'number' ? kg : null)
+      setFormData(prev => ({
+        ...prev,
+        weight_kg: kg,
+        parcel_size: suggestion ?? prev.parcel_size
+      }))
+      return
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: name === 'price_fcfa'
@@ -327,6 +356,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         price_fcfa: finalPriceFcfa,
         compare_at_price_fcfa: formData.compare_at_price_fcfa === '' ? null : Number(formData.compare_at_price_fcfa),
         parcel_size: formData.parcel_size || null,
+        weight_kg: formData.weight_kg === '' ? null : Number(formData.weight_kg),
         availability: finalAvailability,
         specs,
         tags,
@@ -644,7 +674,28 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               <p className="text-xs text-[#7D6A5D] mt-1">Doit être supérieur au prix actuel pour s&apos;afficher comme promo.</p>
             </div>
 
-            {/* Taille de colis : elle détermine le tarif de livraison. */}
+            {/* Poids : sert uniquement à proposer la taille ci-dessous. */}
+            <div>
+              <label className="block text-sm font-semibold text-[#241A14] mb-2">
+                Poids emballé (kg)
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                name="weight_kg"
+                value={formData.weight_kg}
+                onChange={handleChange}
+                placeholder="Ex. 2.3"
+                className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+              />
+              <p className="text-xs text-[#7D6A5D] mt-1">
+                Renseignez-le et la taille de colis se remplit toute seule : jusqu&apos;à 5 kg petit
+                colis, jusqu&apos;à 15 kg moyen, au-delà grand.
+              </p>
+            </div>
+
+            {/* Taille de colis : c'est elle qui détermine le tarif. */}
             <div>
               <label className="block text-sm font-semibold text-[#241A14] mb-2">
                 Taille de colis
@@ -656,14 +707,29 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                 className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
               >
                 <option value="">Non renseignée</option>
-                <option value="petit">Petit colis — clavier, souris, casque, câbles</option>
-                <option value="moyen">Moyen colis — ordinateur portable</option>
-                <option value="grand">Grand colis — écran, tour, config gamer</option>
+                <option value="petit">Petit colis — 0 à 5 kg · 40 × 20 × 13 cm</option>
+                <option value="moyen">Moyen colis — 5 à 15 kg · 70 × 30 × 20 cm</option>
+                <option value="grand">Grand colis — 15 kg et + · 100 × 100 × 62 cm</option>
               </select>
+
+              {suggestedSize && suggestedSize !== formData.parcel_size && (
+                <p className="text-xs text-[#C2410C] mt-1">
+                  D&apos;après le poids saisi, ce serait plutôt un{' '}
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, parcel_size: suggestedSize }))}
+                    className="font-semibold underline"
+                  >
+                    {SIZE_LABELS[suggestedSize].toLowerCase()}
+                  </button>
+                  .
+                </p>
+              )}
+
               <p className="text-xs text-[#7D6A5D] mt-1">
-                Détermine le prix de la livraison. Non renseignée, le produit prend la taille par
-                défaut des réglages — et la livraison peut vous coûter plus cher que ce que le
-                client paie.
+                C&apos;est elle qui fixe le prix de la livraison. Le poids ne suffit pas toujours :
+                un écran de 27 pouces pèse 5 kg mais ne rentre dans aucune boîte de moyen colis —
+                corrigez à la main dans ce cas.
               </p>
             </div>
 

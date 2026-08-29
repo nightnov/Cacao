@@ -10,14 +10,19 @@ import {
   DEFAULT_PARCEL_SIZE,
   type ParcelSize,
 } from '@/lib/delivery'
-import { formatAmount } from '@/lib/format'
 
 interface Zone {
-  id: string
-  city: string
-  price_fcfa: number
-  parent_city: string | null
-  is_active: boolean
+  number: number
+  label: string
+  localities: string | null
+}
+
+interface ParcelSizeRow {
+  code: ParcelSize
+  label: string
+  weight_range: string | null
+  dimensions: string | null
+  examples: string | null
 }
 
 const CARD = 'bg-white border border-[#E8E0D8] rounded-2xl'
@@ -25,19 +30,21 @@ const INPUT = 'w-full px-3 py-2 border border-[#E8E0D8] rounded-lg text-sm text-
 const LABEL = 'block text-xs font-semibold text-[#5B4B41] mb-1.5'
 
 /**
- * Grille de livraison : un prix par zone et par taille de colis.
+ * Grille de livraison : un prix par trajet et par taille de colis.
  *
  * Aucun transporteur n'est nommé, ici comme côté client. La grille décrit ce
  * que le client paie, pas qui porte le colis : ce choix se fait commande par
  * commande, en dehors du site.
  *
- * La saisie est un tableau plutôt qu'un formulaire par zone : avec treize
- * communes et trois tailles, passer d'un écran à l'autre pour comparer deux
- * prix rendrait toute vérification pénible.
+ * Seuls les trajets partant de la zone d'expédition sont affichés. La grille
+ * complète compte vingt et une routes ; n'en montrer que six garde l'écran
+ * lisible et empêche de modifier par erreur un tarif sans rapport.
  */
 export default function DeliveryTariffPanel() {
   const [zones, setZones] = useState<Zone[]>([])
-  const [grid, setGrid] = useState<Record<string, Partial<Record<ParcelSize, string>>>>({})
+  const [sizes, setSizes] = useState<ParcelSizeRow[]>([])
+  const [pickupZone, setPickupZone] = useState(1)
+  const [grid, setGrid] = useState<Record<string, string>>({})
   const [defaultSize, setDefaultSize] = useState<ParcelSize>(DEFAULT_PARCEL_SIZE)
   const [pickupEnabled, setPickupEnabled] = useState(false)
   const [pickupAddress, setPickupAddress] = useState('')
@@ -49,42 +56,50 @@ export default function DeliveryTariffPanel() {
   const [missingTable, setMissingTable] = useState(false)
   const [message, setMessage] = useState<{ kind: 'ok' | 'ko'; text: string } | null>(null)
 
+  const key = (toZone: number, size: ParcelSize) => `${toZone}:${size}`
+
   const load = async () => {
     const supabase = getSupabaseClient()
-    const [zonesRes, ratesRes, settingsRes, productsRes] = await Promise.all([
-      supabase
-        .from('shipping_fees')
-        .select('id, city, price_fcfa, parent_city, is_active')
-        .order('sort_order')
-        .order('city'),
-      supabase.from('shipping_rates').select('zone_id, parcel_size, price_fcfa'),
+    const [zonesRes, sizesRes, ratesRes, settingsRes, productsRes] = await Promise.all([
+      supabase.from('delivery_zones').select('number, label, localities').order('number'),
+      supabase.from('parcel_sizes').select('*').order('sort_order'),
+      supabase.from('shipping_rates').select('from_zone, to_zone, parcel_size, price_fcfa'),
       supabase
         .from('site_settings')
         .select('key, value')
-        .in('key', ['default_parcel_size', 'pickup_enabled', 'pickup_address', 'pickup_hours']),
+        .in('key', [
+          'default_parcel_size',
+          'pickup_zone',
+          'pickup_enabled',
+          'pickup_address',
+          'pickup_hours',
+        ]),
       supabase.from('products').select('name, parcel_size'),
     ])
 
-    setMissingTable(!!ratesRes.error)
-
-    const list = ((zonesRes.data || []) as Zone[]).filter(z => z.is_active !== false)
-    setZones(list)
-
-    const next: Record<string, Partial<Record<ParcelSize, string>>> = {}
-    for (const r of ratesRes.data || []) {
-      if (!isParcelSize(r.parcel_size)) continue
-      next[r.zone_id] = { ...(next[r.zone_id] || {}), [r.parcel_size]: String(r.price_fcfa) }
-    }
-    setGrid(next)
+    setMissingTable(!!zonesRes.error || !!ratesRes.error)
+    setZones((zonesRes.data || []) as Zone[])
+    setSizes((sizesRes.data || []) as ParcelSizeRow[])
 
     const s = Object.fromEntries((settingsRes.data || []).map(r => [r.key, r.value || '']))
+    const pz = Number(s.pickup_zone)
+    const from = Number.isInteger(pz) && pz >= 1 && pz <= 6 ? pz : 1
+    setPickupZone(from)
     if (isParcelSize(s.default_parcel_size)) setDefaultSize(s.default_parcel_size)
     setPickupEnabled(s.pickup_enabled === 'true')
     setPickupAddress(s.pickup_address || '')
     setPickupHours(s.pickup_hours || '')
 
-    // Un produit sans taille prend la taille par défaut : si sa taille réelle
-    // est supérieure, la livraison coûte plus cher que ce que le client paie.
+    // Le trajet est retenu dans les deux sens : la grille publiée n'en donne
+    // qu'une moitié, le tarif étant le même à l'aller et au retour.
+    const next: Record<string, string> = {}
+    for (const r of ratesRes.data || []) {
+      if (!isParcelSize(r.parcel_size)) continue
+      if (r.from_zone === from) next[key(r.to_zone, r.parcel_size)] = String(r.price_fcfa)
+      else if (r.to_zone === from) next[key(r.from_zone, r.parcel_size)] = String(r.price_fcfa)
+    }
+    setGrid(next)
+
     setMissingSizes(
       (productsRes.data || [])
         .filter((p: any) => !isParcelSize(p.parcel_size))
@@ -96,6 +111,7 @@ export default function DeliveryTariffPanel() {
 
   useEffect(() => {
     load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const saveGrid = async () => {
@@ -103,27 +119,36 @@ export default function DeliveryTariffPanel() {
     setMessage(null)
     const supabase = getSupabaseClient()
 
-    const rows: { zone_id: string; parcel_size: string; price_fcfa: number }[] = []
+    const rows: { from_zone: number; to_zone: number; parcel_size: string; price_fcfa: number }[] =
+      []
+
     for (const zone of zones) {
       for (const size of PARCEL_SIZES) {
-        const raw = grid[zone.id]?.[size]
+        const raw = grid[key(zone.number, size)]
         if (raw === undefined || raw === '') continue
         const price = Number(raw)
         if (!Number.isFinite(price) || price < 0) {
           setBusy(false)
           setMessage({
             kind: 'ko',
-            text: `Prix invalide pour ${zone.city} · ${SIZE_LABELS[size]}.`,
+            text: `Prix invalide pour ${zone.label} · ${SIZE_LABELS[size]}.`,
           })
           return
         }
-        rows.push({ zone_id: zone.id, parcel_size: size, price_fcfa: Math.round(price) })
+        // La ligne est écrite dans le sens publié — zone basse vers zone haute —
+        // pour ne pas créer un doublon qui contredirait celle déjà en base.
+        rows.push({
+          from_zone: Math.min(pickupZone, zone.number),
+          to_zone: Math.max(pickupZone, zone.number),
+          parcel_size: size,
+          price_fcfa: Math.round(price),
+        })
       }
     }
 
     const { error } = await supabase
       .from('shipping_rates')
-      .upsert(rows, { onConflict: 'zone_id,parcel_size' })
+      .upsert(rows, { onConflict: 'from_zone,to_zone,parcel_size' })
 
     setBusy(false)
     if (error) {
@@ -140,6 +165,7 @@ export default function DeliveryTariffPanel() {
     const { error } = await supabase.from('site_settings').upsert(
       [
         { key: 'default_parcel_size', value: defaultSize },
+        { key: 'pickup_zone', value: String(pickupZone) },
         { key: 'pickup_enabled', value: pickupEnabled ? 'true' : 'false' },
         { key: 'pickup_address', value: pickupAddress.trim() || null },
         { key: 'pickup_hours', value: pickupHours.trim() || null },
@@ -147,9 +173,12 @@ export default function DeliveryTariffPanel() {
       { onConflict: 'key' }
     )
     setBusy(false)
-    setMessage(
-      error ? { kind: 'ko', text: error.message } : { kind: 'ok', text: 'Réglages enregistrés.' }
-    )
+    if (error) {
+      setMessage({ kind: 'ko', text: error.message })
+      return
+    }
+    await load()
+    setMessage({ kind: 'ok', text: 'Réglages enregistrés.' })
   }
 
   if (loading) {
@@ -166,7 +195,7 @@ export default function DeliveryTariffPanel() {
         <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-start gap-2.5">
           <AlertTriangle size={17} className="text-amber-700 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-amber-900">
-            <p className="font-semibold">La grille par taille n’est pas encore installée.</p>
+            <p className="font-semibold">La grille de livraison n’est pas encore installée.</p>
             <p className="mt-1">
               Exécutez{' '}
               <code className="bg-amber-100 px-1 rounded">
@@ -210,12 +239,41 @@ export default function DeliveryTariffPanel() {
         </div>
       )}
 
+      {/* ── Repères de taille ────────────────────────────────────────────── */}
+      {sizes.length > 0 && (
+        <section className={`${CARD} p-5`}>
+          <h2 className="font-serif text-lg text-[#241A14] mb-1">Tailles de colis</h2>
+          <p className="text-xs text-[#7D6A5D] mb-4">
+            Repères pour classer un produit. Un article qui dépasse une boîte passe à la taille
+            au-dessus.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {sizes.map(s => (
+              <div key={s.code} className="border border-[#E8E0D8] rounded-xl p-3.5">
+                <p className="font-semibold text-sm text-[#241A14]">{s.label}</p>
+                {s.weight_range && (
+                  <p className="text-[12px] text-[#7D6A5D] mt-0.5">{s.weight_range}</p>
+                )}
+                {s.dimensions && (
+                  <p className="text-[12px] text-[#241A14] mt-1.5">{s.dimensions}</p>
+                )}
+                {s.examples && (
+                  <p className="text-[11px] text-[#7D6A5D] mt-1">{s.examples}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ── Grille ───────────────────────────────────────────────────────── */}
       <section className={CARD}>
         <div className="p-5 border-b border-[#E8E0D8]">
-          <h2 className="font-serif text-lg text-[#241A14]">Tarifs par zone et taille</h2>
+          <h2 className="font-serif text-lg text-[#241A14]">Tarifs de livraison</h2>
           <p className="text-xs text-[#7D6A5D] mt-1">
-            Un prix par commune et par taille de colis. Une case vide fait retomber sur le prix
-            fixe de la zone.
+            Prix par zone de destination et par taille de colis, au départ de la{' '}
+            <strong>zone {pickupZone}</strong>. Une case vide fait retomber sur le prix fixe de la
+            localité.
           </p>
         </div>
 
@@ -224,7 +282,7 @@ export default function DeliveryTariffPanel() {
             <thead>
               <tr className="border-b border-[#E8E0D8]">
                 <th className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wide text-[#7D6A5D]">
-                  Zone
+                  Destination
                 </th>
                 {PARCEL_SIZES.map(size => (
                   <th
@@ -238,21 +296,22 @@ export default function DeliveryTariffPanel() {
             </thead>
             <tbody>
               {zones.map(zone => (
-                <tr key={zone.id} className="border-b border-[#F1EBE3] last:border-0">
-                  <td className="px-4 py-2 text-sm text-[#241A14] whitespace-nowrap">
-                    {zone.city}
+                <tr key={zone.number} className="border-b border-[#F1EBE3] last:border-0">
+                  <td className="px-4 py-2.5">
+                    <p className="text-sm text-[#241A14] whitespace-nowrap">{zone.label}</p>
+                    {zone.localities && (
+                      <p className="text-[11px] text-[#7D6A5D] max-w-md truncate">
+                        {zone.localities}
+                      </p>
+                    )}
                   </td>
                   {PARCEL_SIZES.map(size => (
-                    <td key={size} className="px-4 py-2">
+                    <td key={size} className="px-4 py-2.5">
                       <input
                         type="number"
-                        value={grid[zone.id]?.[size] ?? ''}
-                        placeholder={String(zone.price_fcfa)}
+                        value={grid[key(zone.number, size)] ?? ''}
                         onChange={e =>
-                          setGrid({
-                            ...grid,
-                            [zone.id]: { ...(grid[zone.id] || {}), [size]: e.target.value },
-                          })
+                          setGrid({ ...grid, [key(zone.number, size)]: e.target.value })
                         }
                         className="w-24 px-2 py-1.5 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14] tabular-nums"
                       />
@@ -272,23 +331,39 @@ export default function DeliveryTariffPanel() {
           >
             {busy ? 'Enregistrement…' : 'Enregistrer la grille'}
           </button>
-          <span className="text-xs text-[#7D6A5D]">
-            Montants en FCFA. Le gris indique le prix fixe actuel de la zone.
-          </span>
+          <span className="text-xs text-[#7D6A5D]">Montants en FCFA.</span>
         </div>
       </section>
 
+      {/* ── Réglages ─────────────────────────────────────────────────────── */}
       <section className={`${CARD} p-5 space-y-4`}>
         <div>
-          <h2 className="font-serif text-lg text-[#241A14]">Taille par défaut et retrait</h2>
+          <h2 className="font-serif text-lg text-[#241A14]">Expédition et retrait</h2>
           <p className="text-xs text-[#7D6A5D] mt-1">
             Le retrait sur place est la seule option qui échappe au coût du transport. Il devient
-            indispensable dès qu’un colis encombrant fait grimper la livraison au-delà de ce qu’un
-            client accepte de payer.
+            utile dès qu’un grand colis fait grimper la livraison au-delà de ce qu’un client
+            accepte de payer.
           </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={LABEL}>ZONE D’EXPÉDITION</label>
+            <select
+              value={pickupZone}
+              onChange={e => setPickupZone(Number(e.target.value))}
+              className={INPUT}
+            >
+              {zones.map(z => (
+                <option key={z.number} value={z.number}>
+                  {z.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-[11px] text-[#7D6A5D] mt-1">
+              La zone d’où partent vos colis. Elle détermine toute la grille.
+            </p>
+          </div>
           <div>
             <label className={LABEL}>TAILLE PAR DÉFAUT</label>
             <select
@@ -315,7 +390,7 @@ export default function DeliveryTariffPanel() {
               className={INPUT}
             />
           </div>
-          <div className="sm:col-span-2">
+          <div>
             <label className={LABEL}>ADRESSE DE RETRAIT</label>
             <input
               value={pickupAddress}
@@ -324,7 +399,7 @@ export default function DeliveryTariffPanel() {
               className={INPUT}
             />
             <p className="text-[11px] text-[#7D6A5D] mt-1">
-              Sans adresse, l’option de retrait n’est pas proposée au client.
+              Sans adresse, l’option de retrait n’est pas proposée.
             </p>
           </div>
         </div>

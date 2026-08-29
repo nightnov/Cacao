@@ -198,11 +198,18 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
   // prix annoncés par le navigateur ne sont repris. La zone vient de la
   // commande, la taille des produits en base, et le prix de la grille.
   const city = (order.shipping_address as any)?.city
-  const [zoneRes, settingsRes] = await Promise.all([
+  const [localityRes, settingsRes] = await Promise.all([
     city
-      ? supabase.from('shipping_fees').select('id, price_fcfa').eq('city', city).maybeSingle()
+      ? supabase
+          .from('shipping_fees')
+          .select('id, price_fcfa, zone_number')
+          .eq('city', city)
+          .maybeSingle()
       : Promise.resolve({ data: null as any }),
-    supabase.from('site_settings').select('key, value').in('key', ['default_parcel_size']),
+    supabase
+      .from('site_settings')
+      .select('key, value')
+      .in('key', ['default_parcel_size', 'pickup_zone']),
   ])
 
   const settings = Object.fromEntries((settingsRes.data || []).map(r => [r.key, r.value]))
@@ -220,20 +227,30 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
   if (order.delivery_mode === 'retrait') {
     // Le client vient chercher : rien à transporter, rien à facturer.
     shipping = 0
-  } else if (zoneRes.data?.id) {
-    const { data: rates } = await supabase
-      .from('shipping_rates')
-      .select('parcel_size, price_fcfa')
-      .eq('zone_id', zoneRes.data.id)
+  } else if (localityRes.data) {
+    const fromZone = Number(settings.pickup_zone) || 1
+    const toZone = localityRes.data.zone_number
 
-    const zoneRates: ZoneRates = {}
-    for (const r of rates || []) {
-      if (isParcelSize(r.parcel_size)) zoneRates[r.parcel_size] = r.price_fcfa
+    if (toZone) {
+      // Le trajet est cherché dans les deux sens : la grille relevée ne
+      // publie qu'une moitié du tableau (zone basse vers zone haute), le
+      // tarif étant le même à l'aller et au retour.
+      const { data: rate } = await supabase
+        .from('shipping_rates')
+        .select('price_fcfa')
+        .or(
+          `and(from_zone.eq.${fromZone},to_zone.eq.${toZone}),and(from_zone.eq.${toZone},to_zone.eq.${fromZone})`
+        )
+        .eq('parcel_size', parcelSize)
+        .limit(1)
+        .maybeSingle()
+
+      shipping = rate?.price_fcfa ?? localityRes.data.price_fcfa ?? 0
+    } else {
+      // Localité sans zone : on garde son prix fixe plutôt que de livrer
+      // gratuitement sans s'en apercevoir.
+      shipping = localityRes.data.price_fcfa ?? 0
     }
-
-    // Aucun tarif pour cette taille : on retombe sur le prix fixe historique
-    // de la zone plutôt que de livrer gratuitement sans s'en apercevoir.
-    shipping = zoneRates[parcelSize] ?? zoneRes.data.price_fcfa ?? 0
   } else {
     shipping = 0
   }

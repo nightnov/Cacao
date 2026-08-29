@@ -26,6 +26,8 @@ interface ShippingFee {
   id: string
   city: string
   price_fcfa: number
+  /** Zone tarifaire. Absente tant que la migration 025 n'est pas passée. */
+  zone_number?: number | null
 }
 
 function generateOrderNumber(): string {
@@ -59,6 +61,8 @@ export default function Checkout() {
   const [zoneRates, setZoneRates] = useState<ZoneRates>({})
   const [sizes, setSizes] = useState<Record<string, string | null>>({})
   const [defaultSize, setDefaultSize] = useState<ParcelSize>(DEFAULT_PARCEL_SIZE)
+  /** Zone d'où partent les colis. La boutique expédie depuis Abidjan, donc 1. */
+  const [pickupZone, setPickupZone] = useState(1)
   const [pickup, setPickup] = useState<PickupSettings>({
     enabled: false,
     address: null,
@@ -103,13 +107,19 @@ export default function Checkout() {
         const [feesRes, tariffRes] = await Promise.all([
           supabase
             .from('shipping_fees')
-            .select('id, city, price_fcfa, parent_city, is_active, sort_order')
+            .select('id, city, price_fcfa, zone_number, is_active, sort_order')
             .order('sort_order')
             .order('city'),
           supabase
             .from('site_settings')
             .select('key, value')
-            .in('key', ['default_parcel_size', 'pickup_enabled', 'pickup_address', 'pickup_hours']),
+            .in('key', [
+              'default_parcel_size',
+              'pickup_zone',
+              'pickup_enabled',
+              'pickup_address',
+              'pickup_hours',
+            ]),
         ])
 
         if (feesRes.error) throw feesRes.error
@@ -122,6 +132,8 @@ export default function Checkout() {
 
         const s = Object.fromEntries((tariffRes.data || []).map(r => [r.key, r.value]))
         if (isParcelSize(s.default_parcel_size)) setDefaultSize(s.default_parcel_size)
+        const pz = Number(s.pickup_zone)
+        if (Number.isInteger(pz) && pz >= 1 && pz <= 6) setPickupZone(pz)
         setPickup({
           enabled: s.pickup_enabled === 'true',
           address: s.pickup_address || null,
@@ -150,30 +162,40 @@ export default function Checkout() {
     load()
   }, [cartItems])
 
-  // Tarifs de la zone choisie, par taille de colis.
+  // Tarifs du trajet « zone de départ → zone de la localité choisie ».
   useEffect(() => {
-    if (!cityId) return
+    const toZone = shippingFees.find(f => f.id === cityId)?.zone_number
+    if (!toZone) {
+      setZoneRates({})
+      return
+    }
     const load = async () => {
       const supabase = getSupabaseClient()
+      // Cherché dans les deux sens : la grille relevée ne publie qu'une moitié
+      // du tableau, le tarif étant le même à l'aller et au retour.
       const { data, error } = await supabase
         .from('shipping_rates')
-        .select('parcel_size, price_fcfa')
-        .eq('zone_id', cityId)
+        .select('parcel_size, price_fcfa, delay_days')
+        .or(
+          `and(from_zone.eq.${pickupZone},to_zone.eq.${toZone}),and(from_zone.eq.${toZone},to_zone.eq.${pickupZone})`
+        )
 
       // Table absente tant que la migration 025 n'est pas passée : on laisse la
-      // grille vide, le prix fixe de la zone prend alors le relais.
+      // grille vide, le prix fixe de la localité prend alors le relais.
       if (error) {
         setZoneRates({})
         return
       }
       const map: ZoneRates = {}
       for (const r of data || []) {
-        if (isParcelSize(r.parcel_size)) map[r.parcel_size] = r.price_fcfa
+        if (isParcelSize(r.parcel_size)) {
+          map[r.parcel_size] = { priceFcfa: r.price_fcfa, delayDays: r.delay_days }
+        }
       }
       setZoneRates(map)
     }
     load()
-  }, [cityId])
+  }, [cityId, shippingFees, pickupZone])
 
   /**
    * Vérifie le code auprès du serveur. La réponse ne sert qu'à afficher la

@@ -54,8 +54,14 @@ export function cartParcelSize(
   return biggest
 }
 
-/** Grille d'une zone : un prix par taille de colis. */
-export type ZoneRates = Partial<Record<ParcelSize, number>>
+export interface RouteRate {
+  priceFcfa: number
+  /** Délai indicatif du transporteur, en jours ouvrés. */
+  delayDays: number | null
+}
+
+/** Tarifs d'un trajet donné : un par taille de colis. */
+export type ZoneRates = Partial<Record<ParcelSize, RouteRate>>
 
 export interface PickupSettings {
   enabled: boolean
@@ -93,15 +99,23 @@ export function deliveryOptions(
 ): DeliveryOption[] {
   const options: DeliveryOption[] = []
 
-  // Sans tarif pour cette taille, on retombe sur le prix fixe de la zone
+  // Sans tarif pour cette taille, on retombe sur le prix fixe de la localité
   // plutôt que d'annoncer une livraison gratuite.
-  const price = rates[size] ?? fallbackFcfa
+  const rate = rates[size]
+  const price = rate?.priceFcfa ?? fallbackFcfa
+
   if (price != null) {
+    // Le délai est présenté comme une estimation du transporteur, jamais comme
+    // un engagement de la boutique : elle ne maîtrise ni le fournisseur ni la
+    // tournée du livreur.
+    const delay = rate?.delayDays
     options.push({
       mode: 'livraison',
       label: 'Livraison à votre adresse',
       fcfa: price,
-      detail: SIZE_LABELS[size],
+      detail: delay
+        ? `${SIZE_LABELS[size]} · environ ${delay} jours ouvrés`
+        : SIZE_LABELS[size],
     })
   }
 

@@ -275,8 +275,10 @@ export default function AdminDashboard() {
       label: 'Produits',
       value: stats.products,
       icon: Package,
-      iconBg: 'bg-purple-50',
-      iconColor: 'text-purple-600',
+      // Le violet ne fait pas partie de la palette : les quatre cartes
+      // reprennent l'accent, l'information et le succès, plus le doré atténué.
+      iconBg: 'bg-gold-dim/10',
+      iconColor: 'text-gold-dim',
       trend: stats.productsTrend,
       href: '/admin/products'
     }

@@ -26,7 +26,7 @@ interface Event {
   tone: 'neutral' | 'good' | 'bad'
 }
 
-const CARD = 'bg-white border border-[#E8E0D8] rounded-2xl'
+const CARD = 'bg-bg-panel border border-border rounded-2xl'
 
 const FAMILY_META: Record<Family, { label: string; icon: any }> = {
   commande: { label: 'Commandes', icon: ShoppingCart },
@@ -193,7 +193,7 @@ export default function AdminActivity() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-[#5B4B41] text-sm">
+      <div className="flex items-center gap-2 text-ink-dim text-sm">
         <Loader2 size={16} className="animate-spin" /> Chargement…
       </div>
     )
@@ -202,15 +202,15 @@ export default function AdminActivity() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-3xl text-[#241A14]">Journal d’activité</h1>
-        <p className="text-sm text-[#7D6A5D] mt-1">
+        <h1 className="font-serif text-3xl text-ink">Journal d’activité</h1>
+        <p className="text-sm text-ink-dimmer mt-1">
           Ce qui s’est passé sur la boutique, du plus récent au plus ancien.
         </p>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-2.5">
-        <Info size={17} className="text-blue-700 flex-shrink-0 mt-0.5" />
-        <div className="text-sm text-blue-900">
+      <div className="bg-info/10 border border-info/30 rounded-xl p-4 flex items-start gap-2.5">
+        <Info size={17} className="text-info flex-shrink-0 mt-0.5" />
+        <div className="text-sm text-info">
           <p className="font-semibold">Ce journal reconstitue, il n’enregistre pas.</p>
           <p className="mt-1">
             Il assemble ce qui existe déjà : commandes, paiements, mouvements de stock, comptes,
@@ -222,13 +222,13 @@ export default function AdminActivity() {
       </div>
 
       <div className={`${CARD} overflow-hidden`}>
-        <div className="p-4 border-b border-[#E8E0D8] flex flex-wrap gap-2">
+        <div className="p-4 border-b border-border flex flex-wrap gap-2">
           <button
             onClick={() => setFilter('all')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
               filter === 'all'
-                ? 'bg-orange-50 text-[#C2410C] border border-[#C2410C]'
-                : 'border border-[#E8E0D8] text-[#5B4B41] hover:bg-gray-50'
+                ? 'bg-gold/10 text-gold border border-gold'
+                : 'border border-border text-ink-dim hover:bg-bg-raised'
             }`}
           >
             Tout ({counts.all})
@@ -240,8 +240,8 @@ export default function AdminActivity() {
               disabled={!counts[f]}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-30 ${
                 filter === f
-                  ? 'bg-orange-50 text-[#C2410C] border border-[#C2410C]'
-                  : 'border border-[#E8E0D8] text-[#5B4B41] hover:bg-gray-50'
+                  ? 'bg-gold/10 text-gold border border-gold'
+                  : 'border border-border text-ink-dim hover:bg-bg-raised'
               }`}
             >
               {FAMILY_META[f].label} ({counts[f] || 0})
@@ -250,21 +250,21 @@ export default function AdminActivity() {
         </div>
 
         {visible.length === 0 ? (
-          <p className="p-10 text-center text-sm text-[#7D6A5D]">
+          <p className="p-10 text-center text-sm text-ink-dimmer">
             {events.length === 0
               ? 'Rien à afficher pour l’instant. Les événements apparaîtront à la première commande, au premier compte créé ou au premier message.'
               : 'Aucun événement dans cette catégorie.'}
           </p>
         ) : (
-          <ul className="divide-y divide-[#F1EBE3]">
+          <ul className="divide-y divide-border">
             {visible.map(e => {
               const Icon = FAMILY_META[e.family].icon
               const iconCls =
                 e.tone === 'good'
-                  ? 'bg-green-50 text-green-700'
+                  ? 'bg-green/10 text-green-bright'
                   : e.tone === 'bad'
-                    ? 'bg-red-50 text-red-700'
-                    : 'bg-gray-100 text-[#5B4B41]'
+                    ? 'bg-danger/10 text-danger'
+                    : 'bg-bg-raised text-ink-dim'
               return (
                 <li key={e.id} className="px-4 py-3 flex items-start gap-3">
                   <span
@@ -277,12 +277,12 @@ export default function AdminActivity() {
                     )}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-[#241A14]">{e.title}</p>
+                    <p className="text-sm font-medium text-ink">{e.title}</p>
                     {e.detail && (
-                      <p className="text-[12px] text-[#7D6A5D] truncate">{e.detail}</p>
+                      <p className="text-[12px] text-ink-dimmer truncate">{e.detail}</p>
                     )}
                   </div>
-                  <span className="text-[11px] text-[#7D6A5D] whitespace-nowrap pt-0.5">
+                  <span className="text-[11px] text-ink-dimmer whitespace-nowrap pt-0.5">
                     {ago(e.at)}
                   </span>
                 </li>

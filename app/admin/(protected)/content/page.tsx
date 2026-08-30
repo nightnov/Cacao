@@ -23,8 +23,8 @@ interface FaqItem {
   is_visible: boolean
 }
 
-const CARD = 'bg-white border border-[#E8E0D8] rounded-2xl'
-const INPUT = 'w-full px-3 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14]'
+const CARD = 'bg-bg-panel border border-border rounded-2xl'
+const INPUT = 'w-full px-3 py-2 border border-border rounded-lg text-sm text-ink'
 
 /**
  * Promesses que le site ne peut pas tenir, avec la raison technique.
@@ -184,7 +184,7 @@ export default function AdminContent() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-[#5B4B41] text-sm">
+      <div className="flex items-center gap-2 text-ink-dim text-sm">
         <Loader2 size={16} className="animate-spin" /> Chargement…
       </div>
     )
@@ -194,10 +194,10 @@ export default function AdminContent() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-serif text-3xl text-[#241A14]">Contenu</h1>
-          <p className="text-sm text-[#7D6A5D] mt-1">
+          <h1 className="font-serif text-3xl text-ink">Contenu</h1>
+          <p className="text-sm text-ink-dimmer mt-1">
             Les questions fréquentes affichées sur{' '}
-            <Link href="/faq" target="_blank" className="text-[#C2410C] hover:underline">
+            <Link href="/faq" target="_blank" className="text-gold hover:underline">
               /faq
             </Link>
             .
@@ -206,20 +206,20 @@ export default function AdminContent() {
         <button
           onClick={add}
           disabled={busy || missingTable}
-          className="flex items-center gap-1.5 px-4 py-2 bg-[#C2410C] hover:bg-[#9A3412] disabled:opacity-50 text-white rounded-xl font-semibold text-sm whitespace-nowrap"
+          className="flex items-center gap-1.5 px-4 py-2 bg-gold hover:bg-gold-dim disabled:opacity-50 text-ink-invert rounded-xl font-semibold text-sm whitespace-nowrap"
         >
           <Plus size={15} /> Ajouter
         </button>
       </div>
 
       {missingTable && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-start gap-2.5">
-          <AlertTriangle size={17} className="text-amber-700 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-amber-900">
+        <div className="bg-gold/10 border border-gold/30 rounded-xl p-4 flex items-start gap-2.5">
+          <AlertTriangle size={17} className="text-gold flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-gold">
             <p className="font-semibold">La table des questions n’existe pas encore.</p>
             <p className="mt-1">
               Exécutez{' '}
-              <code className="bg-amber-100 px-1 rounded">
+              <code className="bg-gold/15 px-1 rounded">
                 supabase/migrations/023_faq_items.sql
               </code>{' '}
               dans l’éditeur SQL de Supabase, puis rechargez.
@@ -232,8 +232,8 @@ export default function AdminContent() {
         <div
           className={`rounded-xl px-4 py-3 text-sm border ${
             message.kind === 'ok'
-              ? 'bg-green-50 border-green-200 text-green-800'
-              : 'bg-red-50 border-red-200 text-red-800'
+              ? 'bg-green/10 border-green/30 text-green-bright'
+              : 'bg-danger/10 border-danger/30 text-danger'
           }`}
         >
           {message.text}
@@ -241,10 +241,10 @@ export default function AdminContent() {
       )}
 
       {flagged.length > 0 && (
-        <div className="bg-red-50 border border-red-300 rounded-xl p-4">
+        <div className="bg-danger/10 border border-danger/40 rounded-xl p-4">
           <div className="flex items-start gap-2.5">
-            <AlertTriangle size={17} className="text-red-700 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-red-900">
+            <AlertTriangle size={17} className="text-danger flex-shrink-0 mt-0.5" />
+            <div className="text-sm text-danger">
               <p className="font-semibold">
                 {flagged.length} réponse{flagged.length > 1 ? 's promettent' : ' promet'} quelque
                 chose que le site ne fait pas.
@@ -271,7 +271,7 @@ export default function AdminContent() {
       )}
 
       {rows.length === 0 && !missingTable ? (
-        <p className={`${CARD} p-8 text-center text-sm text-[#7D6A5D]`}>
+        <p className={`${CARD} p-8 text-center text-sm text-ink-dimmer`}>
           Aucune question. La page /faq affiche la liste de secours écrite dans le code.
         </p>
       ) : (
@@ -283,7 +283,7 @@ export default function AdminContent() {
               <section
                 key={r.id}
                 className={`${CARD} p-4 ${r.is_visible ? '' : 'opacity-60'} ${
-                  hits.length ? 'border-red-300' : ''
+                  hits.length ? 'border-danger/40' : ''
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -291,7 +291,7 @@ export default function AdminContent() {
                     <button
                       onClick={() => move(i, -1)}
                       disabled={i === 0 || busy}
-                      className="text-[#7D6A5D] hover:text-[#C2410C] disabled:opacity-25"
+                      className="text-ink-dimmer hover:text-gold disabled:opacity-25"
                       aria-label="Monter"
                     >
                       <ArrowUp size={13} />
@@ -299,7 +299,7 @@ export default function AdminContent() {
                     <button
                       onClick={() => move(i, 1)}
                       disabled={i === rows.length - 1 || busy}
-                      className="text-[#7D6A5D] hover:text-[#C2410C] disabled:opacity-25"
+                      className="text-ink-dimmer hover:text-gold disabled:opacity-25"
                       aria-label="Descendre"
                     >
                       <ArrowDown size={13} />
@@ -320,7 +320,7 @@ export default function AdminContent() {
                     />
 
                     {hits.length > 0 && (
-                      <ul className="text-[12px] text-red-700 space-y-0.5">
+                      <ul className="text-[12px] text-danger space-y-0.5">
                         {hits.map((h, k) => (
                           <li key={k}>⚠ {h.why}</li>
                         ))}
@@ -331,14 +331,14 @@ export default function AdminContent() {
                       <button
                         onClick={() => save(r)}
                         disabled={busy || !isDirty(r)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#C2410C] hover:bg-[#9A3412] disabled:opacity-30 text-white rounded-lg font-semibold text-xs"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-gold hover:bg-gold-dim disabled:opacity-30 text-ink-invert rounded-lg font-semibold text-xs"
                       >
                         <Save size={13} /> Enregistrer
                       </button>
                       <button
                         onClick={() => toggle(r)}
                         disabled={busy}
-                        className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E8E0D8] hover:bg-gray-50 text-[#5B4B41] rounded-lg font-semibold text-xs"
+                        className="flex items-center gap-1.5 px-3 py-1.5 border border-border hover:bg-bg-raised text-ink-dim rounded-lg font-semibold text-xs"
                       >
                         {r.is_visible ? <EyeOff size={13} /> : <Eye size={13} />}
                         {r.is_visible ? 'Masquer' : 'Afficher'}
@@ -346,7 +346,7 @@ export default function AdminContent() {
                       <button
                         onClick={() => remove(r)}
                         disabled={busy}
-                        className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-red-700 hover:bg-red-50 rounded-lg font-semibold text-xs"
+                        className="ml-auto flex items-center gap-1.5 px-3 py-1.5 text-danger hover:bg-danger/10 rounded-lg font-semibold text-xs"
                       >
                         <Trash2 size={13} /> Supprimer
                       </button>
@@ -359,7 +359,7 @@ export default function AdminContent() {
         </div>
       )}
 
-      <p className="text-xs text-[#7D6A5D] leading-relaxed">
+      <p className="text-xs text-ink-dimmer leading-relaxed">
         Les pages légales (conditions générales, confidentialité) restent dans le code : elles
         changent rarement et une erreur y coûte plus cher qu’un gain de souplesse.
       </p>

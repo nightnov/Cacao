@@ -245,20 +245,20 @@ export default function AdminSettings() {
   return (
     <div className="max-w-3xl space-y-8">
       <div>
-        <h1 className="font-serif font-semibold text-3xl text-[#241A14] mb-1">Réglages</h1>
-        <p className="text-[#7D6A5D]">Personnalisation du site et sécurité du compte admin</p>
+        <h1 className="font-serif font-semibold text-3xl text-ink mb-1">Réglages</h1>
+        <p className="text-ink-dimmer">Personnalisation du site et sécurité du compte admin</p>
       </div>
 
       {/* Coordonnées de la boutique */}
-      <div className="bg-white rounded-lg border border-[#E8E0D8] p-6">
-        <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-1">Coordonnées</h2>
-        <p className="text-sm text-[#7D6A5D] mb-4">
+      <div className="bg-bg-panel rounded-lg border border-border p-6">
+        <h2 className="font-serif font-semibold text-xl text-ink mb-1">Coordonnées</h2>
+        <p className="text-sm text-ink-dimmer mb-4">
           Affichées sur la page contact. Un champ laissé vide n&apos;apparaît pas — la page
           affichait auparavant « +225 07 XX XX XX XX », un texte de remplacement resté en ligne.
         </p>
 
         {shopSuccess && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4 text-sm font-semibold">
+          <div className="bg-green/10 border border-green/30 text-green-bright px-4 py-3 rounded mb-4 text-sm font-semibold">
             ✓ Coordonnées enregistrées
           </div>
         )}
@@ -266,50 +266,50 @@ export default function AdminSettings() {
         <form onSubmit={handleSaveShop} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-semibold text-[#241A14] mb-1.5">E-mail</label>
+              <label className="block text-sm font-semibold text-ink mb-1.5">E-mail</label>
               <input
                 type="email"
                 value={shopInfo.email}
                 onChange={e => setShopInfo({ ...shopInfo, email: e.target.value })}
                 placeholder="contact@votre-domaine.ci"
-                className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14]"
+                className="w-full px-4 py-2 border border-border rounded-lg text-sm text-ink"
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-[#241A14] mb-1.5">Téléphone</label>
+              <label className="block text-sm font-semibold text-ink mb-1.5">Téléphone</label>
               <input
                 type="tel"
                 value={shopInfo.phone}
                 onChange={e => setShopInfo({ ...shopInfo, phone: e.target.value })}
                 placeholder="+225 07 00 00 00 00"
-                className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14]"
+                className="w-full px-4 py-2 border border-border rounded-lg text-sm text-ink"
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-[#241A14] mb-1.5">WhatsApp</label>
+              <label className="block text-sm font-semibold text-ink mb-1.5">WhatsApp</label>
               <input
                 type="tel"
                 value={shopInfo.whatsapp}
                 onChange={e => setShopInfo({ ...shopInfo, whatsapp: e.target.value })}
                 placeholder="Laissez vide pour utiliser le téléphone"
-                className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14]"
+                className="w-full px-4 py-2 border border-border rounded-lg text-sm text-ink"
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-[#241A14] mb-1.5">Adresse</label>
+              <label className="block text-sm font-semibold text-ink mb-1.5">Adresse</label>
               <input
                 type="text"
                 value={shopInfo.address}
                 onChange={e => setShopInfo({ ...shopInfo, address: e.target.value })}
                 placeholder="Abidjan, Côte d'Ivoire"
-                className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14]"
+                className="w-full px-4 py-2 border border-border rounded-lg text-sm text-ink"
               />
             </div>
           </div>
           <button
             type="submit"
             disabled={savingShop}
-            className="px-5 py-2 bg-[#C2410C] hover:bg-[#9A3412] disabled:opacity-50 text-white rounded-lg font-semibold text-sm"
+            className="px-5 py-2 bg-gold hover:bg-gold-dim disabled:opacity-50 text-ink-invert rounded-lg font-semibold text-sm"
           >
             {savingShop ? 'Enregistrement…' : 'Enregistrer'}
           </button>
@@ -317,17 +317,17 @@ export default function AdminSettings() {
       </div>
 
       {/* Bannière homepage */}
-      <div className="bg-white rounded-lg border border-[#E8E0D8] p-6">
-        <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-1">Bannière de la page d&apos;accueil</h2>
-        <p className="text-sm text-[#7D6A5D] mb-4">
+      <div className="bg-bg-panel rounded-lg border border-border p-6">
+        <h2 className="font-serif font-semibold text-xl text-ink mb-1">Bannière de la page d&apos;accueil</h2>
+        <p className="text-sm text-ink-dimmer mb-4">
           Cette image s&apos;affiche en grand format sur la page d&apos;accueil, au-dessus du catalogue. Format recommandé : image large (ratio proche de 3:1, ex. 1600×530 px), JPG ou PNG, 5 Mo max.
         </p>
 
         {bannerError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 text-sm">{bannerError}</div>
+          <div className="bg-danger/10 border border-danger/30 text-danger px-4 py-3 rounded mb-4 text-sm">{bannerError}</div>
         )}
         {bannerSuccess && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4 text-sm font-semibold">
+          <div className="bg-green/10 border border-green/30 text-green-bright px-4 py-3 rounded mb-4 text-sm font-semibold">
             ✓ Bannière mise à jour
           </div>
         )}
@@ -335,10 +335,10 @@ export default function AdminSettings() {
         {bannerUrl ? (
           <div className="mb-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={bannerUrl} alt="Bannière actuelle" className="w-full rounded-lg border border-[#E8E0D8] object-cover aspect-[3/1]" />
+            <img src={bannerUrl} alt="Bannière actuelle" className="w-full rounded-lg border border-border object-cover aspect-[3/1]" />
           </div>
         ) : (
-          <div className="mb-4 aspect-[3/1] rounded-lg border-2 border-dashed border-[#E8E0D8] flex items-center justify-center text-[#7D6A5D] text-sm">
+          <div className="mb-4 aspect-[3/1] rounded-lg border-2 border-dashed border-border flex items-center justify-center text-ink-dimmer text-sm">
             Aucune bannière définie
           </div>
         )}
@@ -357,14 +357,14 @@ export default function AdminSettings() {
       </div>
 
       {/* Réseaux sociaux */}
-      <div className="bg-white rounded-lg border border-[#E8E0D8] p-6">
-        <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-1">Réseaux sociaux</h2>
-        <p className="text-sm text-[#7D6A5D] mb-4">
+      <div className="bg-bg-panel rounded-lg border border-border p-6">
+        <h2 className="font-serif font-semibold text-xl text-ink mb-1">Réseaux sociaux</h2>
+        <p className="text-sm text-ink-dimmer mb-4">
           Ces liens s&apos;affichent dans le pied de page du site. Laissez vide pour ne pas afficher l&apos;icône correspondante.
         </p>
 
         {socialSuccess && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded mb-4 text-sm font-semibold">
+          <div className="bg-green/10 border border-green/30 text-green-bright px-4 py-3 rounded mb-4 text-sm font-semibold">
             ✓ Liens mis à jour
           </div>
         )}
@@ -377,13 +377,13 @@ export default function AdminSettings() {
             ['youtube', 'YouTube', 'https://youtube.com/@...']
           ] as const).map(([key, label, placeholder]) => (
             <div key={key}>
-              <label className="block text-sm font-semibold text-[#241A14] mb-1">{label}</label>
+              <label className="block text-sm font-semibold text-ink mb-1">{label}</label>
               <input
                 type="url"
                 value={socialLinks[key]}
                 onChange={(e) => setSocialLinks(s => ({ ...s, [key]: e.target.value }))}
                 placeholder={placeholder}
-                className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
               />
             </div>
           ))}
@@ -394,15 +394,15 @@ export default function AdminSettings() {
       </div>
 
       {/* Compte admin */}
-      <div className="bg-white rounded-lg border border-[#E8E0D8] p-6">
-        <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-1">Compte administrateur</h2>
-        <p className="text-sm text-[#7D6A5D] mb-6">Modifier l&apos;e-mail ou le mot de passe utilisés pour vous connecter au tableau de bord.</p>
+      <div className="bg-bg-panel rounded-lg border border-border p-6">
+        <h2 className="font-serif font-semibold text-xl text-ink mb-1">Compte administrateur</h2>
+        <p className="text-sm text-ink-dimmer mb-6">Modifier l&apos;e-mail ou le mot de passe utilisés pour vous connecter au tableau de bord.</p>
 
-        <form onSubmit={handleEmailChange} className="space-y-3 mb-8 pb-8 border-b border-[#E8E0D8]">
-          <label className="block text-sm font-semibold text-[#241A14]">Adresse e-mail</label>
-          {emailError && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">{emailError}</div>}
+        <form onSubmit={handleEmailChange} className="space-y-3 mb-8 pb-8 border-b border-border">
+          <label className="block text-sm font-semibold text-ink">Adresse e-mail</label>
+          {emailError && <div className="bg-danger/10 border border-danger/30 text-danger px-4 py-3 rounded text-sm">{emailError}</div>}
           {emailSuccess && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded text-sm">
+            <div className="bg-green/10 border border-green/30 text-green-bright px-4 py-3 rounded text-sm">
               ✓ Un e-mail de confirmation a été envoyé à la nouvelle adresse
             </div>
           )}
@@ -411,7 +411,7 @@ export default function AdminSettings() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+            className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
           />
           <Button type="submit" variant="primary" disabled={emailLoading}>
             {emailLoading ? 'Envoi...' : 'Mettre à jour l\'e-mail'}
@@ -419,10 +419,10 @@ export default function AdminSettings() {
         </form>
 
         <form onSubmit={handlePasswordChange} className="space-y-3">
-          <label className="block text-sm font-semibold text-[#241A14]">Nouveau mot de passe</label>
-          {passwordError && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">{passwordError}</div>}
+          <label className="block text-sm font-semibold text-ink">Nouveau mot de passe</label>
+          {passwordError && <div className="bg-danger/10 border border-danger/30 text-danger px-4 py-3 rounded text-sm">{passwordError}</div>}
           {passwordSuccess && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded text-sm font-semibold">
+            <div className="bg-green/10 border border-green/30 text-green-bright px-4 py-3 rounded text-sm font-semibold">
               ✓ Mot de passe mis à jour
             </div>
           )}
@@ -432,7 +432,7 @@ export default function AdminSettings() {
             onChange={(e) => setNewPassword(e.target.value)}
             placeholder="Au moins 6 caractères"
             required
-            className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+            className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
           />
           <input
             type="password"
@@ -440,7 +440,7 @@ export default function AdminSettings() {
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Confirmer le nouveau mot de passe"
             required
-            className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+            className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
           />
           <Button type="submit" variant="primary" disabled={passwordLoading}>
             {passwordLoading ? 'Envoi...' : 'Mettre à jour le mot de passe'}

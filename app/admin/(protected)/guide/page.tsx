@@ -171,18 +171,18 @@ const sections: GuideSection[] = [
 export default function AdminGuide() {
   return (
     <div className="max-w-4xl">
-      <h1 className="font-serif font-semibold text-4xl text-[#241A14] mb-2">Guide du dashboard</h1>
-      <p className="text-[#5B4B41] mb-10">Comment utiliser chaque partie de l&apos;administration Cacao.</p>
+      <h1 className="font-serif font-semibold text-4xl text-ink mb-2">Guide du dashboard</h1>
+      <p className="text-ink-dim mb-10">Comment utiliser chaque partie de l&apos;administration Cacao.</p>
 
       {/* Table of contents */}
-      <div className="bg-white rounded-2xl border border-[#E8E0D8] p-6 mb-10">
-        <p className="text-xs font-semibold text-[#7D6A5D] uppercase mb-3">Sommaire</p>
+      <div className="bg-bg-panel rounded-2xl border border-border p-6 mb-10">
+        <p className="text-xs font-semibold text-ink-dimmer uppercase mb-3">Sommaire</p>
         <div className="flex flex-wrap gap-2">
           {sections.map(s => (
             <a
               key={s.id}
               href={`#${s.id}`}
-              className="px-3 py-1.5 bg-gray-100 hover:bg-orange-50 hover:text-[#C2410C] rounded-full text-sm text-[#5B4B41] transition-colors"
+              className="px-3 py-1.5 bg-bg-raised hover:bg-gold/10 hover:text-gold rounded-full text-sm text-ink-dim transition-colors"
             >
               {s.label}
             </a>
@@ -194,20 +194,20 @@ export default function AdminGuide() {
         {sections.map(section => {
           const Icon = section.icon
           return (
-            <div key={section.id} id={section.id} className="bg-white rounded-2xl border border-[#E8E0D8] p-6 scroll-mt-8">
+            <div key={section.id} id={section.id} className="bg-bg-panel rounded-2xl border border-border p-6 scroll-mt-8">
               <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0">
-                    <Icon size={18} className="text-[#C2410C]" />
+                  <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center flex-shrink-0">
+                    <Icon size={18} className="text-gold" />
                   </div>
-                  <h2 className="font-serif font-semibold text-xl text-[#241A14]">{section.label}</h2>
+                  <h2 className="font-serif font-semibold text-xl text-ink">{section.label}</h2>
                 </div>
                 {section.badge ? (
-                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-orange-50 text-[#C2410C]">
+                  <span className="text-xs font-semibold px-3 py-1 rounded-full bg-gold/10 text-gold">
                     {section.badge}
                   </span>
                 ) : section.href ? (
-                  <Link href={section.href} className="text-sm text-[#C2410C] font-semibold hover:underline">
+                  <Link href={section.href} className="text-sm text-gold font-semibold hover:underline">
                     Ouvrir →
                   </Link>
                 ) : null}
@@ -215,9 +215,9 @@ export default function AdminGuide() {
 
               <div className="space-y-4">
                 {section.content.map(item => (
-                  <div key={item.title} className="pb-4 border-b border-[#E8E0D8] last:border-b-0 last:pb-0">
-                    <p className="font-semibold text-sm text-[#241A14] mb-1">{item.title}</p>
-                    <p className="text-sm text-[#5B4B41] leading-relaxed">{item.body}</p>
+                  <div key={item.title} className="pb-4 border-b border-border last:border-b-0 last:pb-0">
+                    <p className="font-semibold text-sm text-ink mb-1">{item.title}</p>
+                    <p className="text-sm text-ink-dim leading-relaxed">{item.body}</p>
                   </div>
                 ))}
               </div>

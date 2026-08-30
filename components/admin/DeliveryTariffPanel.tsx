@@ -25,9 +25,9 @@ interface ParcelSizeRow {
   examples: string | null
 }
 
-const CARD = 'bg-white border border-[#E8E0D8] rounded-2xl'
-const INPUT = 'w-full px-3 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14]'
-const LABEL = 'block text-xs font-semibold text-[#5B4B41] mb-1.5'
+const CARD = 'bg-bg-panel border border-border rounded-2xl'
+const INPUT = 'w-full px-3 py-2 border border-border rounded-lg text-sm text-ink'
+const LABEL = 'block text-xs font-semibold text-ink-dim mb-1.5'
 
 /**
  * Grille de livraison : un prix par trajet et par taille de colis.
@@ -183,7 +183,7 @@ export default function DeliveryTariffPanel() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-[#5B4B41] text-sm">
+      <div className="flex items-center gap-2 text-ink-dim text-sm">
         <Loader2 size={16} className="animate-spin" /> Chargement…
       </div>
     )
@@ -192,13 +192,13 @@ export default function DeliveryTariffPanel() {
   return (
     <div className="space-y-6">
       {missingTable && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-start gap-2.5">
-          <AlertTriangle size={17} className="text-amber-700 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-amber-900">
+        <div className="bg-gold/10 border border-gold/30 rounded-xl p-4 flex items-start gap-2.5">
+          <AlertTriangle size={17} className="text-gold flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-gold">
             <p className="font-semibold">La grille de livraison n’est pas encore installée.</p>
             <p className="mt-1">
               Exécutez{' '}
-              <code className="bg-amber-100 px-1 rounded">
+              <code className="bg-gold/15 px-1 rounded">
                 supabase/migrations/025_delivery_zones.sql
               </code>
               , puis rechargez.
@@ -211,8 +211,8 @@ export default function DeliveryTariffPanel() {
         <div
           className={`rounded-xl px-4 py-3 text-sm border ${
             message.kind === 'ok'
-              ? 'bg-green-50 border-green-200 text-green-800'
-              : 'bg-red-50 border-red-200 text-red-800'
+              ? 'bg-green/10 border-green/30 text-green-bright'
+              : 'bg-danger/10 border-danger/30 text-danger'
           }`}
         >
           {message.text}
@@ -220,9 +220,9 @@ export default function DeliveryTariffPanel() {
       )}
 
       {missingSizes.length > 0 && (
-        <div className="bg-red-50 border border-red-300 rounded-xl p-4 flex items-start gap-2.5">
-          <AlertTriangle size={17} className="text-red-700 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-red-900">
+        <div className="bg-danger/10 border border-danger/40 rounded-xl p-4 flex items-start gap-2.5">
+          <AlertTriangle size={17} className="text-danger flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-danger">
             <p className="font-semibold">
               {missingSizes.length} produit{missingSizes.length > 1 ? 's n’ont' : ' n’a'} pas de
               taille de colis.
@@ -242,23 +242,23 @@ export default function DeliveryTariffPanel() {
       {/* ── Repères de taille ────────────────────────────────────────────── */}
       {sizes.length > 0 && (
         <section className={`${CARD} p-5`}>
-          <h2 className="font-serif text-lg text-[#241A14] mb-1">Tailles de colis</h2>
-          <p className="text-xs text-[#7D6A5D] mb-4">
+          <h2 className="font-serif text-lg text-ink mb-1">Tailles de colis</h2>
+          <p className="text-xs text-ink-dimmer mb-4">
             Repères pour classer un produit. Un article qui dépasse une boîte passe à la taille
             au-dessus.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {sizes.map(s => (
-              <div key={s.code} className="border border-[#E8E0D8] rounded-xl p-3.5">
-                <p className="font-semibold text-sm text-[#241A14]">{s.label}</p>
+              <div key={s.code} className="border border-border rounded-xl p-3.5">
+                <p className="font-semibold text-sm text-ink">{s.label}</p>
                 {s.weight_range && (
-                  <p className="text-[12px] text-[#7D6A5D] mt-0.5">{s.weight_range}</p>
+                  <p className="text-[12px] text-ink-dimmer mt-0.5">{s.weight_range}</p>
                 )}
                 {s.dimensions && (
-                  <p className="text-[12px] text-[#241A14] mt-1.5">{s.dimensions}</p>
+                  <p className="text-[12px] text-ink mt-1.5">{s.dimensions}</p>
                 )}
                 {s.examples && (
-                  <p className="text-[11px] text-[#7D6A5D] mt-1">{s.examples}</p>
+                  <p className="text-[11px] text-ink-dimmer mt-1">{s.examples}</p>
                 )}
               </div>
             ))}
@@ -268,9 +268,9 @@ export default function DeliveryTariffPanel() {
 
       {/* ── Grille ───────────────────────────────────────────────────────── */}
       <section className={CARD}>
-        <div className="p-5 border-b border-[#E8E0D8]">
-          <h2 className="font-serif text-lg text-[#241A14]">Tarifs de livraison</h2>
-          <p className="text-xs text-[#7D6A5D] mt-1">
+        <div className="p-5 border-b border-border">
+          <h2 className="font-serif text-lg text-ink">Tarifs de livraison</h2>
+          <p className="text-xs text-ink-dimmer mt-1">
             Prix par zone de destination et par taille de colis, au départ de la{' '}
             <strong>zone {pickupZone}</strong>. Une case vide fait retomber sur le prix fixe de la
             localité.
@@ -280,14 +280,14 @@ export default function DeliveryTariffPanel() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#E8E0D8]">
-                <th className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wide text-[#7D6A5D]">
+              <tr className="border-b border-border">
+                <th className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wide text-ink-dimmer">
                   Destination
                 </th>
                 {PARCEL_SIZES.map(size => (
                   <th
                     key={size}
-                    className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wide text-[#7D6A5D] whitespace-nowrap"
+                    className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wide text-ink-dimmer whitespace-nowrap"
                   >
                     {SIZE_LABELS[size]}
                   </th>
@@ -296,11 +296,11 @@ export default function DeliveryTariffPanel() {
             </thead>
             <tbody>
               {zones.map(zone => (
-                <tr key={zone.number} className="border-b border-[#F1EBE3] last:border-0">
+                <tr key={zone.number} className="border-b border-border last:border-0">
                   <td className="px-4 py-2.5">
-                    <p className="text-sm text-[#241A14] whitespace-nowrap">{zone.label}</p>
+                    <p className="text-sm text-ink whitespace-nowrap">{zone.label}</p>
                     {zone.localities && (
-                      <p className="text-[11px] text-[#7D6A5D] max-w-md truncate">
+                      <p className="text-[11px] text-ink-dimmer max-w-md truncate">
                         {zone.localities}
                       </p>
                     )}
@@ -313,7 +313,7 @@ export default function DeliveryTariffPanel() {
                         onChange={e =>
                           setGrid({ ...grid, [key(zone.number, size)]: e.target.value })
                         }
-                        className="w-24 px-2 py-1.5 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14] tabular-nums"
+                        className="w-24 px-2 py-1.5 border border-border rounded-lg text-sm text-ink tabular-nums"
                       />
                     </td>
                   ))}
@@ -323,23 +323,23 @@ export default function DeliveryTariffPanel() {
           </table>
         </div>
 
-        <div className="p-4 border-t border-[#E8E0D8] flex items-center gap-3">
+        <div className="p-4 border-t border-border flex items-center gap-3">
           <button
             onClick={saveGrid}
             disabled={busy || missingTable}
-            className="px-5 py-2 bg-[#C2410C] hover:bg-[#9A3412] disabled:opacity-50 text-white rounded-lg font-semibold text-sm"
+            className="px-5 py-2 bg-gold hover:bg-gold-dim disabled:opacity-50 text-ink-invert rounded-lg font-semibold text-sm"
           >
             {busy ? 'Enregistrement…' : 'Enregistrer la grille'}
           </button>
-          <span className="text-xs text-[#7D6A5D]">Montants en FCFA.</span>
+          <span className="text-xs text-ink-dimmer">Montants en FCFA.</span>
         </div>
       </section>
 
       {/* ── Réglages ─────────────────────────────────────────────────────── */}
       <section className={`${CARD} p-5 space-y-4`}>
         <div>
-          <h2 className="font-serif text-lg text-[#241A14]">Expédition et retrait</h2>
-          <p className="text-xs text-[#7D6A5D] mt-1">
+          <h2 className="font-serif text-lg text-ink">Expédition et retrait</h2>
+          <p className="text-xs text-ink-dimmer mt-1">
             Le retrait sur place est la seule option qui échappe au coût du transport. Il devient
             utile dès qu’un grand colis fait grimper la livraison au-delà de ce qu’un client
             accepte de payer.
@@ -360,7 +360,7 @@ export default function DeliveryTariffPanel() {
                 </option>
               ))}
             </select>
-            <p className="text-[11px] text-[#7D6A5D] mt-1">
+            <p className="text-[11px] text-ink-dimmer mt-1">
               La zone d’où partent vos colis. Elle détermine toute la grille.
             </p>
           </div>
@@ -377,7 +377,7 @@ export default function DeliveryTariffPanel() {
                 </option>
               ))}
             </select>
-            <p className="text-[11px] text-[#7D6A5D] mt-1">
+            <p className="text-[11px] text-ink-dimmer mt-1">
               Pour un produit dont la taille n’est pas renseignée.
             </p>
           </div>
@@ -398,13 +398,13 @@ export default function DeliveryTariffPanel() {
               placeholder="Yopougon, …"
               className={INPUT}
             />
-            <p className="text-[11px] text-[#7D6A5D] mt-1">
+            <p className="text-[11px] text-ink-dimmer mt-1">
               Sans adresse, l’option de retrait n’est pas proposée.
             </p>
           </div>
         </div>
 
-        <label className="flex items-center gap-2 text-sm text-[#241A14]">
+        <label className="flex items-center gap-2 text-sm text-ink">
           <input
             type="checkbox"
             checked={pickupEnabled}
@@ -416,13 +416,13 @@ export default function DeliveryTariffPanel() {
         <button
           onClick={saveSettings}
           disabled={busy}
-          className="px-5 py-2 bg-[#C2410C] hover:bg-[#9A3412] disabled:opacity-50 text-white rounded-lg font-semibold text-sm"
+          className="px-5 py-2 bg-gold hover:bg-gold-dim disabled:opacity-50 text-ink-invert rounded-lg font-semibold text-sm"
         >
           {busy ? 'Enregistrement…' : 'Enregistrer'}
         </button>
       </section>
 
-      <p className="text-xs text-[#7D6A5D] leading-relaxed">
+      <p className="text-xs text-ink-dimmer leading-relaxed">
         Aucun transporteur n’est nommé sur le site : le client voit « Livraison » et un prix. Qui
         porte réellement le colis se décide commande par commande, avec la position du client
         lorsqu’il l’a partagée.

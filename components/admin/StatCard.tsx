@@ -13,7 +13,7 @@ interface StatCardProps {
 
 export function StatCard({ label, value, icon: Icon, iconBg, iconColor, trend, href }: StatCardProps) {
   const content = (
-    <div className="bg-white rounded-2xl border border-[#E8E0D8] p-6 hover:shadow-md transition-shadow h-full">
+    <div className="bg-bg-panel rounded-2xl border border-border p-6 hover:shadow-md transition-shadow h-full">
       <div className="flex items-start justify-between mb-4">
         <div className={`w-11 h-11 rounded-full flex items-center justify-center ${iconBg}`}>
           <Icon size={20} className={iconColor} />
@@ -21,15 +21,15 @@ export function StatCard({ label, value, icon: Icon, iconBg, iconColor, trend, h
         {trend && (
           <span
             className={`inline-flex items-center gap-0.5 text-xs font-semibold px-2 py-1 rounded-full ${
-              trend.direction === 'up' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+              trend.direction === 'up' ? 'bg-green/10 text-green-bright' : 'bg-danger/10 text-danger'
             }`}
           >
             {trend.direction === 'up' ? '↑' : '↓'} {Math.abs(trend.value).toFixed(1)}%
           </span>
         )}
       </div>
-      <p className="font-serif font-bold text-3xl text-[#241A14] mb-1">{value}</p>
-      <p className="text-sm text-[#7D6A5D]">{label}</p>
+      <p className="font-serif font-bold text-3xl text-ink mb-1">{value}</p>
+      <p className="text-sm text-ink-dimmer">{label}</p>
     </div>
   )
 

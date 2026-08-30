@@ -55,48 +55,48 @@ export default function AdminLogin() {
   }
 
   return (
-    <main className="min-h-screen bg-white flex items-center justify-center px-10">
+    <main className="min-h-screen bg-bg flex items-center justify-center px-10">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <Link href="/" className="font-serif font-bold text-3xl text-[#241A14] hover:opacity-80 block text-center mb-12">
+        <Link href="/" className="font-serif font-bold text-3xl text-ink hover:opacity-80 block text-center mb-12">
           Cacao Admin
         </Link>
 
         {/* Login Card */}
-        <div className="bg-white rounded-lg border border-[#E8E0D8] p-8">
-          <h1 className="font-serif font-semibold text-2xl text-[#241A14] mb-2">Connexion</h1>
-          <p className="text-[#5B4B41] text-sm mb-8">Accès administrateur réservé</p>
+        <div className="bg-bg-panel rounded-lg border border-border p-8">
+          <h1 className="font-serif font-semibold text-2xl text-ink mb-2">Connexion</h1>
+          <p className="text-ink-dim text-sm mb-8">Accès administrateur réservé</p>
 
           <form onSubmit={handleLogin} className="space-y-4">
             {/* Email */}
             <div>
-              <label className="block text-sm font-semibold text-[#241A14] mb-2">Email</label>
+              <label className="block text-sm font-semibold text-ink mb-2">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                 placeholder="admin@example.com"
               />
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-semibold text-[#241A14] mb-2">Mot de passe</label>
+              <label className="block text-sm font-semibold text-ink mb-2">Mot de passe</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-2.5 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                 placeholder="••••••••"
               />
             </div>
 
             {/* Error Message */}
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              <div className="bg-danger/10 border border-danger/30 text-danger px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
@@ -113,9 +113,9 @@ export default function AdminLogin() {
           </form>
 
           {/* Help Text */}
-          <p className="text-xs text-[#7D6A5D] text-center mt-6">
+          <p className="text-xs text-ink-dimmer text-center mt-6">
             Vous n&apos;êtes pas administrateur ?{' '}
-            <Link href="/" className="text-[#C2410C] hover:underline font-semibold">
+            <Link href="/" className="text-gold hover:underline font-semibold">
               Retour à l&apos;accueil
             </Link>
           </p>

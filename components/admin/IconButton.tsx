@@ -11,7 +11,7 @@ interface IconButtonProps {
 
 export function IconButton({ icon: Icon, label, onClick, href, tone = 'default' }: IconButtonProps) {
   const className = `p-2 rounded-lg transition-colors ${
-    tone === 'danger' ? 'text-[#5B4B41] hover:bg-red-50 hover:text-red-600' : 'text-[#5B4B41] hover:bg-gray-100 hover:text-[#241A14]'
+    tone === 'danger' ? 'text-ink-dim hover:bg-danger/10 hover:text-danger' : 'text-ink-dim hover:bg-bg-raised hover:text-ink'
   }`
 
   if (href) {

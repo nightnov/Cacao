@@ -6,11 +6,11 @@ interface StatusBadgeProps {
 }
 
 const toneStyles: Record<StatusTone, string> = {
-  success: 'bg-green-50 text-green-700',
-  pending: 'bg-orange-50 text-[#C2410C]',
-  danger: 'bg-red-50 text-red-700',
-  neutral: 'bg-gray-100 text-gray-600',
-  info: 'bg-blue-50 text-blue-700'
+  success: 'bg-green/10 text-green-bright',
+  pending: 'bg-gold/10 text-gold',
+  danger: 'bg-danger/10 text-danger',
+  neutral: 'bg-bg-raised text-ink-dimmer',
+  info: 'bg-info/10 text-info'
 }
 
 export function StatusBadge({ label, tone }: StatusBadgeProps) {

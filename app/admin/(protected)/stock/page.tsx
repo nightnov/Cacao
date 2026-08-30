@@ -35,7 +35,7 @@ interface Movement {
 
 type Filter = 'all' | 'out' | 'low'
 
-const CARD = 'bg-white border border-[#E8E0D8] rounded-2xl'
+const CARD = 'bg-bg-panel border border-border rounded-2xl'
 
 const REASON_LABELS: Record<string, string> = {
   sale: 'Vente',
@@ -190,7 +190,7 @@ export default function AdminStock() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-[#5B4B41] text-sm">
+      <div className="flex items-center gap-2 text-ink-dim text-sm">
         <Loader2 size={16} className="animate-spin" /> Chargement…
       </div>
     )
@@ -199,20 +199,20 @@ export default function AdminStock() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-3xl text-[#241A14]">Stock</h1>
-        <p className="text-sm text-[#7D6A5D] mt-1">
+        <h1 className="font-serif text-3xl text-ink">Stock</h1>
+        <p className="text-sm text-ink-dimmer mt-1">
           Toutes les déclinaisons de tous les produits, la plus basse en premier.
         </p>
       </div>
 
       {missingTable && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-start gap-2.5">
-          <AlertTriangle size={17} className="text-amber-700 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-amber-900">
+        <div className="bg-gold/10 border border-gold/30 rounded-xl p-4 flex items-start gap-2.5">
+          <AlertTriangle size={17} className="text-gold flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-gold">
             <p className="font-semibold">Le suivi des mouvements n’est pas encore installé.</p>
             <p className="mt-1">
               Exécutez{' '}
-              <code className="bg-amber-100 px-1 rounded">
+              <code className="bg-gold/15 px-1 rounded">
                 supabase/migrations/020_stock_movements.sql
               </code>{' '}
               dans l’éditeur SQL de Supabase. Sans lui, le stock <strong>n’est pas déduit</strong>{' '}
@@ -226,8 +226,8 @@ export default function AdminStock() {
         <div
           className={`rounded-xl px-4 py-3 text-sm border ${
             message.kind === 'ok'
-              ? 'bg-green-50 border-green-200 text-green-800'
-              : 'bg-red-50 border-red-200 text-red-800'
+              ? 'bg-green/10 border-green/30 text-green-bright'
+              : 'bg-danger/10 border-danger/30 text-danger'
           }`}
         >
           {message.text}
@@ -253,7 +253,7 @@ export default function AdminStock() {
 
       {/* ── Tableau ───────────────────────────────────────────────────── */}
       <section className={CARD}>
-        <div className="p-4 border-b border-[#E8E0D8] flex flex-wrap items-center gap-2">
+        <div className="p-4 border-b border-border flex flex-wrap items-center gap-2">
           {(
             [
               ['all', `Toutes (${counts.all})`],
@@ -266,8 +266,8 @@ export default function AdminStock() {
               onClick={() => setFilter(key)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                 filter === key
-                  ? 'bg-orange-50 text-[#C2410C] border border-[#C2410C]'
-                  : 'border border-[#E8E0D8] text-[#5B4B41] hover:bg-gray-50'
+                  ? 'bg-gold/10 text-gold border border-gold'
+                  : 'border border-border text-ink-dim hover:bg-bg-raised'
               }`}
             >
               {label}
@@ -277,12 +277,12 @@ export default function AdminStock() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Produit, référence…"
-            className="ml-auto px-3 py-1.5 border border-[#E8E0D8] rounded-lg text-xs text-[#241A14] w-full sm:w-56"
+            className="ml-auto px-3 py-1.5 border border-border rounded-lg text-xs text-ink w-full sm:w-56"
           />
         </div>
 
         {visible.length === 0 ? (
-          <p className="p-8 text-center text-sm text-[#7D6A5D]">
+          <p className="p-8 text-center text-sm text-ink-dimmer">
             {rows.length === 0
               ? "Aucun produit n'a de déclinaison. Le stock se gère par variante — ajoutez des options à un produit pour le suivre ici."
               : 'Aucune déclinaison ne correspond à ce filtre.'}
@@ -291,7 +291,7 @@ export default function AdminStock() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#E8E0D8]">
+                <tr className="border-b border-border">
                   <Th>Produit</Th>
                   <Th>Déclinaison</Th>
                   <Th>Référence</Th>
@@ -307,38 +307,38 @@ export default function AdminStock() {
                   return (
                     <tr
                       key={r.id}
-                      className={`border-b border-[#F1EBE3] last:border-0 ${out ? 'bg-red-50/40' : ''}`}
+                      className={`border-b border-border last:border-0 ${out ? 'bg-danger/10/40' : ''}`}
                     >
                       <td className="px-4 py-3 text-sm">
                         {r.products?.slug ? (
                           <Link
                             href={`/products/${r.products.slug}`}
                             target="_blank"
-                            className="text-[#241A14] hover:text-[#C2410C] font-medium"
+                            className="text-ink hover:text-gold font-medium"
                           >
                             {r.products.name}
                           </Link>
                         ) : (
-                          <span className="text-[#7D6A5D]">Produit supprimé</span>
+                          <span className="text-ink-dimmer">Produit supprimé</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-sm text-[#5B4B41]">
+                      <td className="px-4 py-3 text-sm text-ink-dim">
                         {variantLabel(r.option_values)}
                       </td>
-                      <td className="px-4 py-3 text-xs font-mono text-[#7D6A5D]">
+                      <td className="px-4 py-3 text-xs font-mono text-ink-dimmer">
                         {r.sku || '—'}
                       </td>
-                      <td className="px-4 py-3 text-sm text-[#241A14] tabular-nums whitespace-nowrap">
+                      <td className="px-4 py-3 text-sm text-ink tabular-nums whitespace-nowrap">
                         {formatAmount(r.price_fcfa)}
                       </td>
                       <td className="px-4 py-3">
                         <span
                           className={`inline-block px-2 py-0.5 rounded text-xs font-bold tabular-nums ${
                             out
-                              ? 'bg-red-100 text-red-800'
+                              ? 'bg-danger/15 text-danger'
                               : low
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-green-100 text-green-800'
+                                ? 'bg-gold/15 text-gold'
+                                : 'bg-green/15 text-green-bright'
                           }`}
                         >
                           {out ? 'Épuisé' : r.stock}
@@ -351,7 +351,7 @@ export default function AdminStock() {
                           value={edits[r.id] ?? ''}
                           onChange={e => setEdits({ ...edits, [r.id]: e.target.value })}
                           placeholder={String(r.stock)}
-                          className="w-20 px-2 py-1 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14] tabular-nums"
+                          className="w-20 px-2 py-1 border border-border rounded-lg text-sm text-ink tabular-nums"
                         />
                       </td>
                     </tr>
@@ -363,21 +363,21 @@ export default function AdminStock() {
         )}
 
         {pending.length > 0 && (
-          <div className="p-4 border-t border-[#E8E0D8] flex items-center gap-3 bg-orange-50/50">
-            <span className="text-sm text-[#5B4B41]">
+          <div className="p-4 border-t border-border flex items-center gap-3 bg-gold/10/50">
+            <span className="text-sm text-ink-dim">
               {pending.length} modification{pending.length > 1 ? 's' : ''} en attente
             </span>
             <button
               onClick={saveStock}
               disabled={busy}
-              className="ml-auto flex items-center gap-2 px-4 py-2 bg-[#C2410C] hover:bg-[#9A3412] disabled:opacity-50 text-white rounded-xl font-semibold text-sm"
+              className="ml-auto flex items-center gap-2 px-4 py-2 bg-gold hover:bg-gold-dim disabled:opacity-50 text-ink-invert rounded-xl font-semibold text-sm"
             >
               {busy ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
               Enregistrer
             </button>
             <button
               onClick={() => setEdits({})}
-              className="px-4 py-2 border border-[#E8E0D8] hover:bg-white text-[#5B4B41] rounded-xl font-semibold text-sm"
+              className="px-4 py-2 border border-border hover:bg-bg-panel text-ink-dim rounded-xl font-semibold text-sm"
             >
               Annuler
             </button>
@@ -388,8 +388,8 @@ export default function AdminStock() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         {/* ── Seuil ───────────────────────────────────────────────────── */}
         <section className={`${CARD} p-5`}>
-          <h2 className="font-serif text-lg text-[#241A14]">Seuil d’alerte</h2>
-          <p className="text-xs text-[#7D6A5D] mt-1 mb-4">
+          <h2 className="font-serif text-lg text-ink">Seuil d’alerte</h2>
+          <p className="text-xs text-ink-dimmer mt-1 mb-4">
             En dessous ou à ce nombre, une déclinaison est signalée « stock faible ». À zéro, elle
             devient « épuisée » et la fiche produit refuse déjà de l’ajouter au panier.
           </p>
@@ -399,12 +399,12 @@ export default function AdminStock() {
               min={0}
               value={thresholdDraft}
               onChange={e => setThresholdDraft(e.target.value)}
-              className="w-24 px-3 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14] tabular-nums"
+              className="w-24 px-3 py-2 border border-border rounded-lg text-sm text-ink tabular-nums"
             />
             <button
               onClick={saveThreshold}
               disabled={busy || String(threshold) === thresholdDraft}
-              className="px-4 py-2 border border-[#E8E0D8] hover:bg-gray-50 disabled:opacity-40 text-[#241A14] rounded-xl font-semibold text-sm"
+              className="px-4 py-2 border border-border hover:bg-bg-raised disabled:opacity-40 text-ink rounded-xl font-semibold text-sm"
             >
               Enregistrer
             </button>
@@ -414,34 +414,34 @@ export default function AdminStock() {
         {/* ── Mouvements ──────────────────────────────────────────────── */}
         <section className={CARD}>
           <div className="p-5 pb-3">
-            <h2 className="font-serif text-lg text-[#241A14]">Derniers mouvements</h2>
-            <p className="text-xs text-[#7D6A5D] mt-1">
+            <h2 className="font-serif text-lg text-ink">Derniers mouvements</h2>
+            <p className="text-xs text-ink-dimmer mt-1">
               Pourquoi un stock a bougé, et de combien.
             </p>
           </div>
           {movements.length === 0 ? (
-            <p className="px-5 pb-5 text-sm text-[#7D6A5D]">
+            <p className="px-5 pb-5 text-sm text-ink-dimmer">
               Aucun mouvement pour l’instant. Ils apparaîtront à la première vente payée ou à la
               première correction manuelle.
             </p>
           ) : (
-            <ul className="divide-y divide-[#F1EBE3]">
+            <ul className="divide-y divide-border">
               {movements.map(m => (
                 <li key={m.id} className="px-5 py-2.5 flex items-center gap-3 text-sm">
                   <span
                     className={`font-bold tabular-nums w-10 ${
-                      m.delta < 0 ? 'text-red-700' : 'text-green-700'
+                      m.delta < 0 ? 'text-danger' : 'text-green-bright'
                     }`}
                   >
                     {m.delta > 0 ? `+${m.delta}` : m.delta}
                   </span>
-                  <span className="text-[#5B4B41] flex-1 min-w-0 truncate">
+                  <span className="text-ink-dim flex-1 min-w-0 truncate">
                     {REASON_LABELS[m.reason] || m.reason}
                     {m.stock_after !== null && (
-                      <span className="text-[#7D6A5D]"> → reste {m.stock_after}</span>
+                      <span className="text-ink-dimmer"> → reste {m.stock_after}</span>
                     )}
                   </span>
-                  <span className="text-xs text-[#7D6A5D] whitespace-nowrap">
+                  <span className="text-xs text-ink-dimmer whitespace-nowrap">
                     {new Date(m.created_at).toLocaleDateString('fr-FR', {
                       day: '2-digit',
                       month: 'short',
@@ -459,7 +459,7 @@ export default function AdminStock() {
 
 function Th({ children }: { children: React.ReactNode }) {
   return (
-    <th className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wide text-[#7D6A5D] whitespace-nowrap">
+    <th className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wide text-ink-dimmer whitespace-nowrap">
       {children}
     </th>
   )
@@ -477,10 +477,10 @@ function Kpi({
   icon?: LucideIcon
 }) {
   const color =
-    tone === 'bad' ? 'text-red-700' : tone === 'warn' ? 'text-amber-700' : 'text-[#241A14]'
+    tone === 'bad' ? 'text-danger' : tone === 'warn' ? 'text-gold' : 'text-ink'
   return (
     <div className={`${CARD} p-4`}>
-      <div className="flex items-center gap-1.5 text-xs text-[#7D6A5D] mb-1.5">
+      <div className="flex items-center gap-1.5 text-xs text-ink-dimmer mb-1.5">
         {Icon && <Icon size={13} />}
         {label}
       </div>

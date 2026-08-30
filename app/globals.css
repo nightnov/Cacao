@@ -86,6 +86,17 @@ button {
   border-radius: 4px;
 }
 
+/* Fond des champs de saisie.
+   Aucun champ ne le déclarait : ils héritaient du blanc du navigateur, devenu
+   un gris hors palette une fois `color-scheme: dark` posé. Une règle d'élément
+   plutôt que des dizaines de classes — et sa faible spécificité laisse toute
+   classe Tailwind explicite reprendre la main. */
+input:not([type='checkbox']):not([type='radio']):not([type='color']),
+textarea,
+select {
+  background-color: rgb(var(--c-bg-raised));
+}
+
 /* Champs de formulaire : sur fond sombre, le remplissage automatique du
    navigateur repeint l'input en blanc et rend le texte invisible. */
 input:-webkit-autofill,

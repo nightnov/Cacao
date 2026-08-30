@@ -42,8 +42,8 @@ const CONTRAST_CHECKS: { fg: TokenKey; bg: TokenKey; label: string; min: number 
   { fg: 'ink', bg: 'bg-raised', label: 'Texte dans un champ de saisie', min: 4.5 },
 ]
 
-const CARD = 'bg-white border border-[#E8E0D8] rounded-2xl'
-const LABEL = 'block text-xs font-semibold text-[#5B4B41] mb-1.5'
+const CARD = 'bg-bg-panel border border-border rounded-2xl'
+const LABEL = 'block text-xs font-semibold text-ink-dim mb-1.5'
 
 export default function AdminAppearance() {
   const [themes, setThemes] = useState<Theme[]>([])
@@ -212,7 +212,7 @@ export default function AdminAppearance() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-[#5B4B41] text-sm">
+      <div className="flex items-center gap-2 text-ink-dim text-sm">
         <Loader2 size={16} className="animate-spin" /> Chargement…
       </div>
     )
@@ -223,21 +223,21 @@ export default function AdminAppearance() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-3xl text-[#241A14]">Apparence</h1>
-        <p className="text-sm text-[#7D6A5D] mt-1">
+        <h1 className="font-serif text-3xl text-ink">Apparence</h1>
+        <p className="text-sm text-ink-dimmer mt-1">
           Les couleurs de la boutique. Vous pouvez aussi programmer un habillage saisonnier qui
           s’installe et se retire tout seul.
         </p>
       </div>
 
       {missingTable && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-start gap-2.5">
-          <AlertTriangle size={17} className="text-amber-700 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-amber-900">
+        <div className="bg-gold/10 border border-gold/30 rounded-xl p-4 flex items-start gap-2.5">
+          <AlertTriangle size={17} className="text-gold flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-gold">
             <p className="font-semibold">La table des thèmes n’existe pas encore.</p>
             <p className="mt-1">
               Ouvrez l’éditeur SQL de Supabase et exécutez le fichier{' '}
-              <code className="bg-amber-100 px-1 rounded">
+              <code className="bg-gold/15 px-1 rounded">
                 supabase/migrations/019_site_themes.sql
               </code>
               , puis rechargez cette page. En attendant, la boutique s’affiche avec le thème
@@ -251,8 +251,8 @@ export default function AdminAppearance() {
         <div
           className={`rounded-xl px-4 py-3 text-sm border ${
             message.kind === 'ok'
-              ? 'bg-green-50 border-green-200 text-green-800'
-              : 'bg-red-50 border-red-200 text-red-800'
+              ? 'bg-green/10 border-green/30 text-green-bright'
+              : 'bg-danger/10 border-danger/30 text-danger'
           }`}
         >
           {message.text}
@@ -263,10 +263,10 @@ export default function AdminAppearance() {
       <section className={`${CARD} p-5`}>
         <div className="flex items-center justify-between gap-3 mb-4">
           <div>
-            <h2 className="font-serif text-lg text-[#241A14]">Thèmes</h2>
-            <p className="text-xs text-[#7D6A5D] mt-0.5">
+            <h2 className="font-serif text-lg text-ink">Thèmes</h2>
+            <p className="text-xs text-ink-dimmer mt-0.5">
               Actuellement affiché sur le site :{' '}
-              <strong className="text-[#241A14]">
+              <strong className="text-ink">
                 {themes.find(t => t.slug === appliedToday)?.name || 'Nuit'}
               </strong>
               {appliedToday !== activeSlug && ' (période programmée en cours)'}
@@ -274,7 +274,7 @@ export default function AdminAppearance() {
           </div>
           <button
             onClick={duplicate}
-            className="flex items-center gap-1.5 text-sm font-semibold text-[#C2410C] hover:underline whitespace-nowrap"
+            className="flex items-center gap-1.5 text-sm font-semibold text-gold hover:underline whitespace-nowrap"
           >
             <Plus size={15} /> Créer à partir de celui-ci
           </button>
@@ -289,7 +289,7 @@ export default function AdminAppearance() {
                 key={t.slug}
                 onClick={() => (isNew && t.slug === draft?.slug ? null : selectTheme(t.slug))}
                 className={`text-left rounded-xl border-2 overflow-hidden transition-colors ${
-                  selected ? 'border-[#C2410C]' : 'border-[#E8E0D8] hover:border-[#C9BCAE]'
+                  selected ? 'border-gold' : 'border-border hover:border-border-strong'
                 }`}
               >
                 <div className="h-16 flex" style={{ background: tk.bg }}>
@@ -298,8 +298,8 @@ export default function AdminAppearance() {
                   <span className="w-1/4 m-2 rounded" style={{ background: tk.ink }} />
                 </div>
                 <div className="px-2.5 py-2">
-                  <p className="text-xs font-semibold text-[#241A14] truncate">{t.name}</p>
-                  <p className="text-[10px] text-[#7D6A5D] mt-0.5">
+                  <p className="text-xs font-semibold text-ink truncate">{t.name}</p>
+                  <p className="text-[10px] text-ink-dimmer mt-0.5">
                     {t.slug === appliedToday
                       ? 'Affiché sur le site'
                       : t.starts_on
@@ -320,10 +320,10 @@ export default function AdminAppearance() {
           <div className="space-y-6">
             {/* ── Contrôle de lisibilité ───────────────────────────────── */}
             {failures.length > 0 && (
-              <div className="bg-amber-50 border border-amber-300 rounded-xl p-4">
+              <div className="bg-gold/10 border border-gold/30 rounded-xl p-4">
                 <div className="flex items-start gap-2.5">
-                  <AlertTriangle size={17} className="text-amber-700 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-amber-900">
+                  <AlertTriangle size={17} className="text-gold flex-shrink-0 mt-0.5" />
+                  <div className="text-sm text-gold">
                     <p className="font-semibold">
                       {failures.length === 1
                         ? 'Une combinaison est difficile à lire.'
@@ -337,7 +337,7 @@ export default function AdminAppearance() {
                         </li>
                       ))}
                     </ul>
-                    <p className="mt-2 text-[12px] text-amber-800">
+                    <p className="mt-2 text-[12px] text-gold">
                       Rien ne vous empêche d’enregistrer, mais certains visiteurs ne pourront pas
                       lire ces textes.
                     </p>
@@ -348,7 +348,7 @@ export default function AdminAppearance() {
 
             {/* ── Identité et programmation ────────────────────────────── */}
             <section className={`${CARD} p-5`}>
-              <h2 className="font-serif text-lg text-[#241A14] mb-4">Réglages du thème</h2>
+              <h2 className="font-serif text-lg text-ink mb-4">Réglages du thème</h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
                 <div>
@@ -356,7 +356,7 @@ export default function AdminAppearance() {
                   <input
                     value={draft.name}
                     onChange={e => setDraft({ ...draft, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14]"
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm text-ink"
                   />
                 </div>
                 <div>
@@ -364,17 +364,17 @@ export default function AdminAppearance() {
                   <input
                     value={draft.slug}
                     disabled
-                    className="w-full px-3 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#7D6A5D] bg-gray-50"
+                    className="w-full px-3 py-2 border border-border rounded-lg text-sm text-ink-dimmer bg-bg-raised"
                   />
                 </div>
               </div>
 
-              <div className="border-t border-[#E8E0D8] pt-4">
+              <div className="border-t border-border pt-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <CalendarClock size={15} className="text-[#C2410C]" />
-                  <h3 className="text-sm font-semibold text-[#241A14]">Programmation</h3>
+                  <CalendarClock size={15} className="text-gold" />
+                  <h3 className="text-sm font-semibold text-ink">Programmation</h3>
                 </div>
-                <p className="text-xs text-[#7D6A5D] mb-3">
+                <p className="text-xs text-ink-dimmer mb-3">
                   Entre ces deux dates, ce thème remplace le thème par défaut, puis le site revient
                   tout seul à la normale. Laissez vide pour ne pas programmer.
                 </p>
@@ -385,7 +385,7 @@ export default function AdminAppearance() {
                       type="date"
                       value={draft.starts_on || ''}
                       onChange={e => setDraft({ ...draft, starts_on: e.target.value || null })}
-                      className="w-full px-3 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14]"
+                      className="w-full px-3 py-2 border border-border rounded-lg text-sm text-ink"
                     />
                   </div>
                   <div>
@@ -394,7 +394,7 @@ export default function AdminAppearance() {
                       type="date"
                       value={draft.ends_on || ''}
                       onChange={e => setDraft({ ...draft, ends_on: e.target.value || null })}
-                      className="w-full px-3 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14]"
+                      className="w-full px-3 py-2 border border-border rounded-lg text-sm text-ink"
                     />
                   </div>
                 </div>
@@ -404,8 +404,8 @@ export default function AdminAppearance() {
             {/* ── Couleurs ─────────────────────────────────────────────── */}
             {TOKEN_GROUPS.map(group => (
               <section key={group.title} className={`${CARD} p-5`}>
-                <h2 className="font-serif text-lg text-[#241A14]">{group.title}</h2>
-                <p className="text-xs text-[#7D6A5D] mt-0.5 mb-4">{group.hint}</p>
+                <h2 className="font-serif text-lg text-ink">{group.title}</h2>
+                <p className="text-xs text-ink-dimmer mt-0.5 mb-4">{group.hint}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {group.keys.map(key => (
                     <div key={key} className="flex items-center gap-3">
@@ -413,15 +413,15 @@ export default function AdminAppearance() {
                         type="color"
                         value={tokens[key]}
                         onChange={e => setToken(key, e.target.value)}
-                        className="w-10 h-10 rounded-lg border border-[#E8E0D8] cursor-pointer flex-shrink-0 bg-white"
+                        className="w-10 h-10 rounded-lg border border-border cursor-pointer flex-shrink-0 bg-bg-panel"
                         aria-label={TOKEN_LABELS[key]}
                       />
                       <div className="min-w-0 flex-1">
-                        <p className="text-[13px] text-[#241A14] truncate">{TOKEN_LABELS[key]}</p>
+                        <p className="text-[13px] text-ink truncate">{TOKEN_LABELS[key]}</p>
                         <input
                           value={tokens[key]}
                           onChange={e => setToken(key, e.target.value)}
-                          className="w-full text-[11px] font-mono text-[#7D6A5D] bg-transparent outline-none tabular-nums"
+                          className="w-full text-[11px] font-mono text-ink-dimmer bg-transparent outline-none tabular-nums"
                         />
                       </div>
                     </div>
@@ -434,9 +434,9 @@ export default function AdminAppearance() {
           {/* ── Aperçu + actions ───────────────────────────────────────── */}
           <div className="lg:sticky lg:top-4 space-y-4">
             <section className={`${CARD} p-4`}>
-              <h2 className="font-serif text-base text-[#241A14] mb-3">Aperçu</h2>
+              <h2 className="font-serif text-base text-ink mb-3">Aperçu</h2>
               <ThemePreview t={tokens} />
-              <p className="text-[11px] text-[#7D6A5D] mt-2.5 leading-relaxed">
+              <p className="text-[11px] text-ink-dimmer mt-2.5 leading-relaxed">
                 Reproduction d’une carte produit et d’un bouton. L’aperçu suit vos modifications
                 avant enregistrement.
               </p>
@@ -446,7 +446,7 @@ export default function AdminAppearance() {
               <button
                 onClick={save}
                 disabled={busy}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#C2410C] hover:bg-[#9A3412] disabled:opacity-50 text-white rounded-xl font-semibold text-sm transition-colors"
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gold hover:bg-gold-dim disabled:opacity-50 text-ink-invert rounded-xl font-semibold text-sm transition-colors"
               >
                 {busy ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
                 Enregistrer
@@ -455,7 +455,7 @@ export default function AdminAppearance() {
               <button
                 onClick={activate}
                 disabled={busy || isNew || draft.slug === activeSlug}
-                className="w-full px-4 py-2.5 border border-[#E8E0D8] hover:bg-gray-50 disabled:opacity-40 text-[#241A14] rounded-xl font-semibold text-sm transition-colors"
+                className="w-full px-4 py-2.5 border border-border hover:bg-bg-raised disabled:opacity-40 text-ink rounded-xl font-semibold text-sm transition-colors"
               >
                 {draft.slug === activeSlug
                   ? 'Déjà le thème par défaut'
@@ -466,14 +466,14 @@ export default function AdminAppearance() {
                 <button
                   onClick={remove}
                   disabled={busy}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 text-red-700 hover:bg-red-50 rounded-xl font-semibold text-sm transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 text-danger hover:bg-danger/10 rounded-xl font-semibold text-sm transition-colors"
                 >
                   <Trash2 size={14} /> Supprimer ce thème
                 </button>
               )}
 
               {appliedToday !== activeSlug && draft.slug === activeSlug && (
-                <p className="text-[11px] text-[#7D6A5D] leading-relaxed pt-1">
+                <p className="text-[11px] text-ink-dimmer leading-relaxed pt-1">
                   Ce thème est le thème par défaut, mais une période programmée est en cours : le
                   site affiche actuellement « {themes.find(t => t.slug === appliedToday)?.name} ».
                 </p>

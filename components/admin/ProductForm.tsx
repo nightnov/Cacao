@@ -448,15 +448,15 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-bg-panel rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-[#E8E0D8] px-6 py-4 flex items-center justify-between">
-          <h2 className="font-serif font-semibold text-2xl text-[#241A14]">
+        <div className="sticky top-0 bg-bg-panel border-b border-border px-6 py-4 flex items-center justify-between">
+          <h2 className="font-serif font-semibold text-2xl text-ink">
             {product ? 'Modifier produit' : 'Ajouter produit'}
           </h2>
           <button
             onClick={onClose}
-            className="text-[#7D6A5D] hover:text-[#241A14] text-2xl"
+            className="text-ink-dimmer hover:text-ink text-2xl"
           >
             ✕
           </button>
@@ -466,37 +466,37 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Success Message */}
           {success && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded font-semibold">
+            <div className="bg-green/10 border border-green/30 text-green-bright px-4 py-3 rounded font-semibold">
               ✓ Produit enregistré avec succès
             </div>
           )}
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded whitespace-pre-wrap break-words">
+            <div className="bg-danger/10 border border-danger/30 text-danger px-4 py-3 rounded whitespace-pre-wrap break-words">
               {error}
             </div>
           )}
 
           {/* Fournisseur */}
-          <div className="border border-[#E8E0D8] rounded-lg p-4 bg-gray-50">
-            <h3 className="font-semibold text-[#241A14] mb-1">Fournisseur (optionnel)</h3>
-            <p className="text-xs text-[#7D6A5D] mb-3">
+          <div className="border border-border rounded-lg p-4 bg-bg-raised">
+            <h3 className="font-semibold text-ink mb-1">Fournisseur (optionnel)</h3>
+            <p className="text-xs text-ink-dimmer mb-3">
               Si ce produit vient d&apos;une plateforme comme Jumia : collez son URL puis cliquez sur « Importer » pour pré-remplir automatiquement le nom, la description, le prix et les photos. Vérifiez toujours les informations importées avant d&apos;enregistrer.
             </p>
 
             {importError && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-xs mb-3">{importError}</div>
+              <div className="bg-danger/10 border border-danger/30 text-danger px-3 py-2 rounded text-xs mb-3">{importError}</div>
             )}
             {importSuccess && (
-              <div className="bg-green-50 border border-green-200 text-green-700 px-3 py-2 rounded text-xs mb-3 font-semibold">
+              <div className="bg-green/10 border border-green/30 text-green-bright px-3 py-2 rounded text-xs mb-3 font-semibold">
                 ✓ Informations importées — vérifiez-les avant d&apos;enregistrer.
               </div>
             )}
 
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2">
-                <label className="block text-xs font-semibold text-[#241A14] mb-1">URL du produit fournisseur</label>
+                <label className="block text-xs font-semibold text-ink mb-1">URL du produit fournisseur</label>
                 <div className="flex gap-2">
                   <input
                     type="url"
@@ -504,7 +504,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                     value={formData.supplier_url}
                     onChange={handleChange}
                     placeholder="https://www.jumia.ci/..."
-                    className="flex-1 px-3 py-2 text-sm border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C] bg-white"
+                    className="flex-1 px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold bg-bg-panel"
                   />
                   <Button type="button" variant="outline" onClick={handleImportFromUrl} disabled={importing}>
                     {importing ? 'Import...' : 'Importer'}
@@ -512,36 +512,36 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#241A14] mb-1">Nom du fournisseur</label>
+                <label className="block text-xs font-semibold text-ink mb-1">Nom du fournisseur</label>
                 <input
                   type="text"
                   name="supplier_name"
                   value={formData.supplier_name}
                   onChange={handleChange}
                   placeholder="Ex: Jumia"
-                  className="w-full px-3 py-2 text-sm border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C] bg-white"
+                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold bg-bg-panel"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#241A14] mb-1">Référence fournisseur</label>
+                <label className="block text-xs font-semibold text-ink mb-1">Référence fournisseur</label>
                 <input
                   type="text"
                   name="supplier_product_id"
                   value={formData.supplier_product_id}
                   onChange={handleChange}
                   placeholder="Ex: référence produit"
-                  className="w-full px-3 py-2 text-sm border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C] bg-white"
+                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold bg-bg-panel"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#241A14] mb-1">Coût fournisseur (FCFA)</label>
+                <label className="block text-xs font-semibold text-ink mb-1">Coût fournisseur (FCFA)</label>
                 <input
                   type="number"
                   name="supplier_cost_fcfa"
                   value={formData.supplier_cost_fcfa}
                   onChange={handleChange}
                   placeholder="Prix d'achat"
-                  className="w-full px-3 py-2 text-sm border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C] bg-white"
+                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold bg-bg-panel"
                 />
               </div>
             </div>
@@ -549,10 +549,10 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
 
           {/* Images */}
           <div>
-            <label className="block text-sm font-semibold text-[#241A14] mb-2">Photos</label>
+            <label className="block text-sm font-semibold text-ink mb-2">Photos</label>
             <div className="grid grid-cols-4 gap-3 mb-3">
               {formData.image_urls.map(url => (
-                <div key={url} className="relative aspect-square rounded-lg overflow-hidden border border-[#E8E0D8] group">
+                <div key={url} className="relative aspect-square rounded-lg overflow-hidden border border-border group">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={url} alt="" className="w-full h-full object-cover" />
                   <button
@@ -568,7 +568,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
-                className="aspect-square rounded-lg border-2 border-dashed border-[#E8E0D8] flex flex-col items-center justify-center text-[#7D6A5D] hover:border-[#C2410C] hover:text-[#C2410C] transition-colors text-xs gap-1 disabled:opacity-50"
+                className="aspect-square rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center text-ink-dimmer hover:border-gold hover:text-gold transition-colors text-xs gap-1 disabled:opacity-50"
               >
                 {uploading ? (
                   <span>Envoi...</span>
@@ -588,61 +588,61 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               onChange={handleImageUpload}
               className="hidden"
             />
-            <p className="text-xs text-[#7D6A5D]">
+            <p className="text-xs text-ink-dimmer">
               La première photo sera l&apos;image principale. Utilisez des images <strong>carrées</strong> (ratio 1:1, ex. 800×800 px) pour un affichage uniforme dans le catalogue. 5 Mo max par photo.
             </p>
           </div>
 
           {/* Video URL */}
           <div>
-            <label className="block text-sm font-semibold text-[#241A14] mb-2">Vidéo (lien YouTube ou Vimeo)</label>
+            <label className="block text-sm font-semibold text-ink mb-2">Vidéo (lien YouTube ou Vimeo)</label>
             <input
               type="url"
               name="video_url"
               value={formData.video_url}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
               placeholder="https://youtube.com/watch?v=..."
             />
           </div>
 
           {/* Name */}
           <div>
-            <label className="block text-sm font-semibold text-[#241A14] mb-2">Nom *</label>
+            <label className="block text-sm font-semibold text-ink mb-2">Nom *</label>
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
               placeholder="Ex: CacaoBook 14"
             />
           </div>
 
           {/* Slug */}
           <div>
-            <label className="block text-sm font-semibold text-[#241A14] mb-2">Slug *</label>
+            <label className="block text-sm font-semibold text-ink mb-2">Slug *</label>
             <input
               type="text"
               name="slug"
               value={formData.slug}
               onChange={handleChange}
               required
-              className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
               placeholder="Ex: cacaobook-14"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-semibold text-[#241A14] mb-2">Description</label>
+            <label className="block text-sm font-semibold text-ink mb-2">Description</label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
               rows={3}
-              className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
               placeholder="Description du produit"
             />
           </div>
@@ -650,12 +650,12 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
           <div className="grid grid-cols-2 gap-4">
             {/* Category */}
             <div>
-              <label className="block text-sm font-semibold text-[#241A14] mb-2">Catégorie</label>
+              <label className="block text-sm font-semibold text-ink mb-2">Catégorie</label>
               <select
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
               >
                 {categories.map(cat => (
                   <option key={cat.value} value={cat.value}>{cat.label}</option>
@@ -665,8 +665,8 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
 
             {/* Price */}
             <div>
-              <label className="block text-sm font-semibold text-[#241A14] mb-2">
-                Prix (FCFA) {hasVariants && <span className="font-normal text-[#7D6A5D]">— calculé depuis les variantes</span>}
+              <label className="block text-sm font-semibold text-ink mb-2">
+                Prix (FCFA) {hasVariants && <span className="font-normal text-ink-dimmer">— calculé depuis les variantes</span>}
               </label>
               <input
                 type="number"
@@ -674,7 +674,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                 value={formData.price_fcfa}
                 onChange={handleChange}
                 disabled={hasVariants}
-                className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C] disabled:bg-gray-100 disabled:text-[#7D6A5D]"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold disabled:bg-bg-raised disabled:text-ink-dimmer"
               />
             </div>
           </div>
@@ -682,21 +682,21 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
           <div className="grid grid-cols-2 gap-4">
             {/* Compare-at price */}
             <div>
-              <label className="block text-sm font-semibold text-[#241A14] mb-2">Ancien prix (barré, optionnel)</label>
+              <label className="block text-sm font-semibold text-ink mb-2">Ancien prix (barré, optionnel)</label>
               <input
                 type="number"
                 name="compare_at_price_fcfa"
                 value={formData.compare_at_price_fcfa}
                 onChange={handleChange}
                 placeholder="Laisser vide si pas de promo"
-                className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
               />
-              <p className="text-xs text-[#7D6A5D] mt-1">Doit être supérieur au prix actuel pour s&apos;afficher comme promo.</p>
+              <p className="text-xs text-ink-dimmer mt-1">Doit être supérieur au prix actuel pour s&apos;afficher comme promo.</p>
             </div>
 
             {/* Poids : sert uniquement à proposer la taille ci-dessous. */}
             <div>
-              <label className="block text-sm font-semibold text-[#241A14] mb-2">
+              <label className="block text-sm font-semibold text-ink mb-2">
                 Poids emballé (kg)
               </label>
               <input
@@ -707,9 +707,9 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                 value={formData.weight_kg}
                 onChange={handleChange}
                 placeholder="Ex. 2.3"
-                className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
               />
-              <p className="text-xs text-[#7D6A5D] mt-1">
+              <p className="text-xs text-ink-dimmer mt-1">
                 Renseignez-le et la taille de colis se remplit toute seule : jusqu&apos;à 5 kg petit
                 colis, jusqu&apos;à 15 kg moyen, au-delà grand.
               </p>
@@ -717,14 +717,14 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
 
             {/* Taille de colis : c'est elle qui détermine le tarif. */}
             <div>
-              <label className="block text-sm font-semibold text-[#241A14] mb-2">
+              <label className="block text-sm font-semibold text-ink mb-2">
                 Taille de colis
               </label>
               <select
                 name="parcel_size"
                 value={formData.parcel_size}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
               >
                 <option value="">Non renseignée</option>
                 <option value="petit">Petit colis — 0 à 5 kg · 40 × 20 × 13 cm</option>
@@ -733,7 +733,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               </select>
 
               {suggestedSize && suggestedSize !== formData.parcel_size && (
-                <p className="text-xs text-[#C2410C] mt-1">
+                <p className="text-xs text-gold mt-1">
                   D&apos;après le poids saisi, ce serait plutôt un{' '}
                   <button
                     type="button"
@@ -746,7 +746,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                 </p>
               )}
 
-              <p className="text-xs text-[#7D6A5D] mt-1">
+              <p className="text-xs text-ink-dimmer mt-1">
                 C&apos;est elle qui fixe le prix de la livraison. Le poids ne suffit pas toujours :
                 un écran de 27 pouces pèse 5 kg mais ne rentre dans aucune boîte de moyen colis —
                 corrigez à la main dans ce cas.
@@ -755,8 +755,8 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
 
             {/* Composants : la liste que l'acheteur compare avant de décider. */}
             <div className="sm:col-span-2">
-              <label className="block text-sm font-semibold text-[#241A14] mb-2">Composants</label>
-              <p className="text-xs text-[#7D6A5D] mb-3">
+              <label className="block text-sm font-semibold text-ink mb-2">Composants</label>
+              <p className="text-xs text-ink-dimmer mb-3">
                 Les pièces de la machine, affichées en grille sur la fiche produit. Chaque ligne
                 reçoit l&apos;icône de son type. Laissez vide pour un produit qui n&apos;en a pas —
                 un accessoire, par exemple.
@@ -768,13 +768,13 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                     const Icon = componentIcon(row.type)
                     return (
                       <div key={i} className="flex items-center gap-2">
-                        <span className="w-9 h-9 rounded-lg bg-orange-50 text-[#C2410C] grid place-items-center flex-shrink-0">
+                        <span className="w-9 h-9 rounded-lg bg-gold/10 text-gold grid place-items-center flex-shrink-0">
                           <Icon size={16} />
                         </span>
                         <select
                           value={row.type}
                           onChange={e => updateComponent(i, { type: e.target.value })}
-                          className="w-44 px-2.5 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14] flex-shrink-0"
+                          className="w-44 px-2.5 py-2 border border-border rounded-lg text-sm text-ink flex-shrink-0"
                         >
                           {COMPONENT_TYPES.map(t => (
                             <option key={t.value} value={t.value}>
@@ -786,13 +786,13 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                           value={row.label}
                           onChange={e => updateComponent(i, { label: e.target.value })}
                           placeholder="Ex. NVIDIA GeForce RTX 5080 16 Go"
-                          className="flex-1 min-w-0 px-3 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14]"
+                          className="flex-1 min-w-0 px-3 py-2 border border-border rounded-lg text-sm text-ink"
                         />
                         <button
                           type="button"
                           onClick={() => removeComponent(i)}
                           aria-label="Retirer ce composant"
-                          className="w-9 h-9 grid place-items-center text-[#7D6A5D] hover:text-red-700 hover:bg-red-50 rounded-lg flex-shrink-0"
+                          className="w-9 h-9 grid place-items-center text-ink-dimmer hover:text-danger hover:bg-danger/10 rounded-lg flex-shrink-0"
                         >
                           ×
                         </button>
@@ -805,7 +805,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               <button
                 type="button"
                 onClick={addComponent}
-                className="px-4 py-2 border border-[#E8E0D8] hover:bg-gray-50 text-[#241A14] rounded-lg font-semibold text-sm"
+                className="px-4 py-2 border border-border hover:bg-bg-raised text-ink rounded-lg font-semibold text-sm"
               >
                 + Ajouter un composant
               </button>
@@ -813,15 +813,15 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
 
             {/* Availability */}
             <div>
-              <label className="block text-sm font-semibold text-[#241A14] mb-2">
-                Disponibilité {hasVariants && <span className="font-normal text-[#7D6A5D]">— calculée depuis le stock</span>}
+              <label className="block text-sm font-semibold text-ink mb-2">
+                Disponibilité {hasVariants && <span className="font-normal text-ink-dimmer">— calculée depuis le stock</span>}
               </label>
               <select
                 name="availability"
                 value={formData.availability}
                 onChange={handleChange}
                 disabled={hasVariants}
-                className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C] disabled:bg-gray-100 disabled:text-[#7D6A5D]"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold disabled:bg-bg-raised disabled:text-ink-dimmer"
               >
                 <option value="in_stock">En stock</option>
                 <option value="on_order">En commande</option>
@@ -831,15 +831,15 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
           </div>
 
           {/* Variantes */}
-          <div className="border-t border-[#E8E0D8] pt-4">
+          <div className="border-t border-border pt-4">
             <label className="flex items-center gap-2 mb-3 cursor-pointer">
               <input
                 type="checkbox"
                 checked={hasVariants}
                 onChange={e => setHasVariants(e.target.checked)}
-                className="w-4 h-4 accent-[#C2410C]"
+                className="w-4 h-4 accent-gold"
               />
-              <span className="font-semibold text-[#241A14]">Ce produit a des variantes (couleur, taille...)</span>
+              <span className="font-semibold text-ink">Ce produit a des variantes (couleur, taille...)</span>
             </label>
 
             {hasVariants && (
@@ -853,20 +853,20 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                         value={row.name}
                         onChange={e => handleOptionRowChange(i, 'name', e.target.value)}
                         placeholder="Nom (ex: Couleur)"
-                        className="w-1/3 px-3 py-2 text-sm border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                        className="w-1/3 px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                       />
                       <input
                         type="text"
                         value={row.valuesText}
                         onChange={e => handleOptionRowChange(i, 'valuesText', e.target.value)}
                         placeholder="Valeurs séparées par virgules (ex: Noir, Rouge, Bleu)"
-                        className="flex-1 px-3 py-2 text-sm border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                        className="flex-1 px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                       />
                       {variantOptionRows.length > 1 && (
                         <button
                           type="button"
                           onClick={() => handleRemoveOptionRow(i)}
-                          className="px-2 text-[#7D6A5D] hover:text-red-600"
+                          className="px-2 text-ink-dimmer hover:text-danger"
                         >
                           ✕
                         </button>
@@ -877,15 +877,15 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                     <button
                       type="button"
                       onClick={handleAddOptionRow}
-                      className="text-sm text-[#C2410C] font-semibold hover:underline"
+                      className="text-sm text-gold font-semibold hover:underline"
                     >
                       + Ajouter une option
                     </button>
-                    <span className="text-[#E8E0D8]">•</span>
+                    <span className="text-border">•</span>
                     <button
                       type="button"
                       onClick={handleGenerateCombinations}
-                      className="text-sm text-[#C2410C] font-semibold hover:underline"
+                      className="text-sm text-gold font-semibold hover:underline"
                     >
                       Générer les combinaisons
                     </button>
@@ -894,30 +894,30 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
 
                 {/* Variant rows table */}
                 {variantRows.length > 0 && (
-                  <div className="border border-[#E8E0D8] rounded-lg overflow-hidden">
+                  <div className="border border-border rounded-lg overflow-hidden">
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-bg-raised">
                           <tr>
-                            <th className="px-3 py-2 text-left font-semibold text-[#241A14]">Combinaison</th>
-                            <th className="px-3 py-2 text-left font-semibold text-[#241A14]">SKU</th>
-                            <th className="px-3 py-2 text-left font-semibold text-[#241A14]">Prix</th>
-                            <th className="px-3 py-2 text-left font-semibold text-[#241A14]">Coût</th>
-                            <th className="px-3 py-2 text-left font-semibold text-[#241A14]">Stock</th>
-                            <th className="px-3 py-2 text-left font-semibold text-[#241A14]">Image</th>
+                            <th className="px-3 py-2 text-left font-semibold text-ink">Combinaison</th>
+                            <th className="px-3 py-2 text-left font-semibold text-ink">SKU</th>
+                            <th className="px-3 py-2 text-left font-semibold text-ink">Prix</th>
+                            <th className="px-3 py-2 text-left font-semibold text-ink">Coût</th>
+                            <th className="px-3 py-2 text-left font-semibold text-ink">Stock</th>
+                            <th className="px-3 py-2 text-left font-semibold text-ink">Image</th>
                             <th className="px-3 py-2"></th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#E8E0D8]">
+                        <tbody className="divide-y divide-border">
                           {variantRows.map((row, i) => (
                             <tr key={i}>
-                              <td className="px-3 py-2 text-[#241A14] whitespace-nowrap">{variantLabel(row.option_values)}</td>
+                              <td className="px-3 py-2 text-ink whitespace-nowrap">{variantLabel(row.option_values)}</td>
                               <td className="px-3 py-2">
                                 <input
                                   type="text"
                                   value={row.sku}
                                   onChange={e => handleVariantRowChange(i, 'sku', e.target.value)}
-                                  className="w-20 px-2 py-1 border border-[#E8E0D8] rounded"
+                                  className="w-20 px-2 py-1 border border-border rounded"
                                 />
                               </td>
                               <td className="px-3 py-2">
@@ -925,7 +925,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                                   type="number"
                                   value={row.price_fcfa}
                                   onChange={e => handleVariantRowChange(i, 'price_fcfa', e.target.value)}
-                                  className="w-24 px-2 py-1 border border-[#E8E0D8] rounded"
+                                  className="w-24 px-2 py-1 border border-border rounded"
                                 />
                               </td>
                               <td className="px-3 py-2">
@@ -933,7 +933,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                                   type="number"
                                   value={row.supplier_cost_fcfa}
                                   onChange={e => handleVariantRowChange(i, 'supplier_cost_fcfa', e.target.value)}
-                                  className="w-24 px-2 py-1 border border-[#E8E0D8] rounded"
+                                  className="w-24 px-2 py-1 border border-border rounded"
                                 />
                               </td>
                               <td className="px-3 py-2">
@@ -941,14 +941,14 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                                   type="number"
                                   value={row.stock}
                                   onChange={e => handleVariantRowChange(i, 'stock', e.target.value)}
-                                  className="w-16 px-2 py-1 border border-[#E8E0D8] rounded"
+                                  className="w-16 px-2 py-1 border border-border rounded"
                                 />
                               </td>
                               <td className="px-3 py-2">
                                 <select
                                   value={row.image_url}
                                   onChange={e => handleVariantRowChange(i, 'image_url', e.target.value)}
-                                  className="px-2 py-1 border border-[#E8E0D8] rounded max-w-[110px]"
+                                  className="px-2 py-1 border border-border rounded max-w-[110px]"
                                 >
                                   <option value="">(image principale)</option>
                                   {formData.image_urls.map((url, idx) => (
@@ -960,7 +960,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveVariantRow(i)}
-                                  className="text-[#7D6A5D] hover:text-red-600"
+                                  className="text-ink-dimmer hover:text-danger"
                                 >
                                   ✕
                                 </button>
@@ -977,50 +977,50 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
           </div>
 
           {/* Specs */}
-          <div className="border-t border-[#E8E0D8] pt-4">
-            <h3 className="font-semibold text-[#241A14] mb-3">Spécifications</h3>
+          <div className="border-t border-border pt-4">
+            <h3 className="font-semibold text-ink mb-3">Spécifications</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-semibold text-[#241A14] mb-2">CPU</label>
+                <label className="block text-sm font-semibold text-ink mb-2">CPU</label>
                 <input
                   type="text"
                   name="specs_cpu"
                   value={formData.specs_cpu}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                   placeholder="Ex: Intel i5"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#241A14] mb-2">RAM</label>
+                <label className="block text-sm font-semibold text-ink mb-2">RAM</label>
                 <input
                   type="text"
                   name="specs_ram"
                   value={formData.specs_ram}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                   placeholder="Ex: 16 Go"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#241A14] mb-2">Stockage</label>
+                <label className="block text-sm font-semibold text-ink mb-2">Stockage</label>
                 <input
                   type="text"
                   name="specs_storage"
                   value={formData.specs_storage}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                   placeholder="Ex: 512 Go SSD"
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-[#241A14] mb-2">Écran</label>
+                <label className="block text-sm font-semibold text-ink mb-2">Écran</label>
                 <input
                   type="text"
                   name="specs_screen"
                   value={formData.specs_screen}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                   placeholder='Ex: 14"'
                 />
               </div>
@@ -1029,20 +1029,20 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
 
           {/* Tags */}
           <div>
-            <label className="block text-sm font-semibold text-[#241A14] mb-2">Tags (séparés par virgules)</label>
+            <label className="block text-sm font-semibold text-ink mb-2">Tags (séparés par virgules)</label>
             <input
               type="text"
               name="tags"
               value={formData.tags}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+              className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
               placeholder="Ex: portable, gaming, professionnel"
             />
           </div>
 
           {/* Statut */}
-          <div className="border-t border-[#E8E0D8] pt-4">
-            <label className="block text-sm font-semibold text-[#241A14] mb-2">Statut</label>
+          <div className="border-t border-border pt-4">
+            <label className="block text-sm font-semibold text-ink mb-2">Statut</label>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -1050,9 +1050,9 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                   name="status"
                   checked={formData.status === 'draft'}
                   onChange={() => setFormData(prev => ({ ...prev, status: 'draft' }))}
-                  className="accent-[#C2410C]"
+                  className="accent-gold"
                 />
-                <span className="text-sm text-[#241A14]">Brouillon (invisible sur le site)</span>
+                <span className="text-sm text-ink">Brouillon (invisible sur le site)</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -1060,45 +1060,45 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                   name="status"
                   checked={formData.status === 'active'}
                   onChange={() => setFormData(prev => ({ ...prev, status: 'active' }))}
-                  className="accent-[#C2410C]"
+                  className="accent-gold"
                 />
-                <span className="text-sm text-[#241A14]">Actif (visible sur le site)</span>
+                <span className="text-sm text-ink">Actif (visible sur le site)</span>
               </label>
             </div>
           </div>
 
           {/* SEO */}
-          <div className="border-t border-[#E8E0D8] pt-4">
-            <h3 className="font-semibold text-[#241A14] mb-1">Référencement (SEO)</h3>
-            <p className="text-xs text-[#7D6A5D] mb-3">Optionnel — sans ça, le nom et la description du produit sont utilisés.</p>
+          <div className="border-t border-border pt-4">
+            <h3 className="font-semibold text-ink mb-1">Référencement (SEO)</h3>
+            <p className="text-xs text-ink-dimmer mb-3">Optionnel — sans ça, le nom et la description du produit sont utilisés.</p>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-[#241A14] mb-1">Titre SEO</label>
+                <label className="block text-xs font-semibold text-ink mb-1">Titre SEO</label>
                 <input
                   type="text"
                   name="meta_title"
                   value={formData.meta_title}
                   onChange={handleChange}
                   placeholder={formData.name || 'Titre affiché dans les résultats Google'}
-                  className="w-full px-3 py-2 text-sm border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#241A14] mb-1">Meta description</label>
+                <label className="block text-xs font-semibold text-ink mb-1">Meta description</label>
                 <textarea
                   name="meta_description"
                   value={formData.meta_description}
                   onChange={handleChange}
                   rows={2}
                   placeholder="Résumé affiché sous le titre dans les résultats Google"
-                  className="w-full px-3 py-2 text-sm border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
                 />
               </div>
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 pt-4 border-t border-[#E8E0D8]">
+          <div className="flex gap-3 pt-4 border-t border-border">
             <Button
               type="submit"
               variant="primary"

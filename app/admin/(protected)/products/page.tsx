@@ -82,12 +82,19 @@ export default function AdminProducts() {
       key: 'photo',
       header: '',
       render: p => (
-        <div className="w-10 h-10 rounded-lg bg-gray-50 border border-[#E8E0D8] overflow-hidden flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 rounded-lg bg-bg-raised border border-border overflow-hidden flex items-center justify-center flex-shrink-0">
           {p.image_urls?.[0] ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={p.image_urls[0]} alt="" className="w-full h-full object-cover" />
           ) : (
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C2410C" strokeWidth="1.5">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="rgb(var(--c-gold))"
+              strokeWidth="1.5"
+            >
               <rect x="2" y="3" width="20" height="14" rx="2" />
               <line x1="8" y1="21" x2="16" y2="21" />
               <line x1="12" y1="17" x2="12" y2="21" />
@@ -101,13 +108,13 @@ export default function AdminProducts() {
       header: 'Nom',
       render: p => (
         <div className="flex items-center gap-2">
-          <span className="font-medium text-[#241A14]">{p.name}</span>
+          <span className="font-medium text-ink">{p.name}</span>
           {p.status === 'draft' && <StatusBadge label="Brouillon" tone="neutral" />}
           {!!p.variant_options?.length && <StatusBadge label={`${p.variant_options.length} option(s)`} tone="info" />}
         </div>
       )
     },
-    { key: 'category', header: 'Catégorie', render: p => <span className="text-[#5B4B41]">{categoryLabels[p.category] || p.category}</span> },
+    { key: 'category', header: 'Catégorie', render: p => <span className="text-ink-dim">{categoryLabels[p.category] || p.category}</span> },
     { key: 'price', header: 'Prix', render: p => `${formatAmount(p.price_fcfa)} FCFA` },
     {
       key: 'availability',
@@ -133,7 +140,7 @@ export default function AdminProducts() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="font-serif font-semibold text-4xl text-[#241A14]">Produits</h1>
+        <h1 className="font-serif font-semibold text-4xl text-ink">Produits</h1>
         <Button
           variant="primary"
           onClick={() => {

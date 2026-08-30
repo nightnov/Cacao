@@ -77,7 +77,7 @@ export default function AdminShipping() {
   const pagedFees = fees.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const columns: Column<ShippingFee>[] = [
-    { key: 'city', header: 'Ville', render: f => <span className="font-medium text-[#241A14]">{f.city}</span> },
+    { key: 'city', header: 'Ville', render: f => <span className="font-medium text-ink">{f.city}</span> },
     { key: 'price', header: 'Tarif', render: f => `${formatAmount(f.price_fcfa)} FCFA` },
     {
       key: 'actions',
@@ -95,7 +95,7 @@ export default function AdminShipping() {
   return (
     <div>
       <div className="flex items-center justify-between mb-8">
-        <h1 className="font-serif font-semibold text-4xl text-[#241A14]">Frais de livraison</h1>
+        <h1 className="font-serif font-semibold text-4xl text-ink">Frais de livraison</h1>
         <Button
           variant="primary"
           onClick={() => {
@@ -114,8 +114,8 @@ export default function AdminShipping() {
         <DeliveryTariffPanel />
       </div>
 
-      <h2 className="font-serif font-semibold text-xl text-[#241A14] mb-1">Tarifs par zone</h2>
-      <p className="text-sm text-[#7D6A5D] mb-4">
+      <h2 className="font-serif font-semibold text-xl text-ink mb-1">Tarifs par zone</h2>
+      <p className="text-sm text-ink-dimmer mb-4">
         Appliqués quand le client ne partage pas sa position.
       </p>
 

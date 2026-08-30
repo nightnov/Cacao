@@ -33,9 +33,9 @@ interface Category {
   is_visible: boolean
 }
 
-const CARD = 'bg-white border border-[#E8E0D8] rounded-2xl'
-const LABEL = 'block text-xs font-semibold text-[#5B4B41] mb-1.5'
-const INPUT = 'w-full px-3 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14]'
+const CARD = 'bg-bg-panel border border-border rounded-2xl'
+const LABEL = 'block text-xs font-semibold text-ink-dim mb-1.5'
+const INPUT = 'w-full px-3 py-2 border border-border rounded-lg text-sm text-ink'
 
 function slugify(input: string): string {
   return input
@@ -249,7 +249,7 @@ export default function AdminCategories() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-[#5B4B41] text-sm">
+      <div className="flex items-center gap-2 text-ink-dim text-sm">
         <Loader2 size={16} className="animate-spin" /> Chargement…
       </div>
     )
@@ -259,27 +259,27 @@ export default function AdminCategories() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-serif text-3xl text-[#241A14]">Rayons</h1>
-          <p className="text-sm text-[#7D6A5D] mt-1">
+          <h1 className="font-serif text-3xl text-ink">Rayons</h1>
+          <p className="text-sm text-ink-dimmer mt-1">
             Les catégories affichées dans le menu, sur l’accueil et dans le catalogue.
           </p>
         </div>
         <button
           onClick={startNew}
-          className="flex items-center gap-1.5 px-4 py-2 bg-[#C2410C] hover:bg-[#9A3412] text-white rounded-xl font-semibold text-sm whitespace-nowrap"
+          className="flex items-center gap-1.5 px-4 py-2 bg-gold hover:bg-gold-dim text-ink-invert rounded-xl font-semibold text-sm whitespace-nowrap"
         >
           <Plus size={15} /> Nouveau rayon
         </button>
       </div>
 
       {missingTable && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-start gap-2.5">
-          <AlertTriangle size={17} className="text-amber-700 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-amber-900">
+        <div className="bg-gold/10 border border-gold/30 rounded-xl p-4 flex items-start gap-2.5">
+          <AlertTriangle size={17} className="text-gold flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-gold">
             <p className="font-semibold">La table des rayons n’existe pas encore.</p>
             <p className="mt-1">
               Exécutez{' '}
-              <code className="bg-amber-100 px-1 rounded">
+              <code className="bg-gold/15 px-1 rounded">
                 supabase/migrations/021_categories.sql
               </code>{' '}
               dans l’éditeur SQL de Supabase, puis rechargez. En attendant, la boutique affiche les{' '}
@@ -293,8 +293,8 @@ export default function AdminCategories() {
         <div
           className={`rounded-xl px-4 py-3 text-sm border ${
             message.kind === 'ok'
-              ? 'bg-green-50 border-green-200 text-green-800'
-              : 'bg-red-50 border-red-200 text-red-800'
+              ? 'bg-green/10 border-green/30 text-green-bright'
+              : 'bg-danger/10 border-danger/30 text-danger'
           }`}
         >
           {message.text}
@@ -304,7 +304,7 @@ export default function AdminCategories() {
       {/* ── Formulaire ────────────────────────────────────────────────── */}
       {editing && (
         <section className={`${CARD} p-5`}>
-          <h2 className="font-serif text-lg text-[#241A14] mb-4">
+          <h2 className="font-serif text-lg text-ink mb-4">
             {isNew ? 'Nouveau rayon' : `Modifier « ${editing.label} »`}
           </h2>
 
@@ -338,8 +338,8 @@ export default function AdminCategories() {
             </div>
             <div>
               <label className={LABEL}>IDENTIFIANT (ADRESSE)</label>
-              <input value={editing.value} disabled className={`${INPUT} bg-gray-50 text-[#7D6A5D]`} />
-              <p className="text-[11px] text-[#7D6A5D] mt-1">
+              <input value={editing.value} disabled className={`${INPUT} bg-bg-raised text-ink-dimmer`} />
+              <p className="text-[11px] text-ink-dimmer mt-1">
                 {isNew
                   ? 'Généré à partir du nom.'
                   : 'Non modifiable : il apparaît dans les liens déjà partagés.'}
@@ -367,7 +367,7 @@ export default function AdminCategories() {
                 placeholder="Mobilité et autonomie pour le travail et les études"
                 className={INPUT}
               />
-              <p className="text-[11px] text-[#7D6A5D] mt-1">
+              <p className="text-[11px] text-ink-dimmer mt-1">
                 Une ligne, sous le titre de la carte. Gardez-la courte : au-delà de deux lignes,
                 les quatre cartes cessent d&apos;avoir la même hauteur.
               </p>
@@ -377,7 +377,7 @@ export default function AdminCategories() {
             <div className="sm:col-span-2">
               <label className={LABEL}>PHOTO DE LA CARTE</label>
               <div className="flex items-start gap-4">
-                <div className="w-32 aspect-[4/3] rounded-lg border border-[#E8E0D8] bg-gray-50 grid place-items-center overflow-hidden flex-shrink-0">
+                <div className="w-32 aspect-[4/3] rounded-lg border border-border bg-bg-raised grid place-items-center overflow-hidden flex-shrink-0">
                   {editing.image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -386,7 +386,7 @@ export default function AdminCategories() {
                       className="w-full h-full object-contain p-1.5"
                     />
                   ) : (
-                    <ImageIcon size={20} className="text-[#C9BCAE]" />
+                    <ImageIcon size={20} className="text-border-strong" />
                   )}
                 </div>
 
@@ -403,7 +403,7 @@ export default function AdminCategories() {
                       type="button"
                       onClick={() => fileRef.current?.click()}
                       disabled={uploading}
-                      className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E8E0D8] hover:bg-gray-50 disabled:opacity-50 text-[#241A14] rounded-lg font-semibold text-xs"
+                      className="flex items-center gap-1.5 px-3 py-1.5 border border-border hover:bg-bg-raised disabled:opacity-50 text-ink rounded-lg font-semibold text-xs"
                     >
                       <Upload size={13} />
                       {uploading ? 'Envoi…' : editing.image_url ? 'Remplacer' : 'Choisir une image'}
@@ -412,13 +412,13 @@ export default function AdminCategories() {
                       <button
                         type="button"
                         onClick={() => setEditing({ ...editing, image_url: null })}
-                        className="px-3 py-1.5 text-red-700 hover:bg-red-50 rounded-lg font-semibold text-xs"
+                        className="px-3 py-1.5 text-danger hover:bg-danger/10 rounded-lg font-semibold text-xs"
                       >
                         Retirer
                       </button>
                     )}
                   </div>
-                  <p className="text-[11px] text-[#7D6A5D] mt-2 leading-relaxed">
+                  <p className="text-[11px] text-ink-dimmer mt-2 leading-relaxed">
                     Format paysage, idéalement 800 × 600 px, 5 Mo maximum. L&apos;image est
                     affichée entière et non recadrée : un fond uni ou détouré rend mieux.
                     Sans photo, la carte retombe sur l&apos;icône du rayon.
@@ -442,7 +442,7 @@ export default function AdminCategories() {
             <button
               onClick={save}
               disabled={busy}
-              className="px-4 py-2 bg-[#C2410C] hover:bg-[#9A3412] disabled:opacity-50 text-white rounded-xl font-semibold text-sm"
+              className="px-4 py-2 bg-gold hover:bg-gold-dim disabled:opacity-50 text-ink-invert rounded-xl font-semibold text-sm"
             >
               {busy ? 'Enregistrement…' : 'Enregistrer'}
             </button>
@@ -451,7 +451,7 @@ export default function AdminCategories() {
                 setEditing(null)
                 setIsNew(false)
               }}
-              className="px-4 py-2 border border-[#E8E0D8] hover:bg-gray-50 text-[#5B4B41] rounded-xl font-semibold text-sm"
+              className="px-4 py-2 border border-border hover:bg-bg-raised text-ink-dim rounded-xl font-semibold text-sm"
             >
               Annuler
             </button>
@@ -459,7 +459,7 @@ export default function AdminCategories() {
               <button
                 onClick={() => remove(editing)}
                 disabled={busy}
-                className="ml-auto flex items-center gap-1.5 px-4 py-2 text-red-700 hover:bg-red-50 rounded-xl font-semibold text-sm"
+                className="ml-auto flex items-center gap-1.5 px-4 py-2 text-danger hover:bg-danger/10 rounded-xl font-semibold text-sm"
               >
                 <Trash2 size={14} /> Supprimer
               </button>
@@ -470,16 +470,16 @@ export default function AdminCategories() {
 
       {/* ── Liste ─────────────────────────────────────────────────────── */}
       <section className={CARD}>
-        <div className="px-5 py-4 border-b border-[#E8E0D8]">
-          <h2 className="font-serif text-lg text-[#241A14]">Ordre d’affichage</h2>
-          <p className="text-xs text-[#7D6A5D] mt-0.5">
+        <div className="px-5 py-4 border-b border-border">
+          <h2 className="font-serif text-lg text-ink">Ordre d’affichage</h2>
+          <p className="text-xs text-ink-dimmer mt-0.5">
             Cet ordre s’applique au menu, au pied de page, à l’accueil et au catalogue. Les trois
             premiers apparaissent dans le pied de page, les quatre premiers sur l’accueil.
           </p>
         </div>
 
         {rows.length === 0 ? (
-          <p className="p-8 text-center text-sm text-[#7D6A5D]">
+          <p className="p-8 text-center text-sm text-ink-dimmer">
             Aucun rayon en base. Exécutez la migration 021 pour reprendre les rayons existants.
           </p>
         ) : (
@@ -490,7 +490,7 @@ export default function AdminCategories() {
               return (
                 <li
                   key={cat.value}
-                  className={`flex items-center gap-3 px-5 py-3 border-b border-[#F1EBE3] last:border-0 ${
+                  className={`flex items-center gap-3 px-5 py-3 border-b border-border last:border-0 ${
                     cat.is_visible ? '' : 'opacity-55'
                   }`}
                 >
@@ -498,7 +498,7 @@ export default function AdminCategories() {
                     <button
                       onClick={() => move(i, -1)}
                       disabled={i === 0 || busy}
-                      className="text-[#7D6A5D] hover:text-[#C2410C] disabled:opacity-25"
+                      className="text-ink-dimmer hover:text-gold disabled:opacity-25"
                       aria-label="Monter"
                     >
                       <ArrowUp size={13} />
@@ -506,26 +506,26 @@ export default function AdminCategories() {
                     <button
                       onClick={() => move(i, 1)}
                       disabled={i === rows.length - 1 || busy}
-                      className="text-[#7D6A5D] hover:text-[#C2410C] disabled:opacity-25"
+                      className="text-ink-dimmer hover:text-gold disabled:opacity-25"
                       aria-label="Descendre"
                     >
                       <ArrowDown size={13} />
                     </button>
                   </div>
 
-                  <span className="w-9 h-9 rounded-lg bg-orange-50 text-[#C2410C] grid place-items-center flex-shrink-0">
+                  <span className="w-9 h-9 rounded-lg bg-gold/10 text-gold grid place-items-center flex-shrink-0">
                     <Icon size={17} />
                   </span>
 
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-[#241A14] truncate">{cat.label}</p>
-                    <p className="text-[11px] text-[#7D6A5D] truncate">
+                    <p className="text-sm font-semibold text-ink truncate">{cat.label}</p>
+                    <p className="text-[11px] text-ink-dimmer truncate">
                       /products?category={cat.value} · {used} produit{used > 1 ? 's' : ''}
                     </p>
                   </div>
 
                   {i < 3 && cat.is_visible && (
-                    <span className="hidden sm:inline text-[10px] font-bold px-2 py-1 rounded bg-gray-100 text-[#5B4B41] whitespace-nowrap">
+                    <span className="hidden sm:inline text-[10px] font-bold px-2 py-1 rounded bg-bg-raised text-ink-dim whitespace-nowrap">
                       PIED DE PAGE
                     </span>
                   )}
@@ -534,7 +534,7 @@ export default function AdminCategories() {
                     onClick={() => toggleVisible(cat)}
                     disabled={busy}
                     title={cat.is_visible ? 'Masquer dans les menus' : 'Afficher dans les menus'}
-                    className="text-[#7D6A5D] hover:text-[#C2410C] p-1.5"
+                    className="text-ink-dimmer hover:text-gold p-1.5"
                   >
                     {cat.is_visible ? <Eye size={16} /> : <EyeOff size={16} />}
                   </button>
@@ -545,7 +545,7 @@ export default function AdminCategories() {
                       setIsNew(false)
                       setMessage(null)
                     }}
-                    className="text-sm font-semibold text-[#C2410C] hover:underline whitespace-nowrap"
+                    className="text-sm font-semibold text-gold hover:underline whitespace-nowrap"
                   >
                     Modifier
                   </button>
@@ -556,7 +556,7 @@ export default function AdminCategories() {
         )}
       </section>
 
-      <p className="text-xs text-[#7D6A5D] leading-relaxed">
+      <p className="text-xs text-ink-dimmer leading-relaxed">
         Masquer un rayon le retire des menus mais ne touche pas aux produits qu’il contient : ils
         restent trouvables par la recherche et par leur lien direct. Un rayon ne peut être supprimé
         que s’il est vide.

@@ -248,8 +248,8 @@ export default function AdminDashboard() {
       label: 'Clients',
       value: stats.customers,
       icon: Users,
-      iconBg: 'bg-orange-50',
-      iconColor: 'text-[#C2410C]',
+      iconBg: 'bg-gold/10',
+      iconColor: 'text-gold',
       trend: stats.customersTrend,
       href: '/admin/customers'
     },
@@ -257,8 +257,8 @@ export default function AdminDashboard() {
       label: 'Commandes',
       value: stats.orders,
       icon: ShoppingCart,
-      iconBg: 'bg-blue-50',
-      iconColor: 'text-blue-600',
+      iconBg: 'bg-info/10',
+      iconColor: 'text-info',
       trend: stats.ordersTrend,
       href: '/admin/orders'
     },
@@ -266,8 +266,8 @@ export default function AdminDashboard() {
       label: 'Revenus ce mois (FCFA)',
       value: formatAmount(stats.revenue),
       icon: Wallet,
-      iconBg: 'bg-green-50',
-      iconColor: 'text-green-700',
+      iconBg: 'bg-green/10',
+      iconColor: 'text-green-bright',
       trend: stats.revenueTrend,
       href: '/admin/orders'
     },
@@ -284,17 +284,17 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <h1 className="font-serif font-semibold text-4xl text-[#241A14] mb-2">Tableau de bord</h1>
-      <p className="text-[#5B4B41] mb-12">Bienvenue dans l&apos;administration Cacao</p>
+      <h1 className="font-serif font-semibold text-4xl text-ink mb-2">Tableau de bord</h1>
+      <p className="text-ink-dim mb-12">Bienvenue dans l&apos;administration Cacao</p>
 
       {/* Stats Grid */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="bg-white rounded-2xl border border-[#E8E0D8] p-6 animate-pulse">
-              <div className="h-11 w-11 bg-[#E8E0D8] rounded-full mb-4"></div>
-              <div className="h-8 bg-[#E8E0D8] rounded w-1/2 mb-2"></div>
-              <div className="h-4 bg-[#E8E0D8] rounded w-1/3"></div>
+            <div key={i} className="bg-bg-panel rounded-2xl border border-border p-6 animate-pulse">
+              <div className="h-11 w-11 bg-border rounded-full mb-4"></div>
+              <div className="h-8 bg-border rounded w-1/2 mb-2"></div>
+              <div className="h-4 bg-border rounded w-1/3"></div>
             </div>
           ))}
         </div>
@@ -309,9 +309,9 @@ export default function AdminDashboard() {
       {/* Revenue Chart */}
       <div className="mb-12">
         {chartLoading ? (
-          <div className="bg-white rounded-2xl border border-[#E8E0D8] p-6 animate-pulse">
-            <div className="h-6 bg-[#E8E0D8] rounded w-1/4 mb-6"></div>
-            <div className="h-64 bg-[#E8E0D8] rounded"></div>
+          <div className="bg-bg-panel rounded-2xl border border-border p-6 animate-pulse">
+            <div className="h-6 bg-border rounded w-1/4 mb-6"></div>
+            <div className="h-64 bg-border rounded"></div>
           </div>
         ) : (
           <RevenueChart
@@ -326,15 +326,15 @@ export default function AdminDashboard() {
       {/* Recent Orders */}
       <div className="mb-12">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-serif font-semibold text-xl text-[#241A14]">Dernières commandes</h2>
-          <Link href="/admin/orders" className="text-sm text-[#C2410C] font-semibold hover:underline">
+          <h2 className="font-serif font-semibold text-xl text-ink">Dernières commandes</h2>
+          <Link href="/admin/orders" className="text-sm text-gold font-semibold hover:underline">
             Voir tout →
           </Link>
         </div>
         <TableShell
           columns={
             [
-              { key: 'order_number', header: 'Commande', render: (o: Order) => <span className="font-medium text-[#241A14]">{o.order_number}</span> },
+              { key: 'order_number', header: 'Commande', render: (o: Order) => <span className="font-medium text-ink">{o.order_number}</span> },
               {
                 key: 'client',
                 header: 'Client',
@@ -343,7 +343,7 @@ export default function AdminDashboard() {
                   return (
                     <div className="flex items-center gap-3">
                       <Avatar name={name} size="sm" />
-                      <span className="text-[#5B4B41]">{name}</span>
+                      <span className="text-ink-dim">{name}</span>
                     </div>
                   )
                 }
@@ -369,101 +369,101 @@ export default function AdminDashboard() {
 
       {/* Analytics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-        <div className="bg-white rounded-2xl border border-[#E8E0D8] p-6">
+        <div className="bg-bg-panel rounded-2xl border border-border p-6">
           <div className="flex items-center gap-2 mb-4">
-            <SearchX size={18} className="text-[#C2410C]" />
-            <h2 className="font-serif font-semibold text-lg text-[#241A14]">Recherches sans résultat</h2>
+            <SearchX size={18} className="text-gold" />
+            <h2 className="font-serif font-semibold text-lg text-ink">Recherches sans résultat</h2>
           </div>
           {analyticsLoading ? (
             <div className="space-y-3">
-              {[1, 2, 3].map(i => <div key={i} className="h-5 bg-[#E8E0D8] rounded animate-pulse"></div>)}
+              {[1, 2, 3].map(i => <div key={i} className="h-5 bg-border rounded animate-pulse"></div>)}
             </div>
           ) : failedSearches.length > 0 ? (
             <ul className="space-y-3">
               {failedSearches.map(s => (
                 <li key={s.query} className="flex items-center justify-between text-sm">
-                  <span className="text-[#241A14]">« {s.query} »</span>
-                  <span className="text-[#7D6A5D]">{s.count}×</span>
+                  <span className="text-ink">« {s.query} »</span>
+                  <span className="text-ink-dimmer">{s.count}×</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-[#7D6A5D]">Aucune recherche infructueuse pour le moment.</p>
+            <p className="text-sm text-ink-dimmer">Aucune recherche infructueuse pour le moment.</p>
           )}
-          <p className="text-xs text-[#7D6A5D] mt-4 pt-4 border-t border-[#E8E0D8]">
+          <p className="text-xs text-ink-dimmer mt-4 pt-4 border-t border-border">
             Produits recherchés par les clients mais absents du catalogue — pistes pour de futurs ajouts.
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-[#E8E0D8] p-6">
+        <div className="bg-bg-panel rounded-2xl border border-border p-6">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp size={18} className="text-[#C2410C]" />
-            <h2 className="font-serif font-semibold text-lg text-[#241A14]">Produits les plus vus</h2>
+            <TrendingUp size={18} className="text-gold" />
+            <h2 className="font-serif font-semibold text-lg text-ink">Produits les plus vus</h2>
           </div>
           {analyticsLoading ? (
             <div className="space-y-3">
-              {[1, 2, 3].map(i => <div key={i} className="h-5 bg-[#E8E0D8] rounded animate-pulse"></div>)}
+              {[1, 2, 3].map(i => <div key={i} className="h-5 bg-border rounded animate-pulse"></div>)}
             </div>
           ) : topProducts.length > 0 ? (
             <ul className="space-y-3">
               {topProducts.map(p => (
                 <li key={p.name} className="flex items-center justify-between text-sm">
                   {p.slug ? (
-                    <Link href={`/products/${p.slug}`} className="text-[#241A14] hover:text-[#C2410C] truncate">
+                    <Link href={`/products/${p.slug}`} className="text-ink hover:text-gold truncate">
                       {p.name}
                     </Link>
                   ) : (
-                    <span className="text-[#241A14] truncate">{p.name}</span>
+                    <span className="text-ink truncate">{p.name}</span>
                   )}
-                  <span className="text-[#7D6A5D] flex-shrink-0 ml-2">{p.count} vue{p.count !== 1 ? 's' : ''}</span>
+                  <span className="text-ink-dimmer flex-shrink-0 ml-2">{p.count} vue{p.count !== 1 ? 's' : ''}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-[#7D6A5D]">Aucune vue enregistrée pour le moment.</p>
+            <p className="text-sm text-ink-dimmer">Aucune vue enregistrée pour le moment.</p>
           )}
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-2xl border border-[#E8E0D8] p-8">
-        <h2 className="font-serif font-semibold text-2xl text-[#241A14] mb-6">Actions rapides</h2>
+      <div className="bg-bg-panel rounded-2xl border border-border p-8">
+        <h2 className="font-serif font-semibold text-2xl text-ink mb-6">Actions rapides</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <a
             href="/admin/products?action=create"
-            className="flex flex-col items-center gap-2 p-4 border-2 border-[#C2410C] rounded-xl hover:bg-orange-50 transition-colors text-center"
+            className="flex flex-col items-center gap-2 p-4 border-2 border-gold rounded-xl hover:bg-gold/10 transition-colors text-center"
           >
-            <Plus size={22} className="text-[#C2410C]" />
-            <p className="font-semibold text-[#241A14]">Ajouter un produit</p>
-            <p className="text-sm text-[#5B4B41]">Créer un nouveau produit</p>
+            <Plus size={22} className="text-gold" />
+            <p className="font-semibold text-ink">Ajouter un produit</p>
+            <p className="text-sm text-ink-dim">Créer un nouveau produit</p>
           </a>
 
           <a
             href="/admin/shipping"
-            className="flex flex-col items-center gap-2 p-4 border-2 border-[#C2410C] rounded-xl hover:bg-orange-50 transition-colors text-center"
+            className="flex flex-col items-center gap-2 p-4 border-2 border-gold rounded-xl hover:bg-gold/10 transition-colors text-center"
           >
-            <Settings size={22} className="text-[#C2410C]" />
-            <p className="font-semibold text-[#241A14]">Gérer livraison</p>
-            <p className="text-sm text-[#5B4B41]">Configurer frais et villes</p>
+            <Settings size={22} className="text-gold" />
+            <p className="font-semibold text-ink">Gérer livraison</p>
+            <p className="text-sm text-ink-dim">Configurer frais et villes</p>
           </a>
 
           <a
             href="/admin/orders"
-            className="flex flex-col items-center gap-2 p-4 border-2 border-[#C2410C] rounded-xl hover:bg-orange-50 transition-colors text-center"
+            className="flex flex-col items-center gap-2 p-4 border-2 border-gold rounded-xl hover:bg-gold/10 transition-colors text-center"
           >
-            <ClipboardList size={22} className="text-[#C2410C]" />
-            <p className="font-semibold text-[#241A14]">Voir commandes</p>
-            <p className="text-sm text-[#5B4B41]">Gérer les commandes clients</p>
+            <ClipboardList size={22} className="text-gold" />
+            <p className="font-semibold text-ink">Voir commandes</p>
+            <p className="text-sm text-ink-dim">Gérer les commandes clients</p>
           </a>
 
           <a
             href="/admin/customers"
-            className="flex flex-col items-center gap-2 p-4 border-2 border-[#C2410C] rounded-xl hover:bg-orange-50 transition-colors text-center"
+            className="flex flex-col items-center gap-2 p-4 border-2 border-gold rounded-xl hover:bg-gold/10 transition-colors text-center"
           >
-            <Users size={22} className="text-[#C2410C]" />
-            <p className="font-semibold text-[#241A14]">Clients</p>
-            <p className="text-sm text-[#5B4B41]">Liste des utilisateurs</p>
+            <Users size={22} className="text-gold" />
+            <p className="font-semibold text-ink">Clients</p>
+            <p className="text-sm text-ink-dim">Liste des utilisateurs</p>
           </a>
         </div>
       </div>

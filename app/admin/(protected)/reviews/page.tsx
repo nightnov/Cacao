@@ -20,7 +20,7 @@ interface Review {
 
 type Filter = 'all' | 'visible' | 'hidden' | 'low'
 
-const CARD = 'bg-white border border-[#E8E0D8] rounded-2xl'
+const CARD = 'bg-bg-panel border border-border rounded-2xl'
 
 /** Motifs proposés, pour garder une trace exploitable plus tard. */
 const REASONS = [
@@ -124,7 +124,7 @@ export default function AdminReviews() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-[#5B4B41] text-sm">
+      <div className="flex items-center gap-2 text-ink-dim text-sm">
         <Loader2 size={16} className="animate-spin" /> Chargement…
       </div>
     )
@@ -133,20 +133,20 @@ export default function AdminReviews() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-3xl text-[#241A14]">Avis</h1>
-        <p className="text-sm text-[#7D6A5D] mt-1">
+        <h1 className="font-serif text-3xl text-ink">Avis</h1>
+        <p className="text-sm text-ink-dimmer mt-1">
           Les avis paraissent immédiatement. Vous pouvez en masquer un après coup.
         </p>
       </div>
 
       {missingColumn && (
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 flex items-start gap-2.5">
-          <AlertTriangle size={17} className="text-amber-700 flex-shrink-0 mt-0.5" />
-          <div className="text-sm text-amber-900">
+        <div className="bg-gold/10 border border-gold/30 rounded-xl p-4 flex items-start gap-2.5">
+          <AlertTriangle size={17} className="text-gold flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-gold">
             <p className="font-semibold">La modération n’est pas encore installée.</p>
             <p className="mt-1">
               Exécutez{' '}
-              <code className="bg-amber-100 px-1 rounded">
+              <code className="bg-gold/15 px-1 rounded">
                 supabase/migrations/024_review_moderation.sql
               </code>
               . Sans elle, <strong>aucun avis ne peut être retiré</strong> : un commentaire
@@ -160,8 +160,8 @@ export default function AdminReviews() {
         <div
           className={`rounded-xl px-4 py-3 text-sm border ${
             message.kind === 'ok'
-              ? 'bg-green-50 border-green-200 text-green-800'
-              : 'bg-red-50 border-red-200 text-red-800'
+              ? 'bg-green/10 border-green/30 text-green-bright'
+              : 'bg-danger/10 border-danger/30 text-danger'
           }`}
         >
           {message.text}
@@ -169,7 +169,7 @@ export default function AdminReviews() {
       )}
 
       <section className={CARD}>
-        <div className="p-4 border-b border-[#E8E0D8] flex flex-wrap gap-2">
+        <div className="p-4 border-b border-border flex flex-wrap gap-2">
           {(
             [
               ['all', `Tous (${counts.all})`],
@@ -183,8 +183,8 @@ export default function AdminReviews() {
               onClick={() => setFilter(k)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                 filter === k
-                  ? 'bg-orange-50 text-[#C2410C] border border-[#C2410C]'
-                  : 'border border-[#E8E0D8] text-[#5B4B41] hover:bg-gray-50'
+                  ? 'bg-gold/10 text-gold border border-gold'
+                  : 'border border-border text-ink-dim hover:bg-bg-raised'
               }`}
             >
               {label}
@@ -193,20 +193,20 @@ export default function AdminReviews() {
         </div>
 
         {visible.length === 0 ? (
-          <p className="p-10 text-center text-sm text-[#7D6A5D]">
+          <p className="p-10 text-center text-sm text-ink-dimmer">
             {rows.length === 0
               ? 'Aucun avis pour l’instant. Ils apparaîtront quand un client connecté en laissera un.'
               : 'Aucun avis dans cette catégorie.'}
           </p>
         ) : (
-          <ul className="divide-y divide-[#F1EBE3]">
+          <ul className="divide-y divide-border">
             {visible.map(r => {
               const name =
                 [r.profiles?.first_name, r.profiles?.last_name].filter(Boolean).join(' ') ||
                 r.profiles?.email ||
                 'Client'
               return (
-                <li key={r.id} className={`p-4 ${r.is_hidden ? 'bg-gray-50 opacity-75' : ''}`}>
+                <li key={r.id} className={`p-4 ${r.is_hidden ? 'bg-bg-raised opacity-75' : ''}`}>
                   <div className="flex items-start gap-3">
                     <div className="flex items-center gap-0.5 flex-shrink-0 pt-0.5">
                       {[1, 2, 3, 4, 5].map(n => (
@@ -215,15 +215,15 @@ export default function AdminReviews() {
                           size={13}
                           className={
                             n <= r.rating
-                              ? 'fill-[#C2410C] text-[#C2410C]'
-                              : 'text-[#E8E0D8]'
+                              ? 'fill-gold text-gold'
+                              : 'text-border'
                           }
                         />
                       ))}
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <p className="text-[13px] text-[#241A14]">
+                      <p className="text-[13px] text-ink">
                         <span className="font-semibold">{name}</span>
                         {r.products?.slug ? (
                           <>
@@ -231,31 +231,31 @@ export default function AdminReviews() {
                             <Link
                               href={`/products/${r.products.slug}`}
                               target="_blank"
-                              className="text-[#C2410C] hover:underline"
+                              className="text-gold hover:underline"
                             >
                               {r.products.name}
                             </Link>
                           </>
                         ) : (
-                          <span className="text-[#7D6A5D]"> — produit supprimé</span>
+                          <span className="text-ink-dimmer"> — produit supprimé</span>
                         )}
                       </p>
 
                       {r.comment ? (
-                        <p className="text-sm text-[#5B4B41] mt-1 whitespace-pre-wrap">
+                        <p className="text-sm text-ink-dim mt-1 whitespace-pre-wrap">
                           {r.comment}
                         </p>
                       ) : (
-                        <p className="text-sm text-[#7D6A5D] mt-1 italic">Note sans commentaire</p>
+                        <p className="text-sm text-ink-dimmer mt-1 italic">Note sans commentaire</p>
                       )}
 
                       {r.is_hidden && (
-                        <p className="text-[12px] text-red-700 mt-1.5">
+                        <p className="text-[12px] text-danger mt-1.5">
                           Masqué{r.hidden_reason ? ` — ${r.hidden_reason}` : ''}
                         </p>
                       )}
 
-                      <p className="text-[11px] text-[#7D6A5D] mt-1.5">
+                      <p className="text-[11px] text-ink-dimmer mt-1.5">
                         {new Date(r.created_at).toLocaleDateString('fr-FR', {
                           day: '2-digit',
                           month: 'long',
@@ -269,8 +269,8 @@ export default function AdminReviews() {
                       disabled={busy || missingColumn}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold text-xs whitespace-nowrap disabled:opacity-40 ${
                         r.is_hidden
-                          ? 'border border-[#E8E0D8] text-[#5B4B41] hover:bg-white'
-                          : 'text-red-700 hover:bg-red-50'
+                          ? 'border border-border text-ink-dim hover:bg-bg-panel'
+                          : 'text-danger hover:bg-danger/10'
                       }`}
                     >
                       {r.is_hidden ? <Eye size={13} /> : <EyeOff size={13} />}
@@ -284,7 +284,7 @@ export default function AdminReviews() {
         )}
       </section>
 
-      <p className="text-xs text-[#7D6A5D] leading-relaxed">
+      <p className="text-xs text-ink-dimmer leading-relaxed">
         Masquer un avis le retire de la fiche produit <strong>et</strong> de la note moyenne — sans
         quoi masquer un « 1 sur 5 » injurieux laisserait quand même la note du produit au plancher.
         L’avis n’est pas supprimé : son auteur continue de le voir et vous pouvez le republier.

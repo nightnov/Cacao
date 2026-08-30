@@ -22,7 +22,7 @@ interface Row extends Order {
 
 type Filter = 'all' | 'never' | 'failed'
 
-const CARD = 'bg-white border border-[#E8E0D8] rounded-2xl'
+const CARD = 'bg-bg-panel border border-border rounded-2xl'
 
 /** Un numéro ivoirien saisi « 07 00 00 00 00 » devient « 2250700000000 ». */
 function waLink(phone: string | undefined, orderNumber: string): string | null {
@@ -120,7 +120,7 @@ export default function AdminAbandoned() {
 
   if (loading) {
     return (
-      <div className="flex items-center gap-2 text-[#5B4B41] text-sm">
+      <div className="flex items-center gap-2 text-ink-dim text-sm">
         <Loader2 size={16} className="animate-spin" /> Chargement…
       </div>
     )
@@ -129,15 +129,15 @@ export default function AdminAbandoned() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-3xl text-[#241A14]">Commandes non réglées</h1>
-        <p className="text-sm text-[#7D6A5D] mt-1">
+        <h1 className="font-serif text-3xl text-ink">Commandes non réglées</h1>
+        <p className="text-sm text-ink-dimmer mt-1">
           Des clients sont allés jusqu’au paiement sans le terminer.
         </p>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-2.5">
-        <Info size={17} className="text-blue-700 flex-shrink-0 mt-0.5" />
-        <div className="text-sm text-blue-900">
+      <div className="bg-info/10 border border-info/30 rounded-xl p-4 flex items-start gap-2.5">
+        <Info size={17} className="text-info flex-shrink-0 mt-0.5" />
+        <div className="text-sm text-info">
           <p className="font-semibold">
             Ce ne sont pas des « paniers abandonnés » au sens habituel.
           </p>
@@ -156,26 +156,26 @@ export default function AdminAbandoned() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className={`${CARD} p-4`}>
-          <p className="text-xs text-[#7D6A5D] mb-1.5">Commandes en attente</p>
-          <p className="font-serif text-3xl text-[#241A14] tabular-nums">{counts.all}</p>
+          <p className="text-xs text-ink-dimmer mb-1.5">Commandes en attente</p>
+          <p className="font-serif text-3xl text-ink tabular-nums">{counts.all}</p>
         </div>
         <div className={`${CARD} p-4`}>
-          <p className="text-xs text-[#7D6A5D] mb-1.5">Paiements échoués</p>
-          <p className="font-serif text-3xl text-red-700 tabular-nums">{counts.failed}</p>
+          <p className="text-xs text-ink-dimmer mb-1.5">Paiements échoués</p>
+          <p className="font-serif text-3xl text-danger tabular-nums">{counts.failed}</p>
         </div>
         <div className={`${CARD} p-4`}>
-          <p className="text-xs text-[#7D6A5D] mb-1.5">Montant en jeu</p>
-          <p className="font-serif text-3xl text-[#241A14] tabular-nums">
+          <p className="text-xs text-ink-dimmer mb-1.5">Montant en jeu</p>
+          <p className="font-serif text-3xl text-ink tabular-nums">
             {formatAmount(potential)}
           </p>
-          <p className="text-[11px] text-[#7D6A5D] mt-1">
+          <p className="text-[11px] text-ink-dimmer mt-1">
             FCFA — si toutes étaient réglées, ce qui n’arrivera pas.
           </p>
         </div>
       </div>
 
       <section className={CARD}>
-        <div className="p-4 border-b border-[#E8E0D8] flex flex-wrap gap-2">
+        <div className="p-4 border-b border-border flex flex-wrap gap-2">
           {(
             [
               ['all', `Toutes (${counts.all})`],
@@ -188,8 +188,8 @@ export default function AdminAbandoned() {
               onClick={() => setFilter(k)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                 filter === k
-                  ? 'bg-orange-50 text-[#C2410C] border border-[#C2410C]'
-                  : 'border border-[#E8E0D8] text-[#5B4B41] hover:bg-gray-50'
+                  ? 'bg-gold/10 text-gold border border-gold'
+                  : 'border border-border text-ink-dim hover:bg-bg-raised'
               }`}
             >
               {label}
@@ -198,31 +198,31 @@ export default function AdminAbandoned() {
         </div>
 
         {visible.length === 0 ? (
-          <p className="p-10 text-center text-sm text-[#7D6A5D]">
+          <p className="p-10 text-center text-sm text-ink-dimmer">
             {rows.length === 0
               ? 'Aucune commande en attente. Tout ce qui a été commandé a été réglé ou annulé.'
               : 'Aucune commande dans cette catégorie.'}
           </p>
         ) : (
-          <ul className="divide-y divide-[#F1EBE3]">
+          <ul className="divide-y divide-border">
             {visible.map(r => {
               const phone = r.shipping_address?.phone
               const wa = waLink(phone, r.order_number)
               return (
                 <li key={r.id} className="p-4 flex flex-wrap items-start gap-3">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-[#241A14]">
+                    <p className="text-sm font-semibold text-ink">
                       {r.shipping_address?.full_name || 'Client'}
-                      <span className="font-normal text-[#7D6A5D]"> · {r.order_number}</span>
+                      <span className="font-normal text-ink-dimmer"> · {r.order_number}</span>
                     </p>
-                    <p className="text-[12px] text-[#5B4B41] mt-0.5">
+                    <p className="text-[12px] text-ink-dim mt-0.5">
                       {r.items.length ? r.items.join(' · ') : 'Aucun article enregistré'}
                     </p>
-                    <p className="text-[11px] text-[#7D6A5D] mt-1">
+                    <p className="text-[11px] text-ink-dimmer mt-1">
                       {formatAmount(r.total_fcfa)} FCFA · {r.shipping_address?.city || 'ville non renseignée'} ·{' '}
                       {r.ageDays === 0 ? "aujourd'hui" : `il y a ${r.ageDays} j`}
                       {r.lastPayment === 'failed' && (
-                        <span className="text-red-700 font-semibold"> · paiement refusé</span>
+                        <span className="text-danger font-semibold"> · paiement refusé</span>
                       )}
                       {r.lastPayment === 'aucune' && (
                         <span> · paiement jamais lancé</span>
@@ -238,7 +238,7 @@ export default function AdminAbandoned() {
                       <>
                         <a
                           href={`tel:${phone.replace(/\s/g, '')}`}
-                          className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E8E0D8] hover:bg-gray-50 text-[#241A14] rounded-lg font-semibold text-xs whitespace-nowrap"
+                          className="flex items-center gap-1.5 px-3 py-1.5 border border-border hover:bg-bg-raised text-ink rounded-lg font-semibold text-xs whitespace-nowrap"
                         >
                           <Phone size={13} /> Appeler
                         </a>
@@ -247,14 +247,14 @@ export default function AdminAbandoned() {
                             href={wa}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#C2410C] hover:bg-[#9A3412] text-white rounded-lg font-semibold text-xs whitespace-nowrap"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-gold hover:bg-gold-dim text-ink-invert rounded-lg font-semibold text-xs whitespace-nowrap"
                           >
                             <MessageCircle size={13} /> WhatsApp
                           </a>
                         )}
                       </>
                     ) : (
-                      <span className="text-[11px] text-[#7D6A5D]">Aucun numéro</span>
+                      <span className="text-[11px] text-ink-dimmer">Aucun numéro</span>
                     )}
                   </div>
                 </li>
@@ -264,7 +264,7 @@ export default function AdminAbandoned() {
         )}
       </section>
 
-      <p className="text-xs text-[#7D6A5D] leading-relaxed">
+      <p className="text-xs text-ink-dimmer leading-relaxed">
         Le message WhatsApp est pré-rempli mais rien n’est envoyé automatiquement : votre
         application s’ouvre, vous relisez, vous envoyez.
       </p>

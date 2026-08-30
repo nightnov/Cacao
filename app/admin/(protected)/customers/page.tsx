@@ -94,13 +94,13 @@ export default function AdminCustomers() {
         return (
           <div className="flex items-center gap-3">
             <Avatar name={name} size="sm" />
-            <span className="font-medium text-[#241A14]">{name}</span>
+            <span className="font-medium text-ink">{name}</span>
           </div>
         )
       }
     },
-    { key: 'email', header: 'Email', render: c => <span className="text-[#5B4B41]">{c.email}</span> },
-    { key: 'phone', header: 'Téléphone', render: c => <span className="text-[#5B4B41]">{c.phone}</span> },
+    { key: 'email', header: 'Email', render: c => <span className="text-ink-dim">{c.email}</span> },
+    { key: 'phone', header: 'Téléphone', render: c => <span className="text-ink-dim">{c.phone}</span> },
     { key: 'orders', header: 'Commandes', align: 'center', render: c => <StatusBadge label={String(c.order_count)} tone="info" /> },
     { key: 'total', header: 'Total dépensé', align: 'right', render: c => `${formatAmount(c.total_spent_fcfa)} FCFA` }
   ]
@@ -108,7 +108,7 @@ export default function AdminCustomers() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="font-serif font-semibold text-4xl text-[#241A14] mb-6">Clients</h1>
+        <h1 className="font-serif font-semibold text-4xl text-ink mb-6">Clients</h1>
 
         {/* Search */}
         <div className="mb-6">
@@ -117,7 +117,7 @@ export default function AdminCustomers() {
             placeholder="Rechercher par email, nom..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border border-[#E8E0D8] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#C2410C]"
+            className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
           />
         </div>
       </div>

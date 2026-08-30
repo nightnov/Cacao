@@ -22,28 +22,28 @@ export function TableShell<T>({ columns, rows, rowKey, loading, emptyMessage, em
     align === 'right' ? 'text-right' : align === 'center' ? 'text-center' : 'text-left'
 
   return (
-    <div className="bg-white rounded-2xl border border-[#E8E0D8] overflow-hidden">
+    <div className="bg-bg-panel rounded-2xl border border-border overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-bg-raised">
             <tr>
               {columns.map(col => (
                 <th
                   key={col.key}
-                  className={`px-6 py-3 text-xs font-semibold text-[#7D6A5D] uppercase tracking-wide ${alignClass(col.align)}`}
+                  className={`px-6 py-3 text-xs font-semibold text-ink-dimmer uppercase tracking-wide ${alignClass(col.align)}`}
                 >
                   {col.header}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#E8E0D8]">
+          <tbody className="divide-y divide-border">
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <tr key={i} className="animate-pulse">
                   {columns.map(col => (
                     <td key={col.key} className="px-6 py-4">
-                      <div className="h-4 bg-[#E8E0D8] rounded w-3/4"></div>
+                      <div className="h-4 bg-border rounded w-3/4"></div>
                     </td>
                   ))}
                 </tr>
@@ -51,15 +51,15 @@ export function TableShell<T>({ columns, rows, rowKey, loading, emptyMessage, em
             ) : rows.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="px-6 py-16 text-center">
-                  <p className="text-[#7D6A5D] mb-3">{emptyMessage}</p>
+                  <p className="text-ink-dimmer mb-3">{emptyMessage}</p>
                   {emptyAction}
                 </td>
               </tr>
             ) : (
               rows.map(row => (
-                <tr key={rowKey(row)} className="hover:bg-gray-50 transition-colors">
+                <tr key={rowKey(row)} className="hover:bg-bg-raised transition-colors">
                   {columns.map(col => (
-                    <td key={col.key} className={`px-6 py-4 text-sm text-[#241A14] ${alignClass(col.align)}`}>
+                    <td key={col.key} className={`px-6 py-4 text-sm text-ink ${alignClass(col.align)}`}>
                       {col.render(row)}
                     </td>
                   ))}

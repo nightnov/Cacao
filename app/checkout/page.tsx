@@ -15,7 +15,10 @@ import {
   deliveryOptions,
   accuracyIsUsable,
   isParcelSize,
+  volumeDiscount,
   DEFAULT_PARCEL_SIZE,
+  DEFAULT_VOLUME_DISCOUNT,
+  type VolumeDiscountSettings,
   type ParcelSize,
   type ZoneRates,
   type PickupSettings,
@@ -63,6 +66,7 @@ export default function Checkout() {
   const [defaultSize, setDefaultSize] = useState<ParcelSize>(DEFAULT_PARCEL_SIZE)
   /** Zone d'où partent les colis. La boutique expédie depuis Abidjan, donc 1. */
   const [pickupZone, setPickupZone] = useState(1)
+  const [volume, setVolume] = useState<VolumeDiscountSettings>(DEFAULT_VOLUME_DISCOUNT)
   const [pickup, setPickup] = useState<PickupSettings>({
     enabled: false,
     address: null,
@@ -119,6 +123,9 @@ export default function Checkout() {
               'pickup_enabled',
               'pickup_address',
               'pickup_hours',
+              'volume_discount_enabled',
+              'volume_discount_threshold_fcfa',
+              'volume_discount_percent',
             ]),
         ])
 
@@ -134,6 +141,16 @@ export default function Checkout() {
         if (isParcelSize(s.default_parcel_size)) setDefaultSize(s.default_parcel_size)
         const pz = Number(s.pickup_zone)
         if (Number.isInteger(pz) && pz >= 1 && pz <= 6) setPickupZone(pz)
+
+        const threshold = Number(s.volume_discount_threshold_fcfa)
+        const percent = Number(s.volume_discount_percent)
+        setVolume({
+          enabled: s.volume_discount_enabled !== 'false',
+          thresholdFcfa: Number.isFinite(threshold)
+            ? threshold
+            : DEFAULT_VOLUME_DISCOUNT.thresholdFcfa,
+          percent: Number.isFinite(percent) ? percent : DEFAULT_VOLUME_DISCOUNT.percent,
+        })
         setPickup({
           enabled: s.pickup_enabled === 'true',
           address: s.pickup_address || null,
@@ -304,7 +321,14 @@ export default function Checkout() {
   // Ces montants ne servent qu'à l'affichage. Le total réellement prélevé est
   // recalculé par le serveur à partir des prix en base, dans
   // app/api/payment/initiate/route.ts.
-  const discount = promo?.discount || 0
+  const promoDiscount = promo?.discount || 0
+
+  // Les deux remises ne se cumulent pas : la plus avantageuse l'emporte. Le
+  // serveur applique la même règle au moment du paiement.
+  const volumeAmount = volumeDiscount(volume, productsTotal)
+  const discount = Math.max(promoDiscount, volumeAmount)
+  const discountIsVolume = volumeAmount > promoDiscount
+
   const total = Math.max(0, productsTotal + shippingCost - discount)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -619,23 +643,39 @@ export default function Checkout() {
                   <span>{formatAmount(shippingCost)} FCFA</span>
                 </div>
 
-                {promo && (
+                {discount > 0 && (
                   <div className="flex justify-between text-sm text-green-bright">
                     <span className="flex items-center gap-2">
-                      Remise ({promo.code})
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPromo(null)
-                          setPromoError('')
-                        }}
-                        className="text-ink-dimmer hover:text-ink underline text-[12px]"
-                      >
-                        retirer
-                      </button>
+                      {discountIsVolume ? (
+                        <>Remise gros panier (−{volume.percent} %)</>
+                      ) : (
+                        <>
+                          Remise ({promo?.code})
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPromo(null)
+                              setPromoError('')
+                            }}
+                            className="text-ink-dimmer hover:text-ink underline text-[12px]"
+                          >
+                            retirer
+                          </button>
+                        </>
+                      )}
                     </span>
-                    <span>−{formatAmount(promo.discount)} FCFA</span>
+                    <span>−{formatAmount(discount)} FCFA</span>
                   </div>
+                )}
+
+                {/* Un code moins avantageux que la remise automatique ne doit
+                    pas laisser croire qu'il a été ignoré par erreur. */}
+                {promo && discountIsVolume && (
+                  <p className="text-[12px] text-ink-dimmer">
+                    Votre code {promo.code} (−{formatAmount(promo.discount)} FCFA) est moins
+                    avantageux que la remise automatique. C&apos;est la meilleure des deux qui
+                    s&apos;applique.
+                  </p>
                 )}
 
                 {!promo && (

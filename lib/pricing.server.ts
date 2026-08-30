@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 import {
   cartParcelSize,
   isParcelSize,
+  volumeDiscount,
   DEFAULT_PARCEL_SIZE,
   type ParcelSize,
   type ZoneRates,
@@ -37,6 +38,8 @@ export interface PricedOrder {
   parcelSize: ParcelSize
   deliveryMode: 'livraison' | 'retrait'
   discount: number
+  /** Origine de la remise retenue, quand il y en a une. */
+  discountKind: 'promo' | 'volume' | null
   promoCode: string | null
   total: number
   /** Renseigné quand le total enregistré ne correspondait pas au calcul. */
@@ -209,7 +212,13 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
     supabase
       .from('site_settings')
       .select('key, value')
-      .in('key', ['default_parcel_size', 'pickup_zone']),
+      .in('key', [
+        'default_parcel_size',
+        'pickup_zone',
+        'volume_discount_enabled',
+        'volume_discount_threshold_fcfa',
+        'volume_discount_percent',
+      ]),
   ])
 
   const settings = Object.fromEntries((settingsRes.data || []).map(r => [r.key, r.value]))
@@ -255,11 +264,27 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
     shipping = 0
   }
 
-  let discount = 0
+  let promoDiscount = 0
   if (order.promo_code) {
     const check = await checkPromotion(order.promo_code, productsTotal, shipping, order.user_id)
-    if (check.ok) discount = check.discount || 0
+    if (check.ok) promoDiscount = check.discount || 0
   }
+
+  // Remise sur gros panier, accordée automatiquement dès le seuil franchi.
+  const volume = volumeDiscount(
+    {
+      enabled: settings.volume_discount_enabled !== 'false',
+      thresholdFcfa: Number(settings.volume_discount_threshold_fcfa),
+      percent: Number(settings.volume_discount_percent),
+    },
+    productsTotal
+  )
+
+  // Les deux remises ne se cumulent pas : la plus avantageuse l'emporte. Les
+  // additionner donnerait vite 20 % ou plus sur des montants à sept chiffres.
+  const discount = Math.max(promoDiscount, volume)
+  const discountKind: PricedOrder['discountKind'] =
+    discount === 0 ? null : volume > promoDiscount ? 'volume' : 'promo'
 
   const total = Math.max(0, productsTotal + shipping - discount)
 
@@ -270,7 +295,8 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
     parcelSize,
     deliveryMode: order.delivery_mode === 'retrait' ? 'retrait' : 'livraison',
     discount,
-    promoCode: discount > 0 ? order.promo_code : null,
+    discountKind,
+    promoCode: discountKind === 'promo' ? order.promo_code : null,
     total,
     mismatch: order.total_fcfa !== total ? { stored: order.total_fcfa, computed: total } : null,
   }

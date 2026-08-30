@@ -160,6 +160,48 @@ export function deliveryOptions(
   return options
 }
 
+export interface VolumeDiscountSettings {
+  enabled: boolean
+  thresholdFcfa: number
+  percent: number
+}
+
+export const DEFAULT_VOLUME_DISCOUNT: VolumeDiscountSettings = {
+  enabled: true,
+  thresholdFcfa: 1_000_000,
+  percent: 10,
+}
+
+/**
+ * Remise accordée quand le montant des articles franchit un seuil.
+ *
+ * Elle s'applique toute seule, sans que le client ait à composer ni à cocher
+ * quoi que ce soit. Lui demander de sélectionner les articles à regrouper
+ * n'aurait aucun sens : son intérêt serait toujours de tous les prendre, écarter
+ * un article ne pouvant que réduire sa remise. La sélection ne servirait donc
+ * qu'à lui faire rater son avantage.
+ *
+ * Porte sur le montant des articles seulement, jamais sur la livraison — celle-ci
+ * est un coût avancé au transporteur, la rogner reviendrait à payer de sa poche.
+ */
+export function volumeDiscount(
+  settings: VolumeDiscountSettings,
+  productsTotalFcfa: number
+): number {
+  const threshold = Number.isFinite(settings.thresholdFcfa)
+    ? settings.thresholdFcfa
+    : DEFAULT_VOLUME_DISCOUNT.thresholdFcfa
+  const percent = Number.isFinite(settings.percent)
+    ? settings.percent
+    : DEFAULT_VOLUME_DISCOUNT.percent
+
+  if (!settings.enabled) return 0
+  if (percent <= 0 || percent > 100) return 0
+  if (productsTotalFcfa < threshold) return 0
+
+  return Math.round((productsTotalFcfa * percent) / 100)
+}
+
 /** Lien de carte à transmettre au livreur. */
 export function mapsLink(lat: number, lng: number): string {
   return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`

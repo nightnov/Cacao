@@ -7,10 +7,17 @@ import { Button } from '@/components/Button'
 import Link from 'next/link'
 import { getCart, updateCartItemQuantity, removeFromCart, CartItem, CART_EVENT } from '@/lib/cart'
 import { formatAmount } from '@/lib/format'
+import { getSupabaseClient } from '@/lib/supabase'
+import {
+  volumeDiscount,
+  DEFAULT_VOLUME_DISCOUNT,
+  type VolumeDiscountSettings,
+} from '@/lib/delivery'
 
 export default function Cart() {
   const [items, setItems] = useState<CartItem[]>([])
   const [loaded, setLoaded] = useState(false)
+  const [volume, setVolume] = useState<VolumeDiscountSettings>(DEFAULT_VOLUME_DISCOUNT)
 
   useEffect(() => {
     const refresh = () => setItems(getCart())
@@ -20,7 +27,41 @@ export default function Cart() {
     return () => window.removeEventListener(CART_EVENT, refresh)
   }, [])
 
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const supabase = getSupabaseClient()
+        const { data } = await supabase
+          .from('site_settings')
+          .select('key, value')
+          .in('key', [
+            'volume_discount_enabled',
+            'volume_discount_threshold_fcfa',
+            'volume_discount_percent',
+          ])
+        const s = Object.fromEntries((data || []).map(r => [r.key, r.value]))
+        const threshold = Number(s.volume_discount_threshold_fcfa)
+        const percent = Number(s.volume_discount_percent)
+        setVolume({
+          enabled: s.volume_discount_enabled !== 'false',
+          thresholdFcfa: Number.isFinite(threshold)
+            ? threshold
+            : DEFAULT_VOLUME_DISCOUNT.thresholdFcfa,
+          percent: Number.isFinite(percent) ? percent : DEFAULT_VOLUME_DISCOUNT.percent,
+        })
+      } catch {
+        // Réglages illisibles : on garde les valeurs par défaut plutôt que de
+        // retirer une remise à laquelle le client a peut-être droit.
+      }
+    }
+    load()
+  }, [])
+
   const total = items.reduce((sum, item) => sum + item.price_fcfa * item.quantity, 0)
+
+  // Affichage seulement : le montant prélevé est recalculé au paiement.
+  const discount = volumeDiscount(volume, total)
+  const missingForDiscount = Math.max(0, volume.thresholdFcfa - total)
 
   if (!loaded) return null
 
@@ -138,12 +179,32 @@ export default function Cart() {
                 <span>Produits</span>
                 <span>{formatAmount(total)} FCFA</span>
               </div>
-              <p className="text-xs text-ink-dimmer mb-6">
+
+              {discount > 0 && (
+                <div className="flex justify-between text-green-bright mb-2">
+                  <span>Remise gros panier (−{volume.percent} %)</span>
+                  <span>−{formatAmount(discount)} FCFA</span>
+                </div>
+              )}
+
+              {/* Rien n'est demandé au client : la remise tombe d'elle-même.
+                  On indique seulement ce qu'il manque, quand c'est atteignable. */}
+              {discount === 0 && volume.enabled && missingForDiscount > 0 && (
+                <div className="bg-bg-raised border border-border rounded-lg px-3 py-2.5 mb-2">
+                  <p className="text-xs text-ink-dim">
+                    Plus que{' '}
+                    <strong className="text-gold">{formatAmount(missingForDiscount)} FCFA</strong>{' '}
+                    d&apos;articles pour obtenir {volume.percent} % de remise automatique.
+                  </p>
+                </div>
+              )}
+
+              <p className="text-xs text-ink-dimmer mb-6 mt-2">
                 Frais de livraison calculés à l&apos;étape suivante selon votre ville.
               </p>
               <div className="flex justify-between text-lg font-bold text-ink pt-4 border-t border-border mb-6">
                 <span>Total</span>
-                <span className="text-gold">{formatAmount(total)} FCFA</span>
+                <span className="text-gold">{formatAmount(total - discount)} FCFA</span>
               </div>
               <Link href="/checkout">
                 <Button variant="primary" className="w-full">

@@ -64,17 +64,69 @@ export default function AdminPromotions() {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [missingTable, setMissingTable] = useState(false)
+
+  const [volumeEnabled, setVolumeEnabled] = useState(true)
+  const [volumeThreshold, setVolumeThreshold] = useState('1000000')
+  const [volumePercent, setVolumePercent] = useState('10')
   const [message, setMessage] = useState<{ kind: 'ok' | 'ko'; text: string } | null>(null)
 
   const load = async () => {
     const supabase = getSupabaseClient()
-    const { data, error } = await supabase
-      .from('promotions')
-      .select('*')
-      .order('created_at', { ascending: false })
-    setMissingTable(!!error)
-    setRows((data || []) as Promotion[])
+    const [promosRes, settingsRes] = await Promise.all([
+      supabase.from('promotions').select('*').order('created_at', { ascending: false }),
+      supabase
+        .from('site_settings')
+        .select('key, value')
+        .in('key', [
+          'volume_discount_enabled',
+          'volume_discount_threshold_fcfa',
+          'volume_discount_percent',
+        ]),
+    ])
+
+    setMissingTable(!!promosRes.error)
+    setRows((promosRes.data || []) as Promotion[])
+
+    const s = Object.fromEntries((settingsRes.data || []).map(r => [r.key, r.value]))
+    setVolumeEnabled(s.volume_discount_enabled !== 'false')
+    if (s.volume_discount_threshold_fcfa) setVolumeThreshold(s.volume_discount_threshold_fcfa)
+    if (s.volume_discount_percent) setVolumePercent(s.volume_discount_percent)
+
     setLoading(false)
+  }
+
+  const saveVolume = async () => {
+    const threshold = Number(volumeThreshold)
+    const percent = Number(volumePercent)
+
+    if (!Number.isFinite(threshold) || threshold < 0) {
+      setMessage({ kind: 'ko', text: 'Le seuil doit être un montant positif.' })
+      return
+    }
+    if (!Number.isInteger(percent) || percent < 1 || percent > 100) {
+      setMessage({ kind: 'ko', text: 'La remise doit être un entier entre 1 et 100.' })
+      return
+    }
+
+    setBusy(true)
+    setMessage(null)
+    const supabase = getSupabaseClient()
+    const { error } = await supabase.from('site_settings').upsert(
+      [
+        { key: 'volume_discount_enabled', value: volumeEnabled ? 'true' : 'false' },
+        { key: 'volume_discount_threshold_fcfa', value: String(Math.round(threshold)) },
+        { key: 'volume_discount_percent', value: String(percent) },
+      ],
+      { onConflict: 'key' }
+    )
+    setBusy(false)
+
+    if (error) {
+      setMessage({ kind: 'ko', text: error.message })
+      return
+    }
+    await load()
+    setMessage({ kind: 'ok', text: 'Remise sur gros panier enregistrée.' })
   }
 
   useEffect(() => {
@@ -390,6 +442,73 @@ export default function AdminPromotions() {
           </div>
         </section>
       )}
+
+      {/* ── Remise automatique sur gros panier ────────────────────────── */}
+      <section className={`${CARD} p-5`}>
+        <h2 className="font-serif text-lg text-[#241A14]">Remise sur gros panier</h2>
+        <p className="text-xs text-[#7D6A5D] mt-1 mb-4">
+          Accordée automatiquement dès que le montant des articles franchit le seuil. Le client n’a
+          rien à saisir ni à composer.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className={LABEL}>SEUIL (FCFA)</label>
+            <input
+              type="number"
+              min={0}
+              value={volumeThreshold}
+              onChange={e => setVolumeThreshold(e.target.value)}
+              className={INPUT}
+            />
+          </div>
+          <div>
+            <label className={LABEL}>REMISE (%)</label>
+            <input
+              type="number"
+              min={1}
+              max={100}
+              value={volumePercent}
+              onChange={e => setVolumePercent(e.target.value)}
+              className={INPUT}
+            />
+          </div>
+        </div>
+
+        <div className="bg-orange-50 border border-orange-200 rounded-lg px-3.5 py-2.5 mt-3 text-[12px] text-[#5B4B41]">
+          Un panier de {formatAmount(Number(volumeThreshold) || 0)} FCFA donnerait{' '}
+          <strong className="text-[#241A14]">
+            {formatAmount(
+              Math.round(((Number(volumeThreshold) || 0) * (Number(volumePercent) || 0)) / 100)
+            )}{' '}
+            FCFA
+          </strong>{' '}
+          de remise. Elle porte sur les articles seulement, jamais sur la livraison — celle-ci est
+          avancée au transporteur.
+        </div>
+
+        <label className="flex items-center gap-2 text-sm text-[#241A14] mt-4">
+          <input
+            type="checkbox"
+            checked={volumeEnabled}
+            onChange={e => setVolumeEnabled(e.target.checked)}
+          />
+          Activer la remise sur gros panier
+        </label>
+
+        <p className="text-[12px] text-[#7D6A5D] mt-3">
+          Elle ne se cumule pas avec un code : la plus avantageuse des deux s’applique. Les
+          additionner atteindrait vite 20 % sur des montants à sept chiffres.
+        </p>
+
+        <button
+          onClick={saveVolume}
+          disabled={busy}
+          className="mt-4 px-5 py-2 bg-[#C2410C] hover:bg-[#9A3412] disabled:opacity-50 text-white rounded-lg font-semibold text-sm"
+        >
+          {busy ? 'Enregistrement…' : 'Enregistrer'}
+        </button>
+      </section>
 
       <section className={CARD}>
         {rows.length === 0 ? (

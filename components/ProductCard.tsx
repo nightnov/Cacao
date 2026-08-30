@@ -1,16 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { FavoriteButton } from '@/components/FavoriteButton'
 import { StarRating } from '@/components/StarRating'
 import { formatAmount } from '@/lib/format'
-import { colorToHex } from '@/lib/colorNames'
-
-interface ColorVariant {
-  value: string
-  image_url: string | null
-}
 
 interface ProductCardProps {
   id: string
@@ -25,7 +18,6 @@ interface ProductCardProps {
   avg_rating?: number | null
   review_count?: number
   specs?: Record<string, unknown>
-  colors?: ColorVariant[]
 }
 
 const NEW_THRESHOLD_DAYS = 14
@@ -46,8 +38,7 @@ export function ProductCard({
   created_at,
   avg_rating,
   review_count,
-  specs,
-  colors = []
+  specs
 }: ProductCardProps) {
   const hasPromo = !!compare_at_price_fcfa && compare_at_price_fcfa > price_fcfa
   const discount = hasPromo
@@ -56,18 +47,21 @@ export function ProductCard({
   const isNew = !!created_at && Date.now() - new Date(created_at).getTime() < NEW_THRESHOLD_DAYS * 24 * 60 * 60 * 1000
   const summary = specsSummary(specs)
 
-  // Couleur choisie sur la carte : ne change QUE la photo affichée ici,
-  // sans naviguer. Le vrai choix (avec effet sur le prix) se fait sur la
-  // fiche produit, où les variantes existent réellement.
-  const [selectedColor, setSelectedColor] = useState<ColorVariant | null>(null)
-  const displayImage = selectedColor?.image_url || image_urls?.[0]
+  // Une seule photo sur la carte. Le choix de la couleur appartient à la fiche
+  // produit, où la variante a un prix réel : le proposer ici laissait croire à
+  // une sélection alors que rien n'était retenu au passage au panier.
+  const displayImage = image_urls?.[0]
 
   return (
     <Link
       href={`/products/${slug}`}
       className="group flex flex-col bg-bg-panel border border-border rounded-xl overflow-hidden transition-all duration-200 hover:border-border-strong hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
     >
-      <div className="relative h-[132px] sm:h-[158px] bg-bg-sunken flex items-center justify-center overflow-hidden flex-shrink-0">
+      {/* Cadre carré plutôt qu'une hauteur fixe : à 387 px de large, une bande
+          de 158 px écrasait la machine sur une fine ligne. Le carré suit la
+          largeur de la colonne et garde la même proportion à toutes les
+          tailles d'écran. */}
+      <div className="relative aspect-square bg-bg-sunken flex items-center justify-center overflow-hidden flex-shrink-0">
         {displayImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -102,54 +96,28 @@ export function ProductCard({
         />
       </div>
 
-      <div className="flex flex-col flex-1 px-5 pt-4 pb-5">
+      <div className="flex flex-col flex-1 px-6 pt-5 pb-6">
         {/* Nom en display : les références PC sont longues, deux lignes maximum */}
-        <h3 className="font-display text-[16px] text-ink line-clamp-2 min-h-[2.6rem] leading-[1.25] group-hover:text-gold transition-colors">
+        <h3 className="font-display text-[18px] text-ink line-clamp-2 min-h-[2.8rem] leading-[1.25] group-hover:text-gold transition-colors">
           {name}
         </h3>
 
         {summary && (
-          <p className="text-[12px] text-ink-dimmer leading-[1.55] mt-2 line-clamp-2">{summary}</p>
+          <p className="text-[13px] text-ink-dimmer leading-[1.55] mt-2.5 line-clamp-2">{summary}</p>
         )}
 
         {!!review_count && avg_rating != null && (
-          <div className="mt-2">
-            <StarRating rating={avg_rating} reviewCount={review_count} size={11} compact />
+          <div className="mt-2.5">
+            <StarRating rating={avg_rating} reviewCount={review_count} size={12} compact />
           </div>
         )}
 
-        {/* Pastilles de couleur : aperçu rapide sans quitter la grille.
-            Le vrai choix (et son effet sur le prix) se fait sur la fiche
-            produit, où les variantes ont un prix réel. */}
-        {colors.length > 1 && (
-          <div className="flex items-center gap-1.5 mt-2.5" onClick={e => e.preventDefault()}>
-            {colors.slice(0, 5).map(c => {
-              const hex = colorToHex(c.value)
-              const active = selectedColor?.value === c.value
-              return (
-                <button
-                  key={c.value}
-                  type="button"
-                  title={c.value}
-                  aria-label={`Voir en ${c.value}`}
-                  aria-pressed={active}
-                  onClick={() => setSelectedColor(active ? null : c)}
-                  className={`w-5 h-5 rounded-full border-2 flex-shrink-0 transition-transform ${
-                    active ? 'border-gold scale-110' : 'border-border hover:border-border-strong'
-                  }`}
-                  style={{ backgroundColor: hex || '#45484C' }}
-                />
-              )
-            })}
-          </div>
-        )}
-
-        <div className="mt-auto pt-2.5 flex items-baseline gap-2 flex-wrap">
-          <span className="font-display text-[21px] text-ink tabular-nums leading-tight">
+        <div className="mt-auto pt-4 flex items-baseline gap-2.5 flex-wrap">
+          <span className="font-display text-[24px] text-ink tabular-nums leading-tight">
             {formatAmount(price_fcfa)} FCFA
           </span>
           {hasPromo && (
-            <span className="text-[12.5px] text-ink-faint line-through tabular-nums">
+            <span className="text-[14px] text-ink-faint line-through tabular-nums">
               {formatAmount(compare_at_price_fcfa!)}
             </span>
           )}

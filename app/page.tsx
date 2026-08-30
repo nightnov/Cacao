@@ -267,9 +267,13 @@ export default function Home() {
 
       {/* Gammes : prix « à partir de » calculé sur les vrais produits en ligne */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-11">
-        <div className="text-center mb-7">
-          <h2 className="font-display text-[21px] sm:text-[25px] text-ink mb-2">CHOISISSEZ VOTRE GAMME</h2>
-          <p className="text-[13px] text-ink-dimmer">Quatre familles, un même niveau d&apos;exigence sur la sélection.</p>
+        <div className="text-center mb-9">
+          <h2 className="font-display text-[25px] sm:text-[30px] text-ink mb-2.5">
+            CHOISISSEZ VOTRE GAMME
+          </h2>
+          <p className="text-[15px] text-ink-dimmer">
+            Quatre familles, un même niveau d&apos;exigence sur la sélection.
+          </p>
         </div>
         {/* Cartes hautes avec visuel : une photo de machine dit en un coup
             d'œil ce que contient le rayon, là où quatre icônes de trait se
@@ -281,7 +285,10 @@ export default function Home() {
 
             const inner = (
               <>
-                <div className="relative aspect-[4/3] bg-bg-sunken overflow-hidden">
+                {/* Format carré et image quasi bord à bord, comme sur la
+                    référence : la machine occupe le cadre au lieu de flotter
+                    au milieu d'une marge. */}
+                <div className="relative aspect-square bg-bg-sunken overflow-hidden">
                   {cat.imageUrl ? (
                     <img
                       src={cat.imageUrl}
@@ -289,7 +296,7 @@ export default function Home() {
                       loading="lazy"
                       /* `contain` et non `cover` : une machine recadrée perd
                          justement ce qui permet de la reconnaître. */
-                      className={`w-full h-full object-contain p-4 transition-transform duration-300 ${
+                      className={`w-full h-full object-contain p-2.5 transition-transform duration-300 ${
                         empty ? 'opacity-45' : 'group-hover:scale-[1.04]'
                       }`}
                     />
@@ -299,37 +306,37 @@ export default function Home() {
                         empty ? 'text-ink-faint' : 'text-border-strong'
                       }`}
                     >
-                      <Icon size={52} strokeWidth={1.1} />
+                      <Icon size={64} strokeWidth={1} />
                     </div>
                   )}
                 </div>
 
-                <div className="p-5 flex flex-col flex-1">
+                <div className="p-6 flex flex-col flex-1">
                   <h3
-                    className={`font-display text-[17px] mb-1.5 ${empty ? 'text-ink-dimmer' : 'text-ink'}`}
+                    className={`font-display text-[21px] leading-tight mb-2 ${empty ? 'text-ink-dimmer' : 'text-ink'}`}
                   >
                     {cat.short.toUpperCase()}
                   </h3>
-                  <p className="text-[12.5px] text-ink-dimmer leading-[1.55] min-h-[38px]">
+                  <p className="text-[14px] text-ink-dimmer leading-[1.5] min-h-[42px]">
                     {cat.tagline || GAMME_PITCH[cat.value] || ''}
                   </p>
 
                   {min !== null ? (
                     <>
-                      <p className="text-[12px] text-ink-dim mt-4">
+                      <p className="text-[14px] text-ink-dim mt-5">
                         À partir de{' '}
-                        <span className="font-display text-[16px] text-gold tabular-nums">
+                        <span className="font-display text-[18px] text-gold tabular-nums">
                           {formatAmount(min)} FCFA
                         </span>
                       </p>
-                      <span className="mt-4 block text-center bg-gold text-ink-invert font-bold text-[13px] rounded-lg py-2.5 group-hover:bg-gold-dim transition-colors">
+                      <span className="mt-5 block text-center bg-gold text-ink-invert font-bold text-[14.5px] rounded-lg py-3.5 group-hover:bg-gold-dim transition-colors">
                         Découvrir {cat.short}
                       </span>
                     </>
                   ) : (
                     /* Aucun produit dans ce rayon : la carte n'est pas
                        cliquable et n'annonce rien qui n'existe pas. */
-                    <span className="mt-auto pt-4 block text-center border border-border-mid text-ink-faint text-[12.5px] rounded-lg py-2.5">
+                    <span className="mt-auto pt-5 block text-center border border-border-mid text-ink-faint text-[14px] rounded-lg py-3.5">
                       Bientôt disponible
                     </span>
                   )}

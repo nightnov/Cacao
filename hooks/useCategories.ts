@@ -19,7 +19,7 @@ async function fetchCategories(): Promise<CategoryDef[]> {
     const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('categories')
-      .select('value, label, short_label, icon, description, is_visible')
+      .select('value, label, short_label, icon, description, tagline, image_url, is_visible')
       .order('sort_order')
 
     // Tant que la migration n'est pas exécutée, la table n'existe pas : on
@@ -32,6 +32,8 @@ async function fetchCategories(): Promise<CategoryDef[]> {
       short: row.short_label || row.label,
       icon: categoryIcon(row.icon),
       description: row.description,
+      tagline: row.tagline,
+      imageUrl: row.image_url,
       isVisible: row.is_visible,
     }))
   } catch {

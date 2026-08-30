@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { getSupabaseClient } from '@/lib/supabase'
 import {
   CATEGORY_ICON_CHOICES,
@@ -17,6 +17,8 @@ import {
   Loader2,
   Plus,
   Trash2,
+  Upload,
+  Image as ImageIcon,
 } from 'lucide-react'
 
 interface Category {
@@ -25,6 +27,8 @@ interface Category {
   short_label: string
   icon: string
   description: string | null
+  tagline: string | null
+  image_url: string | null
   sort_order: number
   is_visible: boolean
 }
@@ -50,6 +54,8 @@ export default function AdminCategories() {
   const [isNew, setIsNew] = useState(false)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
   const [missingTable, setMissingTable] = useState(false)
   const [message, setMessage] = useState<{ kind: 'ok' | 'ko'; text: string } | null>(null)
 
@@ -149,6 +155,8 @@ export default function AdminCategories() {
       short_label: editing.short_label.trim() || editing.label.trim(),
       icon: editing.icon,
       description: editing.description?.trim() || null,
+      tagline: editing.tagline?.trim() || null,
+      image_url: editing.image_url || null,
       sort_order: isNew ? rows.length + 1 : editing.sort_order,
       is_visible: editing.is_visible,
     }
@@ -182,6 +190,47 @@ export default function AdminCategories() {
     if (ok) setEditing(null)
   }
 
+  /**
+   * Téléverse la photo du rayon dans le même dépôt que les images produits.
+   *
+   * L'image est enregistrée tout de suite en base plutôt qu'à la validation du
+   * formulaire : sans ça, un fichier téléversé puis abandonné resterait dans le
+   * dépôt sans que rien n'y renvoie.
+   */
+  const uploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !editing) return
+
+    if (!file.type.startsWith('image/')) {
+      setMessage({ kind: 'ko', text: 'Ce fichier n’est pas une image.' })
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setMessage({ kind: 'ko', text: 'L’image dépasse 5 Mo.' })
+      return
+    }
+
+    setUploading(true)
+    setMessage(null)
+    try {
+      const supabase = getSupabaseClient()
+      const ext = file.name.split('.').pop() || 'jpg'
+      const path = `categories/${crypto.randomUUID()}.${ext}`
+
+      const { error: upErr } = await supabase.storage.from('product-images').upload(path, file)
+      if (upErr) throw new Error(upErr.message)
+
+      const { data } = supabase.storage.from('product-images').getPublicUrl(path)
+      setEditing({ ...editing, image_url: data.publicUrl })
+    } catch (err: any) {
+      setMessage({ kind: 'ko', text: err.message || 'Envoi impossible.' })
+    } finally {
+      setUploading(false)
+      // Sans ça, choisir deux fois le même fichier ne déclencherait rien.
+      if (fileRef.current) fileRef.current.value = ''
+    }
+  }
+
   const startNew = () => {
     setIsNew(true)
     setEditing({
@@ -190,6 +239,8 @@ export default function AdminCategories() {
       short_label: '',
       icon: 'Package',
       description: null,
+      tagline: null,
+      image_url: null,
       sort_order: rows.length + 1,
       is_visible: true,
     })
@@ -308,6 +359,74 @@ export default function AdminCategories() {
                 ))}
               </select>
             </div>
+            <div className="sm:col-span-2">
+              <label className={LABEL}>ACCROCHE (CARTE DE L&apos;ACCUEIL)</label>
+              <input
+                value={editing.tagline || ''}
+                onChange={e => setEditing({ ...editing, tagline: e.target.value })}
+                placeholder="Mobilité et autonomie pour le travail et les études"
+                className={INPUT}
+              />
+              <p className="text-[11px] text-[#7D6A5D] mt-1">
+                Une ligne, sous le titre de la carte. Gardez-la courte : au-delà de deux lignes,
+                les quatre cartes cessent d&apos;avoir la même hauteur.
+              </p>
+            </div>
+
+            {/* Visuel de la carte de gamme */}
+            <div className="sm:col-span-2">
+              <label className={LABEL}>PHOTO DE LA CARTE</label>
+              <div className="flex items-start gap-4">
+                <div className="w-32 aspect-[4/3] rounded-lg border border-[#E8E0D8] bg-gray-50 grid place-items-center overflow-hidden flex-shrink-0">
+                  {editing.image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={editing.image_url}
+                      alt=""
+                      className="w-full h-full object-contain p-1.5"
+                    />
+                  ) : (
+                    <ImageIcon size={20} className="text-[#C9BCAE]" />
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={uploadImage}
+                    className="hidden"
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => fileRef.current?.click()}
+                      disabled={uploading}
+                      className="flex items-center gap-1.5 px-3 py-1.5 border border-[#E8E0D8] hover:bg-gray-50 disabled:opacity-50 text-[#241A14] rounded-lg font-semibold text-xs"
+                    >
+                      <Upload size={13} />
+                      {uploading ? 'Envoi…' : editing.image_url ? 'Remplacer' : 'Choisir une image'}
+                    </button>
+                    {editing.image_url && (
+                      <button
+                        type="button"
+                        onClick={() => setEditing({ ...editing, image_url: null })}
+                        className="px-3 py-1.5 text-red-700 hover:bg-red-50 rounded-lg font-semibold text-xs"
+                      >
+                        Retirer
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-[#7D6A5D] mt-2 leading-relaxed">
+                    Format paysage, idéalement 800 × 600 px, 5 Mo maximum. L&apos;image est
+                    affichée entière et non recadrée : un fond uni ou détouré rend mieux.
+                    Sans photo, la carte retombe sur l&apos;icône du rayon.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="sm:col-span-2">
               <label className={LABEL}>DESCRIPTION (HAUT DE LA PAGE CATALOGUE)</label>
               <textarea

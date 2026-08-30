@@ -27,6 +27,10 @@ export interface CategoryDef {
   short: string
   icon: LucideIcon
   description?: string | null
+  /** Accroche courte affichée sur la carte de gamme de l'accueil. */
+  tagline?: string | null
+  /** Photo de la carte de gamme. Vide = repli sur l'icône. */
+  imageUrl?: string | null
   isVisible?: boolean
 }
 

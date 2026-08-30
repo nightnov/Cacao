@@ -74,7 +74,7 @@ export function ProductCard({
             src={displayImage}
             alt={name}
             loading="lazy"
-            className="w-full h-full object-contain p-3 transition-transform duration-500 ease-out group-hover:scale-[1.05]"
+            className="w-full h-full object-contain p-5 transition-transform duration-500 ease-out group-hover:scale-[1.05]"
           />
         ) : (
           <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#3E4247" strokeWidth="1.4" aria-hidden="true">
@@ -102,14 +102,14 @@ export function ProductCard({
         />
       </div>
 
-      <div className="flex flex-col flex-1 px-3.5 pt-3.5 pb-4">
+      <div className="flex flex-col flex-1 px-5 pt-4 pb-5">
         {/* Nom en display : les références PC sont longues, deux lignes maximum */}
-        <h3 className="font-display text-[14.5px] text-ink line-clamp-2 min-h-[2.4rem] leading-[1.2] group-hover:text-gold transition-colors">
+        <h3 className="font-display text-[16px] text-ink line-clamp-2 min-h-[2.6rem] leading-[1.25] group-hover:text-gold transition-colors">
           {name}
         </h3>
 
         {summary && (
-          <p className="text-[10.5px] text-ink-dimmer leading-[1.5] mt-1.5 line-clamp-2">{summary}</p>
+          <p className="text-[12px] text-ink-dimmer leading-[1.55] mt-2 line-clamp-2">{summary}</p>
         )}
 
         {!!review_count && avg_rating != null && (
@@ -145,11 +145,11 @@ export function ProductCard({
         )}
 
         <div className="mt-auto pt-2.5 flex items-baseline gap-2 flex-wrap">
-          <span className="font-display text-[17px] text-ink tabular-nums leading-tight">
+          <span className="font-display text-[21px] text-ink tabular-nums leading-tight">
             {formatAmount(price_fcfa)} FCFA
           </span>
           {hasPromo && (
-            <span className="text-[11px] text-ink-faint line-through tabular-nums">
+            <span className="text-[12.5px] text-ink-faint line-through tabular-nums">
               {formatAmount(compare_at_price_fcfa!)}
             </span>
           )}

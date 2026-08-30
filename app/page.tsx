@@ -74,7 +74,9 @@ function ProductSection({ title, products, href }: { title: string; products: Pr
           </Link>
         )}
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      {/* Trois colonnes et non quatre : les cartes gagnent en largeur, la photo
+          du produit devient lisible et le nom cesse d'être tronqué. */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {products.map(p => <ProductCard key={p.id} {...p} />)}
       </div>
     </section>
@@ -137,12 +139,29 @@ export default function Home() {
   // Rayons les plus fournis. Un rayon dont tous les produits figurent déjà
   // dans « meilleures ventes » est masqué : sur un petit catalogue, il
   // affichait exactement la même grille juste en dessous.
-  const popularIds = new Set(popular.map(p => p.id))
-  const topCategories = categories
-    .map(cat => ({ cat, items: products.filter(p => p.category === cat.value).slice(0, 4) }))
-    .filter(({ items }) => items.length > 0 && items.some(p => !popularIds.has(p.id)))
-    .sort((a, b) => b.items.length - a.items.length)
-    .slice(0, 4)
+  /**
+   * Meilleures ventes découpées par famille, trois modèles chacune.
+   *
+   * Le classement suit `popular`, trié par nombre de vues : on garde donc l'ordre
+   * de popularité à l'intérieur de chaque rayon plutôt que l'ordre du catalogue.
+   *
+   * Un rayon sans produit est écarté : afficher un titre suivi du vide donnerait
+   * l'impression d'un affichage cassé.
+   */
+  const popularRank = new Map(popular.map((p, i) => [p.id, i]))
+  const bestSellersByFamily = categories
+    .map(cat => ({
+      cat,
+      items: products
+        .filter(p => p.category === cat.value)
+        .sort(
+          (a, b) =>
+            (popularRank.get(a.id) ?? Number.MAX_SAFE_INTEGER) -
+            (popularRank.get(b.id) ?? Number.MAX_SAFE_INTEGER)
+        )
+        .slice(0, 3),
+    }))
+    .filter(({ items }) => items.length > 0)
 
   const gammes = categories.slice(0, GAMMES_COUNT).map(cat => {
     const items = products.filter(p => p.category === cat.value)
@@ -252,44 +271,73 @@ export default function Home() {
           <h2 className="font-display text-[21px] sm:text-[25px] text-ink mb-2">CHOISISSEZ VOTRE GAMME</h2>
           <p className="text-[13px] text-ink-dimmer">Quatre familles, un même niveau d&apos;exigence sur la sélection.</p>
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Cartes hautes avec visuel : une photo de machine dit en un coup
+            d'œil ce que contient le rayon, là où quatre icônes de trait se
+            ressemblaient toutes. */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {gammes.map(({ cat, min, count }) => {
             const Icon = cat.icon
             const empty = count === 0
 
             const inner = (
               <>
-                <span className={`absolute inset-x-0 top-0 h-[3px] ${empty ? 'bg-border-mid' : 'bg-gold'}`} />
-                <span className={`w-12 h-12 mx-auto mt-1.5 mb-3.5 rounded-xl bg-bg-raised border border-border-mid flex items-center justify-center ${empty ? 'text-ink-faint' : 'text-gold'}`}>
-                  <Icon size={21} strokeWidth={1.7} />
-                </span>
-                <h3 className={`font-display text-[15px] mb-1.5 ${empty ? 'text-ink-dimmer' : 'text-ink'}`}>
-                  {cat.short.toUpperCase()}
-                </h3>
-                <p className="text-[11.5px] text-ink-dimmer leading-[1.5] min-h-[34px]">{GAMME_PITCH[cat.value]}</p>
-                {min !== null ? (
-                  <>
-                    <p className="text-[11px] text-ink-dim mt-3">
-                      À partir de
-                      <span className="block font-display text-[15px] text-gold tabular-nums mt-0.5">
-                        {formatAmount(min)} FCFA
-                      </span>
-                    </p>
-                    <span className="block mt-3 text-[11.5px] font-bold text-gold group-hover:underline">
-                      Découvrir →
-                    </span>
-                  </>
-                ) : (
-                  /* Aucun produit dans ce rayon : la carte n'est pas cliquable et
-                     n'annonce aucune alerte, qui n'existe pas. */
-                  <p className="text-[11px] text-ink-faint mt-3 min-h-[62px] flex items-center justify-center">
-                    Bientôt disponible
+                <div className="relative aspect-[4/3] bg-bg-sunken overflow-hidden">
+                  {cat.imageUrl ? (
+                    <img
+                      src={cat.imageUrl}
+                      alt={cat.label}
+                      loading="lazy"
+                      /* `contain` et non `cover` : une machine recadrée perd
+                         justement ce qui permet de la reconnaître. */
+                      className={`w-full h-full object-contain p-4 transition-transform duration-300 ${
+                        empty ? 'opacity-45' : 'group-hover:scale-[1.04]'
+                      }`}
+                    />
+                  ) : (
+                    <div
+                      className={`w-full h-full flex items-center justify-center ${
+                        empty ? 'text-ink-faint' : 'text-border-strong'
+                      }`}
+                    >
+                      <Icon size={52} strokeWidth={1.1} />
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-5 flex flex-col flex-1">
+                  <h3
+                    className={`font-display text-[17px] mb-1.5 ${empty ? 'text-ink-dimmer' : 'text-ink'}`}
+                  >
+                    {cat.short.toUpperCase()}
+                  </h3>
+                  <p className="text-[12.5px] text-ink-dimmer leading-[1.55] min-h-[38px]">
+                    {cat.tagline || GAMME_PITCH[cat.value] || ''}
                   </p>
-                )}
+
+                  {min !== null ? (
+                    <>
+                      <p className="text-[12px] text-ink-dim mt-4">
+                        À partir de{' '}
+                        <span className="font-display text-[16px] text-gold tabular-nums">
+                          {formatAmount(min)} FCFA
+                        </span>
+                      </p>
+                      <span className="mt-4 block text-center bg-gold text-ink-invert font-bold text-[13px] rounded-lg py-2.5 group-hover:bg-gold-dim transition-colors">
+                        Découvrir {cat.short}
+                      </span>
+                    </>
+                  ) : (
+                    /* Aucun produit dans ce rayon : la carte n'est pas
+                       cliquable et n'annonce rien qui n'existe pas. */
+                    <span className="mt-auto pt-4 block text-center border border-border-mid text-ink-faint text-[12.5px] rounded-lg py-2.5">
+                      Bientôt disponible
+                    </span>
+                  )}
+                </div>
               </>
             )
 
-            const base = 'relative rounded-xl p-5 text-center overflow-hidden transition-colors border'
+            const base = 'rounded-xl overflow-hidden border flex flex-col transition-colors'
 
             return empty ? (
               <div key={cat.value} className={`${base} bg-bg-panel/60 border-border cursor-default`}>
@@ -299,7 +347,7 @@ export default function Home() {
               <Link
                 key={cat.value}
                 href={`/products?category=${cat.value}`}
-                className={`group ${base} bg-bg-panel border-border hover:border-border-strong`}
+                className={`group ${base} bg-bg-panel border-border hover:border-gold`}
               >
                 {inner}
               </Link>
@@ -315,18 +363,18 @@ export default function Home() {
           <GridSkeleton />
         </section>
       ) : (
-        <ProductSection title="NOS MEILLEURES VENTES" products={popular} href="/products?sort=popular" />
+        /* Une section de meilleures ventes par famille, trois modèles chacune.
+           Un rayon sans produit n'apparaît pas : une rangée vide ferait croire
+           à une panne d'affichage. */
+        bestSellersByFamily.map(({ cat, items }) => (
+          <ProductSection
+            key={cat.value}
+            title={`NOS MEILLEURES VENTES ${cat.short.toUpperCase()}`}
+            products={items}
+            href={`/products?category=${cat.value}&sort=popular`}
+          />
+        ))
       )}
-
-      {/* Rayons les plus fournis : un rayon vide ne s'affiche pas */}
-      {topCategories.map(({ cat, items }) => (
-        <ProductSection
-          key={cat.value}
-          title={cat.label.toUpperCase()}
-          products={items}
-          href={`/products?category=${cat.value}`}
-        />
-      ))}
 
       {deals.length > 0 && (
         <ProductSection title="LES MEILLEURES OFFRES" products={deals} href="/products" />

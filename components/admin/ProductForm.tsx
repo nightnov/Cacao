@@ -7,6 +7,12 @@ import { Product, ProductVariant, VariantOption } from '@/types/admin'
 import { generateVariantCombinations, variantLabel } from '@/lib/variants'
 import { useCategories } from '@/hooks/useCategories'
 import { sizeFromWeight, SIZE_LABELS } from '@/lib/delivery'
+import {
+  COMPONENT_TYPES,
+  componentIcon,
+  sanitizeComponents,
+  type ProductComponent,
+} from '@/lib/components'
 
 interface ProductFormProps {
   product?: Product | null
@@ -91,6 +97,17 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     typeof formData.weight_kg === 'number' ? formData.weight_kg : null
   )
 
+  const [componentRows, setComponentRows] = useState<ProductComponent[]>([])
+
+  const addComponent = () =>
+    setComponentRows(rows => [...rows, { type: 'gpu', label: '' }])
+
+  const updateComponent = (index: number, patch: Partial<ProductComponent>) =>
+    setComponentRows(rows => rows.map((r, i) => (i === index ? { ...r, ...patch } : r)))
+
+  const removeComponent = (index: number) =>
+    setComponentRows(rows => rows.filter((_, i) => i !== index))
+
   const [hasVariants, setHasVariants] = useState(false)
   const [variantOptionRows, setVariantOptionRows] = useState<VariantOptionRow[]>([{ name: '', valuesText: '' }])
   const [variantRows, setVariantRows] = useState<VariantRow[]>([])
@@ -122,6 +139,8 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         meta_title: product.meta_title || '',
         meta_description: product.meta_description || ''
       })
+
+      setComponentRows(sanitizeComponents(product.components))
 
       const options = product.variant_options || []
       const productHasVariants = options.length > 0
@@ -356,6 +375,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         price_fcfa: finalPriceFcfa,
         compare_at_price_fcfa: formData.compare_at_price_fcfa === '' ? null : Number(formData.compare_at_price_fcfa),
         parcel_size: formData.parcel_size || null,
+        components: sanitizeComponents(componentRows),
         weight_kg: formData.weight_kg === '' ? null : Number(formData.weight_kg),
         availability: finalAvailability,
         specs,
@@ -731,6 +751,64 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                 un écran de 27 pouces pèse 5 kg mais ne rentre dans aucune boîte de moyen colis —
                 corrigez à la main dans ce cas.
               </p>
+            </div>
+
+            {/* Composants : la liste que l'acheteur compare avant de décider. */}
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-semibold text-[#241A14] mb-2">Composants</label>
+              <p className="text-xs text-[#7D6A5D] mb-3">
+                Les pièces de la machine, affichées en grille sur la fiche produit. Chaque ligne
+                reçoit l&apos;icône de son type. Laissez vide pour un produit qui n&apos;en a pas —
+                un accessoire, par exemple.
+              </p>
+
+              {componentRows.length > 0 && (
+                <div className="space-y-2 mb-3">
+                  {componentRows.map((row, i) => {
+                    const Icon = componentIcon(row.type)
+                    return (
+                      <div key={i} className="flex items-center gap-2">
+                        <span className="w-9 h-9 rounded-lg bg-orange-50 text-[#C2410C] grid place-items-center flex-shrink-0">
+                          <Icon size={16} />
+                        </span>
+                        <select
+                          value={row.type}
+                          onChange={e => updateComponent(i, { type: e.target.value })}
+                          className="w-44 px-2.5 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14] flex-shrink-0"
+                        >
+                          {COMPONENT_TYPES.map(t => (
+                            <option key={t.value} value={t.value}>
+                              {t.label}
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          value={row.label}
+                          onChange={e => updateComponent(i, { label: e.target.value })}
+                          placeholder="Ex. NVIDIA GeForce RTX 5080 16 Go"
+                          className="flex-1 min-w-0 px-3 py-2 border border-[#E8E0D8] rounded-lg text-sm text-[#241A14]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeComponent(i)}
+                          aria-label="Retirer ce composant"
+                          className="w-9 h-9 grid place-items-center text-[#7D6A5D] hover:text-red-700 hover:bg-red-50 rounded-lg flex-shrink-0"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={addComponent}
+                className="px-4 py-2 border border-[#E8E0D8] hover:bg-gray-50 text-[#241A14] rounded-lg font-semibold text-sm"
+              >
+                + Ajouter un composant
+              </button>
             </div>
 
             {/* Availability */}

@@ -8,6 +8,7 @@ import { Footer } from '@/components/Footer'
 import { Button } from '@/components/Button'
 import { ProductCard } from '@/components/ProductCard'
 import { FavoriteButton } from '@/components/FavoriteButton'
+import { componentIcon, componentTypeLabel, sanitizeComponents } from '@/lib/components'
 import { SoldByBlock } from '@/components/SoldByBlock'
 import { StarRating } from '@/components/StarRating'
 import { getSupabaseClient } from '@/lib/supabase'
@@ -31,6 +32,7 @@ interface Product {
   compare_at_price_fcfa: number | null
   availability: 'in_stock' | 'on_order' | 'discontinued'
   specs: Record<string, unknown>
+  components?: unknown
   tags: string[]
   image_urls: string[]
   video_url: string | null
@@ -81,6 +83,37 @@ export default function ProductDetail() {
   const [shared, setShared] = useState(false)
   const [activeTab, setActiveTab] = useState<typeof tabs[number]['key']>('description')
 
+  /** Vrai s'il existe au catalogue de quoi compléter un poste de travail. */
+  const [hasCompanionProducts, setHasCompanionProducts] = useState(false)
+  const [volumeThreshold, setVolumeThreshold] = useState(1_000_000)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const supabase = getSupabaseClient()
+        const [companionRes, settingRes] = await Promise.all([
+          supabase
+            .from('products')
+            .select('id', { count: 'exact', head: true })
+            .in('category', ['accessoire', 'ecrans'])
+            .eq('status', 'active'),
+          supabase
+            .from('site_settings')
+            .select('value')
+            .eq('key', 'volume_discount_threshold_fcfa')
+            .maybeSingle(),
+        ])
+        setHasCompanionProducts((companionRes.count || 0) > 0)
+        const t = Number(settingRes.data?.value)
+        if (Number.isFinite(t) && t > 0) setVolumeThreshold(t)
+      } catch {
+        // Bloc purement incitatif : en cas d'échec il ne s'affiche pas, ce qui
+        // vaut mieux qu'un encart renvoyant vers un rayon vide.
+      }
+    }
+    load()
+  }, [])
+
   const [reviews, setReviews] = useState<Review[]>([])
   const [myRating, setMyRating] = useState(0)
   const [myComment, setMyComment] = useState('')
@@ -94,21 +127,38 @@ export default function ProductDetail() {
       setNotFound(false)
       try {
         const supabase = getSupabaseClient()
-        let { data, error } = await supabase
-          .from('products')
-          .select('id, name, slug, description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url, variant_options, seller_id, sellers(name, created_at)')
-          .eq('slug', slug)
-          .eq('status', 'active')
-          .maybeSingle()
 
-        // Repli si la table/relation "sellers" n'est pas encore en place (migration non exécutée)
-        if (error?.code === 'PGRST200') {
+        /**
+         * Trois requêtes de moins en moins exigeantes.
+         *
+         * Chaque migration non encore exécutée fait échouer la requête entière
+         * et affichait « Produit introuvable » — une fiche parfaitement valide
+         * devenait inaccessible parce qu'une colonne d'affichage manquait. On
+         * retire donc ce qui n'est pas indispensable jusqu'à obtenir une
+         * réponse, plutôt que de tout perdre pour un détail.
+         */
+        const BASE =
+          'id, name, slug, description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url, variant_options'
+
+        const attempts = [
+          `${BASE}, components, seller_id, sellers(name, created_at)`,
+          `${BASE}, components`,
+          BASE,
+        ]
+
+        let data: any = null
+        let error: any = null
+
+        for (const columns of attempts) {
           ;({ data, error } = await supabase
             .from('products')
-            .select('id, name, slug, description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url, variant_options')
+            .select(columns)
             .eq('slug', slug)
             .eq('status', 'active')
             .maybeSingle())
+
+          // PGRST200 : relation absente. 42703 : colonne absente.
+          if (!error || (error.code !== 'PGRST200' && error.code !== '42703')) break
         }
 
         if (error) throw error
@@ -329,6 +379,13 @@ export default function ProductDetail() {
   const hasPromo = !matchedVariant && !!product.compare_at_price_fcfa && product.compare_at_price_fcfa > product.price_fcfa
   const embedUrl = product.video_url ? getVideoEmbedUrl(product.video_url) : null
   const specEntries = Object.entries(product.specs || {}).filter(([, v]) => v)
+  const components = sanitizeComponents(product.components)
+
+  // Seules les machines appellent un pack, et seulement si le catalogue a de
+  // quoi le composer : proposer « ajouter un écran » sans écran en rayon
+  // mènerait à une page vide.
+  const canBuildPack =
+    ['portable', 'bureau', 'gaming'].includes(product.category) && hasCompanionProducts
   const canAddToCart = hasVariants
     ? !!matchedVariant && matchedVariant.stock > 0
     : product.availability !== 'discontinued'
@@ -511,19 +568,53 @@ export default function ProductDetail() {
               </ul>
             )}
 
+            {/* Composants : la liste que l'acheteur compare avant de décider.
+                Deux colonnes plutôt qu'une liste à puces — chaque pièce est
+                lisible d'un coup d'œil sans balayer tout le paragraphe. */}
+            {components.length > 0 && (
+              <div className="my-5">
+                <h2 className="font-display text-[17px] text-ink mb-3">COMPOSANTS</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {components.map((c, i) => {
+                    const Icon = componentIcon(c.type)
+                    return (
+                      <div
+                        key={`${c.type}-${i}`}
+                        className="flex items-start gap-3 rounded-xl border border-border bg-bg-panel px-3.5 py-3"
+                      >
+                        <Icon
+                          size={19}
+                          strokeWidth={1.7}
+                          className="text-gold flex-shrink-0 mt-0.5"
+                          aria-hidden="true"
+                        />
+                        <span className="text-[13.5px] text-ink leading-[1.45]">
+                          <span className="sr-only">{componentTypeLabel(c.type)} : </span>
+                          {c.label}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Variant picker */}
             {hasVariants && (
-              <div className="mb-4 space-y-3">
+              <div className="mb-4 space-y-4">
                 {product.variant_options!.map(option => (
                   <div key={option.name}>
                     <p className="text-sm font-semibold text-ink mb-2">{option.name}</p>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2.5">
                       {option.values.map(value => (
                         <button
                           key={value}
                           type="button"
                           onClick={() => handleSelectOption(option.name, value)}
-                          className={`px-4 py-2 rounded-full text-sm border-2 transition-colors ${
+                          /* Rectangles arrondis plutôt que pastilles : les
+                             valeurs sont parfois longues (« Lian Li 8.8 pouces »)
+                             et une pastille très allongée se lit mal. */
+                          className={`px-5 py-2.5 rounded-xl text-[13.5px] border-2 transition-colors ${
                             selectedOptions[option.name] === value
                               ? 'border-gold bg-gold/5 text-gold font-semibold'
                               : 'border-border text-ink-dim hover:border-border-strong'
@@ -813,6 +904,30 @@ export default function ProductDetail() {
             </div>
           )}
         </div>
+
+        {/* Composer un pack : un acheteur d'unité centrale a souvent besoin
+            d'un écran et d'un clavier. Proposé seulement pour les machines —
+            un clavier n'appelle pas un pack — et seulement si des accessoires
+            existent réellement au catalogue, pour ne pas mener à une page
+            vide. */}
+        {canBuildPack && (
+          <div className="mb-12 rounded-2xl border border-gold/30 bg-gold/5 p-6 sm:p-8">
+            <h2 className="font-display text-[19px] text-ink mb-2">COMPLÉTEZ VOTRE POSTE</h2>
+            <p className="text-[14px] text-ink-dim leading-[1.6] mb-5 max-w-2xl">
+              Écran, clavier, souris ou sacoche : ajoutez ce qu&apos;il vous faut autour de cette
+              machine. Au-delà de {formatAmount(volumeThreshold)} FCFA d&apos;articles, la remise
+              s&apos;applique toute seule.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/products?category=accessoire">
+                <Button variant="primary">Voir les accessoires</Button>
+              </Link>
+              <Link href="/products?category=ecrans">
+                <Button variant="secondary">Ajouter un écran</Button>
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Related products */}
         {related.length > 0 && (

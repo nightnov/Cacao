@@ -26,6 +26,8 @@ export interface Product {
   parcel_size?: 'petit' | 'moyen' | 'grand' | null
   /** Poids emballé en kg. Sert à proposer la taille, sans la remplacer. */
   weight_kg?: number | null
+  /** Pièces de la machine, affichées en grille sur la fiche produit. */
+  components?: unknown
   availability: string
   specs: Record<string, unknown>
   tags: string[]

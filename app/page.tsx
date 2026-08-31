@@ -289,7 +289,7 @@ export default function Home() {
           <h2 className="font-display text-[25px] sm:text-[30px] text-ink mb-2.5">
             CHOISISSEZ VOTRE GAMME
           </h2>
-          <p className="text-[15px] text-ink-dimmer">
+          <p className="text-[15px] text-ink-dim">
             Quatre familles, un même niveau d&apos;exigence sur la sélection.
           </p>
         </div>
@@ -471,11 +471,11 @@ export default function Home() {
             { icon: Headphones, t: 'Conseil avant achat', p: 'Une question sur une configuration ? On répond avant que vous commandiez.' }
           ].map(({ icon: Icon, t, p }) => (
             <div key={t} className="bg-bg-panel border border-border rounded-xl p-5">
-              <span className="w-9 h-9 rounded-lg bg-bg-raised text-ink-dim flex items-center justify-center mb-3">
+              <span className="w-9 h-9 rounded-lg bg-accent/12 border border-accent/25 text-accent flex items-center justify-center mb-3">
                 <Icon size={17} strokeWidth={1.9} />
               </span>
               <h4 className="text-[13px] font-bold text-ink mb-1.5">{t}</h4>
-              <p className="text-[11.5px] text-ink-dimmer leading-[1.55]">{p}</p>
+              <p className="text-[12px] text-ink-dim leading-[1.55]">{p}</p>
             </div>
           ))}
         </div>
@@ -485,7 +485,7 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-14">
         <div className="bg-bg-panel border border-border rounded-xl p-7 sm:p-9 text-center">
           <h2 className="font-display text-[19px] sm:text-[22px] text-ink mb-2">NE MANQUEZ AUCUNE OFFRE</h2>
-          <p className="text-[13px] text-ink-dimmer mb-6 max-w-md mx-auto">
+          <p className="text-[14px] text-ink-dim mb-6 max-w-md mx-auto">
             Recevez les nouveautés et les bonnes affaires CACAO.
           </p>
           {newsletterStatus === 'success' ? (

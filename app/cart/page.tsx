@@ -5,7 +5,7 @@ import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { Button } from '@/components/Button'
 import Link from 'next/link'
-import { getCart, updateCartItemQuantity, removeFromCart, CartItem, CART_EVENT } from '@/lib/cart'
+import { getCart, updateCartItemQuantity, removeFromCart, cartLineKey, CartItem, CART_EVENT } from '@/lib/cart'
 import { formatAmount } from '@/lib/format'
 import { PRICE } from '@/lib/ui'
 import { getSupabaseClient } from '@/lib/supabase'
@@ -81,7 +81,7 @@ export default function Cart() {
                 height="48"
                 viewBox="0 0 24 24"
                 fill="none"
-                stroke="#FDC700"
+                stroke="rgb(var(--c-border-mid))"
                 strokeWidth="1.5"
                 className="mx-auto mb-4"
               >
@@ -132,22 +132,22 @@ export default function Cart() {
                   <Link href={`/products/${item.slug}`} className="font-semibold text-ink hover:text-ink transition-colors line-clamp-1">
                     {item.name}
                   </Link>
-                  {item.variant_label && (
-                    <p className="text-xs text-ink-dimmer mt-0.5">{item.variant_label}</p>
+                  {(item.config_label || item.variant_label) && (
+                    <p className="text-xs text-ink-dimmer mt-0.5">{item.config_label || item.variant_label}</p>
                   )}
                   <p className="text-sm text-ink-dimmer mt-1">{formatAmount(item.price_fcfa)} FCFA</p>
                 </div>
 
                 <div className="flex items-center border-2 border-border-strong rounded-full flex-shrink-0">
                   <button
-                    onClick={() => updateCartItemQuantity(item.id, item.quantity - 1, item.variant_id)}
+                    onClick={() => updateCartItemQuantity(cartLineKey(item), item.quantity - 1)}
                     className="w-8 h-8 flex items-center justify-center text-ink hover:text-ink"
                   >
                     −
                   </button>
                   <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
                   <button
-                    onClick={() => updateCartItemQuantity(item.id, item.quantity + 1, item.variant_id)}
+                    onClick={() => updateCartItemQuantity(cartLineKey(item), item.quantity + 1)}
                     className="w-8 h-8 flex items-center justify-center text-ink hover:text-ink"
                   >
                     +
@@ -159,7 +159,7 @@ export default function Cart() {
                 </div>
 
                 <button
-                  onClick={() => removeFromCart(item.id, item.variant_id)}
+                  onClick={() => removeFromCart(cartLineKey(item))}
                   className="text-ink-dimmer hover:text-danger transition-colors flex-shrink-0"
                   aria-label="Retirer du panier"
                 >

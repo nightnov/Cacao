@@ -18,7 +18,7 @@ import {
  * la requête, un visiteur pouvait payer 1 000 FCFA un ordinateur à 299 000.
  *
  * Tout ce qui vient du navigateur est donc ignoré ici. Les seules sources
- * retenues sont `products` / `product_variants` pour les prix, `shipping_fees`
+ * retenues sont `products` et `product_option_values` pour les prix, `shipping_fees`
  * pour la livraison, et `promotions` pour la remise.
  */
 
@@ -132,10 +132,12 @@ export async function checkPromotion(
 /**
  * Recalcule intégralement une commande à partir de la base.
  *
- * Les prix sont relus depuis `product_variants` quand la ligne porte une
- * variante, sinon depuis `products`. Le prix mémorisé dans `order_items` n'est
- * pas utilisé : il a été écrit par le navigateur, donc il n'est pas digne de
- * confiance à ce stade.
+ * Rien de ce qui vient du navigateur n'est utilisé pour calculer le montant.
+ * Le prix de base est relu depuis `products` — ou `product_variants` pour les
+ * lignes issues de l'ancien modèle — et les suppléments de configuration sont
+ * retrouvés en base à partir des seuls identifiants de valeurs conservés.
+ * Le champ `unit_price_fcfa` de `order_items` est délibérément ignoré : il a
+ * été écrit côté client, donc il n'est pas digne de confiance à ce stade.
  */
 export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
   const supabase = getSupabaseAdmin()
@@ -150,7 +152,7 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
 
   const { data: items } = await supabase
     .from('order_items')
-    .select('product_id, variant_id, quantity, product_name, variant_label')
+    .select('product_id, variant_id, quantity, product_name, variant_label, option_value_ids')
     .eq('order_id', orderId)
 
   if (!items?.length) return null
@@ -158,30 +160,67 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
   const productIds = [...new Set(items.map(i => i.product_id).filter(Boolean))]
   const variantIds = [...new Set(items.map(i => i.variant_id).filter(Boolean))]
 
-  const [productsRes, variantsRes] = await Promise.all([
+  // Identifiants de configuration retenus sur l'ensemble des lignes.
+  const optionValueIds = [
+    ...new Set(items.flatMap(i => (i.option_value_ids as string[] | null) || [])),
+  ].filter(Boolean)
+
+  const [productsRes, variantsRes, optionValuesRes] = await Promise.all([
     productIds.length
       ? supabase.from('products').select('id, price_fcfa, parcel_size').in('id', productIds)
       : Promise.resolve({ data: [] as any[] }),
     variantIds.length
       ? supabase.from('product_variants').select('id, price_fcfa').in('id', variantIds)
       : Promise.resolve({ data: [] as any[] }),
+    /**
+     * Suppléments de configuration, relus en base.
+     *
+     * C'est le point sensible de cette fonction. Le navigateur affiche un prix
+     * qui tient compte des options choisies ; s'il était cru sur parole, il
+     * suffirait de demander un Core i7 et 2 To en ne payant que le prix de
+     * base. On ne garde donc du panier que les IDENTIFIANTS des valeurs, et le
+     * montant qu'ils représentent est retrouvé ici.
+     */
+    optionValueIds.length
+      ? supabase
+          .from('product_option_values')
+          .select('id, price_delta_fcfa')
+          .in('id', optionValueIds)
+      : Promise.resolve({ data: [] as any[] }),
   ])
 
   const productPrice = new Map((productsRes.data || []).map(p => [p.id, p.price_fcfa]))
   const productSize = new Map((productsRes.data || []).map(p => [p.id, p.parcel_size]))
   const variantPrice = new Map((variantsRes.data || []).map(v => [v.id, v.price_fcfa]))
+  const optionDelta = new Map(
+    (optionValuesRes.data || []).map((v: any) => [v.id, Number(v.price_delta_fcfa) || 0])
+  )
 
   let productsTotal = 0
   const lines: PricedLine[] = []
 
   for (const item of items) {
-    const unit = item.variant_id
+    const base = item.variant_id
       ? variantPrice.get(item.variant_id)
       : productPrice.get(item.product_id)
 
     // Un article dont le prix a disparu (produit supprimé entre-temps) ne peut
     // pas être facturé à zéro sans qu'on s'en aperçoive.
-    if (unit == null) return null
+    if (base == null) return null
+
+    // Une valeur d'option introuvable — supprimée depuis la commande — ne doit
+    // pas être silencieusement comptée pour zéro : le total facturé serait
+    // inférieur à celui affiché au client, sans que rien ne le signale.
+    const chosen = (item.option_value_ids as string[] | null) || []
+    let extra = 0
+    for (const id of chosen) {
+      const delta = optionDelta.get(id)
+      if (delta == null) return null
+      extra += delta
+    }
+
+    // Un cumul de réductions ne peut pas rendre un article gratuit ou négatif.
+    const unit = Math.max(0, base + extra)
 
     const qty = Math.max(1, Math.min(99, Number(item.quantity) || 1))
     const subtotal = unit * qty

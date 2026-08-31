@@ -26,7 +26,7 @@ export function TrustBar() {
               i < 2 ? 'border-b border-border lg:border-b-0' : ''
             } ${i === 1 || i === 2 ? 'lg:border-r lg:border-border' : ''} lg:pl-4 lg:first:pl-0`}
           >
-            <span className="w-8 h-8 rounded-lg bg-bg-raised border border-border-mid text-ink-dim flex items-center justify-center flex-shrink-0">
+            <span className="w-8 h-8 rounded-lg bg-accent/12 border border-accent/25 text-accent flex items-center justify-center flex-shrink-0">
               <Icon size={15} strokeWidth={2} />
             </span>
             <span className="min-w-0">

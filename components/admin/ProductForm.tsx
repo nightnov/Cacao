@@ -6,6 +6,7 @@ import { Button } from '@/components/Button'
 import { Product, ProductVariant, VariantOption } from '@/types/admin'
 import { generateVariantCombinations, variantLabel } from '@/lib/variants'
 import { useCategories } from '@/hooks/useCategories'
+import { ProductOptionsPanel } from '@/components/admin/ProductOptionsPanel'
 import { sizeFromWeight, SIZE_LABELS } from '@/lib/delivery'
 import {
   COMPONENT_TYPES,
@@ -67,6 +68,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     name: '',
     slug: '',
     description: '',
+    short_description: '',
     category: 'portable',
     price_fcfa: 0,
     compare_at_price_fcfa: '' as string | number,
@@ -118,6 +120,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         name: product.name,
         slug: product.slug,
         description: product.description,
+        short_description: (product as any).short_description || '',
         category: product.category,
         price_fcfa: product.price_fcfa,
         compare_at_price_fcfa: product.compare_at_price_fcfa ?? '',
@@ -371,6 +374,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         name: formData.name.trim(),
         slug: slugify(formData.slug),
         description: formData.description,
+        short_description: formData.short_description.trim() || null,
         category: formData.category,
         price_fcfa: finalPriceFcfa,
         compare_at_price_fcfa: formData.compare_at_price_fcfa === '' ? null : Number(formData.compare_at_price_fcfa),
@@ -631,6 +635,21 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               required
               className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
               placeholder="Ex: cacaobook-14"
+            />
+          </div>
+
+          {/* Accroche commerciale : une ou deux phrases sous le nom du produit,
+              distincte de la description longue de la section repliable. */}
+          <div>
+            <label className="block text-sm font-semibold text-ink mb-2">
+              Accroche courte
+            </label>
+            <input
+              name="short_description"
+              value={formData.short_description}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+              placeholder="Une ou deux phrases affichées sous le nom sur la fiche"
             />
           </div>
 
@@ -1096,6 +1115,29 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               </div>
             </div>
           </div>
+
+          {/*
+            Configuration du produit.
+
+            Visible seulement à la modification : les options sont rattachées à
+            un identifiant de produit, qui n'existe pas tant que la fiche n'a pas
+            été enregistrée une première fois. L'afficher à la création aurait
+            donné un panneau dont chaque enregistrement échouait.
+
+            Le panneau écrit directement en base, indépendamment du bouton
+            « Enregistrer » de ce formulaire : chaque modification est prise en
+            compte immédiatement.
+          */}
+          {product?.id ? (
+            <div className="pt-4 border-t border-border">
+              <ProductOptionsPanel productId={product.id} />
+            </div>
+          ) : (
+            <p className="pt-4 border-t border-border text-sm text-ink-dimmer">
+              Enregistrez d&apos;abord le produit pour pouvoir définir sa configuration
+              (couleur, stockage, mémoire, processeur).
+            </p>
+          )}
 
           {/* Actions */}
           <div className="flex gap-3 pt-4 border-t border-border">

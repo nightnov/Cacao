@@ -13,7 +13,6 @@ import { componentIcon, componentTypeLabel, sanitizeComponents } from '@/lib/com
 import { SoldByBlock } from '@/components/SoldByBlock'
 import { StarRating } from '@/components/StarRating'
 import { getSupabaseClient } from '@/lib/supabase'
-import { getVideoEmbedUrl } from '@/lib/video'
 import { addToCart } from '@/lib/cart'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
@@ -23,12 +22,28 @@ import { findMatchingVariant, variantLabel } from '@/lib/variants'
 import { categoryLabel } from '@/lib/categories'
 import { formatAmount } from '@/lib/format'
 import { PRICE, PRICE_OLD } from '@/lib/ui'
+import { ProductGallery } from '@/components/ProductGallery'
+import { ProductConfigurator } from '@/components/ProductConfigurator'
+import { ProductDescription } from '@/components/ProductDescription'
+import {
+  groupOptions,
+  defaultSelection,
+  selectedValues,
+  selectionIds,
+  selectionImage,
+  configLabel,
+  configuredPrice,
+  type ProductOption,
+  type OptionValue,
+} from '@/lib/options'
 
 interface Product {
   id: string
   name: string
   slug: string
   description: string
+  /** Accroche d'une ou deux phrases, affichée sous le nom. */
+  short_description?: string | null
   category: string
   price_fcfa: number
   compare_at_price_fcfa: number | null
@@ -60,13 +75,6 @@ const specLabels: Record<string, string> = {
   screen: 'Écran'
 }
 
-const tabs = [
-  { key: 'description', label: 'Description' },
-  { key: 'specs', label: 'Caractéristiques' },
-  { key: 'shipping', label: 'Livraison & garantie' },
-  { key: 'reviews', label: 'Avis' }
-] as const
-
 export default function ProductDetail() {
   const params = useParams()
   const router = useRouter()
@@ -77,13 +85,18 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [related, setRelated] = useState<Product[]>([])
-  const [selectedMedia, setSelectedMedia] = useState<{ type: 'image' | 'video'; value: string } | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
   const [variants, setVariants] = useState<ProductVariant[]>([])
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({})
   const [shared, setShared] = useState(false)
-  const [activeTab, setActiveTab] = useState<typeof tabs[number]['key']>('description')
+
+  /** Configuration : options du produit et valeur retenue pour chacune. */
+  const [options, setOptions] = useState<ProductOption[]>([])
+  const [selection, setSelection] = useState<Record<string, string>>({})
+
+  /** Vrai si le client a reçu ce produit : condition pour laisser un avis. */
+  const [canReview, setCanReview] = useState(false)
 
   /** Vrai s'il existe au catalogue de quoi compléter un poste de travail. */
   const [hasCompanionProducts, setHasCompanionProducts] = useState(false)
@@ -116,6 +129,39 @@ export default function ProductDetail() {
     load()
   }, [])
 
+  /**
+   * Droit de laisser un avis : une commande livrée contenant ce produit.
+   *
+   * La fonction est déclarée `SECURITY DEFINER` en base afin qu'un client
+   * puisse vérifier son propre droit sans qu'on lui ouvre la lecture de la
+   * table des commandes.
+   */
+  useEffect(() => {
+    if (!product || !user) {
+      setCanReview(false)
+      return
+    }
+    let alive = true
+    const check = async () => {
+      try {
+        const supabase = getSupabaseClient()
+        const { data, error } = await supabase.rpc('has_delivered_order', {
+          p_user: user.id,
+          p_product: product.id,
+        })
+        if (alive) setCanReview(!error && data === true)
+      } catch {
+        // Migration 034 pas encore exécutée : on reste sur le refus, qui est le
+        // choix le plus sûr des deux.
+        if (alive) setCanReview(false)
+      }
+    }
+    check()
+    return () => {
+      alive = false
+    }
+  }, [product, user])
+
   const [reviews, setReviews] = useState<Review[]>([])
   const [myRating, setMyRating] = useState(0)
   const [myComment, setMyComment] = useState('')
@@ -142,8 +188,12 @@ export default function ProductDetail() {
         const BASE =
           'id, name, slug, description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url, variant_options'
 
+        // Du plus complet au plus minimal. `short_description` n'existe qu'après
+        // la migration 034 : elle est demandée d'abord, puis abandonnée, sans
+        // que la fiche cesse de s'afficher.
         const attempts = [
-          `${BASE}, components, seller_id, sellers(name, created_at)`,
+          `${BASE}, short_description, components, seller_id, sellers(name, created_at)`,
+          `${BASE}, short_description, components`,
           `${BASE}, components`,
           BASE,
         ]
@@ -175,7 +225,6 @@ export default function ProductDetail() {
         setQuantity(1)
         setAdded(false)
         setSelectedOptions({})
-        setActiveTab('description')
 
         supabase.from('product_views').insert([{ product_id: typedProduct.id }]).then(
           () => {},
@@ -188,6 +237,40 @@ export default function ProductDetail() {
           .eq('product_id', typedProduct.id)
           .order('created_at', { ascending: false })
         setReviews((reviewsData as unknown as Review[]) || [])
+
+        /**
+         * Configuration du produit.
+         *
+         * Lue à part du produit : ajouter une jointure à la requête principale
+         * ferait échouer toute la fiche tant que la migration 034 n'est pas
+         * exécutée, alors qu'un produit sans configuration reste parfaitement
+         * consultable. Un échec ici laisse simplement la fiche sans options.
+         */
+        try {
+          const { data: rawOptions, error: optErr } = await supabase
+            .from('product_options')
+            .select('id, product_id, name, sort_order')
+            .eq('product_id', typedProduct.id)
+            .order('sort_order')
+
+          if (!optErr && rawOptions?.length) {
+            const { data: rawValues } = await supabase
+              .from('product_option_values')
+              .select('*')
+              .in('option_id', rawOptions.map(o => o.id))
+              .order('sort_order')
+
+            const grouped = groupOptions(rawOptions, (rawValues as OptionValue[]) || [])
+            setOptions(grouped)
+            setSelection(defaultSelection(grouped))
+          } else {
+            setOptions([])
+            setSelection({})
+          }
+        } catch {
+          setOptions([])
+          setSelection({})
+        }
 
         if (typedProduct.seller_id) {
           const { data: sellerProducts } = await supabase
@@ -227,13 +310,8 @@ export default function ProductDetail() {
           setVariants([])
         }
 
-        if (typedProduct.image_urls && typedProduct.image_urls.length > 0) {
-          setSelectedMedia({ type: 'image', value: typedProduct.image_urls[0] })
-        } else if (typedProduct.video_url) {
-          setSelectedMedia({ type: 'video', value: typedProduct.video_url })
-        } else {
-          setSelectedMedia(null)
-        }
+        // Le média affiché est désormais géré par la galerie elle-même : elle
+        // ouvre sur la première image et suit la configuration choisie.
 
         const res = await fetch(`/api/products?category=${typedProduct.category}`)
         const categoryProducts: Product[] = await res.json()
@@ -279,22 +357,33 @@ export default function ProductDetail() {
     }
   }
 
+  /**
+   * Ligne de panier.
+   *
+   * `price_fcfa` n'est là que pour l'affichage du panier. Ce qui compte pour la
+   * facturation, ce sont `option_value_ids` : le serveur relit les suppléments
+   * en base à partir d'eux, sans jamais croire le montant venu du navigateur.
+   */
   const buildCartItem = () => {
     if (!product) return null
     return {
       id: product.id,
       name: product.name,
       slug: product.slug,
-      price_fcfa: matchedVariant ? matchedVariant.price_fcfa : product.price_fcfa,
-      image_url: matchedVariant?.image_url || product.image_urls?.[0] || null,
+      price_fcfa: displayPrice,
+      image_url: configImage || matchedVariant?.image_url || product.image_urls?.[0] || null,
       variant_id: matchedVariant?.id,
-      variant_label: matchedVariant ? variantLabel(selectedOptions) : undefined
+      variant_label: matchedVariant ? variantLabel(selectedOptions) : undefined,
+      option_value_ids: options.length > 0 ? selectionIds(options, selection) : undefined,
+      config_label: options.length > 0 ? configLabel(options, selection) : undefined,
     }
   }
 
+  /** Vrai quand une combinaison de l'ancien modèle reste à choisir. */
+  const blockedByLegacyVariant = options.length === 0 && hasVariants && !matchedVariant
+
   const handleAddToCart = () => {
-    if (!product) return
-    if (hasVariants && !matchedVariant) return
+    if (!product || blockedByLegacyVariant) return
     const item = buildCartItem()
     if (!item) return
     addToCart(item, quantity)
@@ -303,8 +392,7 @@ export default function ProductDetail() {
   }
 
   const handleBuyNow = () => {
-    if (!product) return
-    if (hasVariants && !matchedVariant) return
+    if (!product || blockedByLegacyVariant) return
     const item = buildCartItem()
     if (!item) return
     addToCart(item, quantity)
@@ -377,9 +465,27 @@ export default function ProductDetail() {
     )
   }
 
-  const displayPrice = matchedVariant ? matchedVariant.price_fcfa : product.price_fcfa
-  const hasPromo = !matchedVariant && !!product.compare_at_price_fcfa && product.compare_at_price_fcfa > product.price_fcfa
-  const embedUrl = product.video_url ? getVideoEmbedUrl(product.video_url) : null
+  /**
+   * Prix affiché : prix de base augmenté des suppléments de la configuration.
+   * Purement indicatif — le montant facturé est recalculé côté serveur.
+   */
+  const basePrice = matchedVariant ? matchedVariant.price_fcfa : product.price_fcfa
+  const displayPrice =
+    options.length > 0 ? configuredPrice(basePrice, options, selection) : basePrice
+
+  /** Visuel imposé par la configuration : la couleur choisie, en pratique. */
+  const configImage = options.length > 0 ? selectionImage(options, selection) : null
+
+  /** Blocs explicatifs des valeurs retenues, affichés sous la description. */
+  const configBlocks = options.length > 0 ? selectedValues(options, selection) : []
+
+  // Le prix barré n'a de sens que sur la configuration de base : comparé à un
+  // prix augmenté d'options, il annoncerait une remise qui n'existe pas.
+  const hasPromo =
+    !matchedVariant &&
+    displayPrice === product.price_fcfa &&
+    !!product.compare_at_price_fcfa &&
+    product.compare_at_price_fcfa > product.price_fcfa
   const specEntries = Object.entries(product.specs || {}).filter(([, v]) => v)
   const components = sanitizeComponents(product.components)
 
@@ -388,13 +494,29 @@ export default function ProductDetail() {
   // mènerait à une page vide.
   const canBuildPack =
     ['portable', 'bureau', 'gaming'].includes(product.category) && hasCompanionProducts
-  const canAddToCart = hasVariants
-    ? !!matchedVariant && matchedVariant.stock > 0
-    : product.availability !== 'discontinued'
+  // Avec la configuration par option, toutes les valeurs sont sélectionnées dès
+  // l'ouverture : rien ne reste à choisir pour pouvoir commander. Le blocage ne
+  // concerne plus que les produits restés sur l'ancien modèle de combinaisons.
+  const canAddToCart =
+    options.length === 0 && hasVariants
+      ? !!matchedVariant && matchedVariant.stock > 0
+      : product.availability !== 'discontinued'
 
   const reviewCount = reviews.length
   const avgRating = reviewCount > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount : 0
   const myExistingReview = isLoggedIn && user ? reviews.find(r => r.user_id === user.id) : undefined
+
+  /**
+   * Le formulaire d'avis n'apparaît qu'après réception du produit.
+   *
+   * Le contrôle est également posé en base (politique RLS, migration 034) :
+   * cacher le formulaire ne suffit pas, la requête d'écriture pourrait être
+   * envoyée sans passer par la page. Ici, on évite surtout d'afficher un
+   * formulaire qui échouerait au moment de l'envoi.
+   *
+   * Un client qui a déjà laissé un avis garde l'accès pour le corriger.
+   */
+  const showReviewForm = isLoggedIn && (canReview || !!myExistingReview)
 
   return (
     <main className="min-h-screen bg-bg-panel flex flex-col">
@@ -416,114 +538,35 @@ export default function ProductDetail() {
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.05fr,1fr] gap-8 lg:gap-12 mb-12 items-start">
-          {/* Gallery */}
-          <div className="flex gap-3">
-            {(product.image_urls?.length > 0 || embedUrl) && (
-              <div className="hidden sm:flex flex-col gap-2 flex-shrink-0">
-                {embedUrl && (
-                  <button
-                    onClick={() => setSelectedMedia({ type: 'video', value: product.video_url! })}
-                    className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 flex items-center justify-center bg-bg-raised ${
-                      selectedMedia?.type === 'video' ? 'border-ink' : 'border-transparent'
-                    }`}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                  </button>
-                )}
-                {product.image_urls?.map((url, i) => (
-                  <button
-                    key={url}
-                    onClick={() => setSelectedMedia({ type: 'image', value: url })}
-                    aria-label={`Voir la photo ${i + 1}`}
-                    className={`w-14 h-14 rounded-lg overflow-hidden border-2 bg-bg-panel transition-colors ${
-                      selectedMedia?.type === 'image' && selectedMedia.value === url
-                        ? 'border-ink'
-                        : 'border-border hover:border-ink-faint'
-                    }`}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={url} alt="" className="w-full h-full object-contain p-1" />
-                  </button>
-                ))}
-              </div>
-            )}
-
-            <div className="relative aspect-square bg-bg-panel rounded-2xl border border-border overflow-hidden flex items-center justify-center flex-1 min-w-0">
-              {selectedMedia?.type === 'video' && embedUrl ? (
-                <iframe
-                  src={embedUrl}
-                  title={`Vidéo de présentation : ${product.name}`}
-                  className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              ) : selectedMedia?.type === 'image' ? (
-                // object-contain (et non object-cover) : sur une fiche produit,
-                // recadrer la photo cache une partie de l'appareil que le client achète.
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={selectedMedia.value} alt={product.name} className="w-full h-full object-contain p-4" />
-              ) : (
-                <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#FDC700" strokeWidth="1">
-                  <rect x="2" y="3" width="20" height="14" rx="2" />
-                  <line x1="8" y1="21" x2="16" y2="21" />
-                  <line x1="12" y1="17" x2="12" y2="21" />
-                </svg>
-              )}
-              <FavoriteButton productId={product.id} size={18} className="absolute top-3 right-3 w-9 h-9 shadow-sm" />
-            </div>
+          {/* Galerie. Sur mobile elle passe naturellement en premier : c'est
+              l'ordre du flux, aucune règle d'ordre n'est nécessaire. */}
+          <div className="relative">
+            <ProductGallery
+              images={product.image_urls || []}
+              videoUrl={product.video_url}
+              forcedImage={configImage}
+              productName={product.name}
+            />
+            <FavoriteButton
+              productId={product.id}
+              size={18}
+              className="absolute top-3 right-3 z-10 w-9 h-9 bg-black/45 border border-border-strong text-ink-dim"
+            />
           </div>
 
-          {/* Bandeau de vignettes pour mobile : la colonne verticale est masquée
-              sous `sm`, sans ça les photos secondaires étaient inaccessibles au doigt. */}
-          {(product.image_urls?.length > 1 || (product.image_urls?.length > 0 && embedUrl)) && (
-            <div className="sm:hidden -mt-6 mb-2 flex gap-2 overflow-x-auto no-scrollbar pb-1">
-              {embedUrl && (
-                <button
-                  onClick={() => setSelectedMedia({ type: 'video', value: product.video_url! })}
-                  aria-label="Voir la vidéo"
-                  className={`w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border-2 flex items-center justify-center bg-bg-raised ${
-                    selectedMedia?.type === 'video' ? 'border-ink' : 'border-border'
-                  }`}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </button>
-              )}
-              {product.image_urls?.map((url, i) => (
-                <button
-                  key={url}
-                  onClick={() => setSelectedMedia({ type: 'image', value: url })}
-                  aria-label={`Voir la photo ${i + 1}`}
-                  className={`w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border-2 bg-bg-panel ${
-                    selectedMedia?.type === 'image' && selectedMedia.value === url
-                      ? 'border-ink'
-                      : 'border-border'
-                  }`}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={url} alt="" className="w-full h-full object-contain p-1" />
-                </button>
-              ))}
-            </div>
-          )}
-
           {/* Bloc d'achat. Collant sur grand écran : l'acheteur garde le prix et
-              le bouton sous les yeux pendant qu'il parcourt la galerie et les specs. */}
+              le bouton sous les yeux pendant qu'il parcourt la galerie. */}
           <div className="lg:sticky lg:top-24">
-            {/* Le libellé de catégorie a été retiré ici : il doublonnait avec le fil d'Ariane. */}
+            {/* Ni étoiles ni avis au-dessus du nom : ils ouvrent la fiche sur un
+                jugement extérieur plutôt que sur le produit. Ils sont plus bas,
+                sous la description. Le libellé de rayon a lui aussi été retiré,
+                il doublonnait avec le fil d'Ariane. */}
             <h1 className="font-serif font-semibold text-xl sm:text-2xl leading-snug text-ink mb-2">{product.name}</h1>
 
-            {reviewCount > 0 && (
-              <button
-                type="button"
-                onClick={() => setActiveTab('reviews')}
-                className="mb-3 hover:opacity-70 transition-opacity rounded"
-              >
-                <StarRating rating={avgRating} reviewCount={reviewCount} />
-              </button>
+            {product.short_description && (
+              <p className="text-[14px] text-ink-dim leading-[1.6] mb-3">
+                {product.short_description}
+              </p>
             )}
 
             {/* Le prix garde la même couleur qu'il soit remisé ou non : c'est
@@ -562,51 +605,25 @@ export default function ProductDetail() {
               productCount={sellerStats?.productCount}
             />
 
-            {/* Caractéristiques clés (aperçu rapide) */}
-            {specEntries.length > 0 && (
-              <ul className="flex flex-wrap gap-x-4 gap-y-1.5 my-4 text-sm text-ink-dim">
-                {specEntries.slice(0, 4).map(([key, value]) => (
-                  <li key={key} className="flex items-center gap-1.5">
-                    <span className="w-1 h-1 rounded-full bg-ink-dimmer"></span>
-                    {String(value)}
-                  </li>
-                ))}
-              </ul>
-            )}
+            {/* Le bloc « Caractéristiques » qui figurait ici a été retiré : les
+                sélecteurs ci-dessous montrent déjà le processeur, la mémoire et
+                le stockage retenus, et les répéter à dix centimètres disait deux
+                fois la même chose. Le détail vit dans la section Description. */}
 
-            {/* Composants : la liste que l'acheteur compare avant de décider.
-                Deux colonnes plutôt qu'une liste à puces — chaque pièce est
-                lisible d'un coup d'œil sans balayer tout le paragraphe. */}
-            {components.length > 0 && (
-              <div className="my-5">
-                <h2 className="font-display text-[17px] text-ink mb-3">COMPOSANTS</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {components.map((c, i) => {
-                    const Icon = componentIcon(c.type)
-                    return (
-                      <div
-                        key={`${c.type}-${i}`}
-                        className="flex items-start gap-3 rounded-xl border border-border bg-bg-panel px-3.5 py-3"
-                      >
-                        <Icon
-                          size={19}
-                          strokeWidth={1.7}
-                          className="text-ink-dimmer flex-shrink-0 mt-0.5"
-                          aria-hidden="true"
-                        />
-                        <span className="text-[13.5px] text-ink leading-[1.45]">
-                          <span className="sr-only">{componentTypeLabel(c.type)} : </span>
-                          {c.label}
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
+            <div className="my-5">
+              <ProductConfigurator
+                options={options}
+                selection={selection}
+                onSelect={(optionId, valueId) =>
+                  setSelection(s => ({ ...s, [optionId]: valueId }))
+                }
+              />
+            </div>
 
-            {/* Variant picker */}
-            {hasVariants && (
+            {/* Ancien sélecteur de variantes, conservé pour les produits saisis
+                avant le passage au supplément par valeur. Il ne s'affiche que
+                si aucune configuration moderne n'existe sur ce produit. */}
+            {options.length === 0 && hasVariants && (
               <div className="mb-4 space-y-4">
                 {product.variant_options!.map(option => (
                   <div key={option.name}>
@@ -617,12 +634,9 @@ export default function ProductDetail() {
                           key={value}
                           type="button"
                           onClick={() => handleSelectOption(option.name, value)}
-                          /* Rectangles arrondis plutôt que pastilles : les
-                             valeurs sont parfois longues (« Lian Li 8.8 pouces »)
-                             et une pastille très allongée se lit mal. */
                           className={`px-5 py-2.5 rounded-xl text-[13.5px] border-2 transition-colors ${
                             selectedOptions[option.name] === value
-                              ? 'border-ink-dimmer bg-bg-raised text-ink font-semibold'
+                              ? 'border-accent bg-accent/10 text-ink font-semibold'
                               : 'border-border text-ink-dim hover:border-border-strong'
                           }`}
                         >
@@ -669,7 +683,7 @@ export default function ProductDetail() {
                 disabled={!canAddToCart}
                 onClick={handleAddToCart}
               >
-                {hasVariants && !matchedVariant
+                {blockedByLegacyVariant
                   ? 'Choisissez une combinaison'
                   : !canAddToCart
                   ? 'Rupture de stock'
@@ -684,7 +698,7 @@ export default function ProductDetail() {
                 disabled={!canAddToCart}
                 onClick={handleBuyNow}
               >
-                Acheter maintenant
+                Commander maintenant
               </Button>
             </div>
 
@@ -732,52 +746,62 @@ export default function ProductDetail() {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="mb-16">
-          <div className="flex gap-6 border-b border-border mb-6 overflow-x-auto">
-            {tabs.map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`pb-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
-                  activeTab === tab.key
-                    ? 'border-ink text-ink'
-                    : 'border-transparent text-ink-dimmer hover:text-ink'
-                }`}
-              >
-                {tab.label}
-                {tab.key === 'reviews' && reviewCount > 0 && ` (${reviewCount})`}
-              </button>
-            ))}
-          </div>
+        {/*
+          Les onglets ont disparu : ils cachaient la description et les avis
+          derrière un clic, alors que ce sont les deux contenus que l'acheteur
+          vient chercher après avoir vu le prix. Tout est désormais empilé, dans
+          l'ordre de lecture.
+        */}
+        <div className="mb-16 space-y-8">
+          <ProductDescription description={product.description} blocks={configBlocks} />
 
-          {activeTab === 'description' && (
-            <p className="text-sm text-ink-dim leading-relaxed max-w-2xl">
-              {product.description || 'Aucune description disponible pour ce produit.'}
-            </p>
+          {/* Caractéristiques techniques héritées de `specs`. Conservées sous la
+              description pour les produits saisis avant la configuration, et
+              masquées quand elles n'apportent rien. */}
+          {specEntries.length > 0 && (
+            <section className="rounded-xl border border-border bg-bg-panel overflow-hidden">
+              <h2 className="font-display text-[16px] text-ink px-5 sm:px-6 py-4">CARACTÉRISTIQUES</h2>
+              <div className="border-t border-border">
+                {specEntries.map(([key, value], i) => (
+                  <div
+                    key={key}
+                    className={`grid grid-cols-1 sm:grid-cols-[220px,1fr] text-[12.5px] ${i % 2 === 1 ? 'bg-bg-raised' : ''}`}
+                  >
+                    <div className="px-5 sm:px-6 py-3 text-ink-dimmer sm:border-r border-border">{specLabels[key] || key}</div>
+                    <div className="px-5 sm:px-6 pb-3 sm:py-3 text-ink font-medium">{String(value)}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
           )}
 
-          {activeTab === 'specs' && (
-            <div className="max-w-3xl">
-              {specEntries.length > 0 ? (
-                <div className="border border-border rounded-xl overflow-hidden">
-                  {specEntries.map(([key, value], i) => (
+          {/* Composants détaillés, déplacés depuis la colonne d'achat où ils
+              allongeaient la distance entre le prix et le bouton. */}
+          {components.length > 0 && (
+            <section className="rounded-xl border border-border bg-bg-panel p-5 sm:p-6">
+              <h2 className="font-display text-[16px] text-ink mb-4">COMPOSANTS</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {components.map((c, i) => {
+                  const Icon = componentIcon(c.type)
+                  return (
                     <div
-                      key={key}
-                      className={`grid grid-cols-1 sm:grid-cols-[220px,1fr] text-[12.5px] ${i % 2 === 0 ? 'bg-bg-panel' : ''}`}
+                      key={`${c.type}-${i}`}
+                      className="flex items-start gap-3 rounded-lg border border-border bg-bg-raised px-3.5 py-3"
                     >
-                      <div className="px-4 py-3 text-ink-dimmer sm:border-r border-border">{specLabels[key] || key}</div>
-                      <div className="px-4 pb-3 sm:py-3 text-ink font-medium">{String(value)}</div>
+                      <Icon size={19} strokeWidth={1.7} className="text-accent flex-shrink-0 mt-0.5" aria-hidden="true" />
+                      <span className="text-[13.5px] text-ink leading-[1.45]">
+                        <span className="sr-only">{componentTypeLabel(c.type)} : </span>
+                        {c.label}
+                      </span>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-ink-dimmer">Aucune caractéristique renseignée pour ce produit.</p>
-              )}
-            </div>
+                  )
+                })}
+              </div>
+            </section>
           )}
 
-          {activeTab === 'shipping' && (
+          <section>
+            <h2 className="font-display text-[16px] text-ink mb-4">LIVRAISON &amp; GARANTIE</h2>
             <div className="max-w-3xl">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {[
@@ -803,21 +827,36 @@ export default function ProductDetail() {
                   }
                 ].map(({ icon: Icon, t, p }) => (
                   <div key={t} className="bg-bg-panel border border-border rounded-xl p-5">
-                    <Icon size={20} strokeWidth={1.8} className="text-ink-dimmer mb-2.5" />
+                    {/* Icônes en bleu : ce sont des garanties, donc des points
+                        d'appui commerciaux. En gris, elles se confondaient avec
+                        le texte qu'elles introduisent. */}
+                    <Icon size={20} strokeWidth={1.8} className="text-accent mb-2.5" />
                     <h4 className="text-[13.5px] font-bold text-ink mb-1.5">{t}</h4>
-                    <p className="text-[12px] text-ink-dimmer leading-[1.65]">{p}</p>
+                    <p className="text-[12.5px] text-ink-dim leading-[1.65]">{p}</p>
                   </div>
                 ))}
               </div>
-              <Link href="/legal/terms" className="inline-block mt-5 text-[13px] text-ink font-bold hover:underline">
+              <Link href="/legal/terms" className="inline-block mt-5 text-[13px] text-accent font-bold hover:underline">
                 Voir les conditions complètes →
               </Link>
             </div>
-          )}
+          </section>
 
-          {activeTab === 'reviews' && (
+          {/* Avis : sous la description, jamais au-dessus du nom du produit. */}
+          <section>
+            <h2 className="font-display text-[16px] text-ink mb-4">
+              AVIS CLIENTS{reviewCount > 0 ? ` (${reviewCount})` : ''}
+            </h2>
             <div className="max-w-2xl space-y-8">
-              {isLoggedIn && (
+              {/* Un client connecté qui n'a pas encore reçu ce produit voit
+                  pourquoi il ne peut pas noter, plutôt qu'une zone vide. */}
+              {isLoggedIn && !showReviewForm && (
+                <p className="text-[13px] text-ink-dim bg-bg-sunken border border-border rounded-xl px-5 py-4">
+                  Les avis sont réservés aux clients ayant reçu ce produit. Le formulaire
+                  apparaîtra ici une fois votre commande livrée.
+                </p>
+              )}
+              {showReviewForm && (
                 <form onSubmit={handleSubmitReview} className="bg-bg-sunken rounded-xl p-5 border border-border">
                   <p className="text-sm font-semibold text-ink mb-3">
                     {myExistingReview ? 'Modifier votre avis' : 'Laisser un avis'}
@@ -908,7 +947,7 @@ export default function ProductDetail() {
                 </div>
               )}
             </div>
-          )}
+          </section>
         </div>
 
         {/* Composer un pack : un acheteur d'unité centrale a souvent besoin

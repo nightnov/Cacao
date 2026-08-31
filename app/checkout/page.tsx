@@ -379,6 +379,12 @@ export default function Checkout() {
 
       if (orderError) throw orderError
 
+      /**
+       * `unit_price_fcfa` et `subtotal_fcfa` sont écrits pour l'historique
+       * affiché au client, mais ils ne servent PAS à facturer : ils viennent du
+       * navigateur. Le montant réel est recalculé côté serveur à partir de
+       * `product_id` et `option_value_ids` (voir `lib/pricing.server.ts`).
+       */
       const orderItemsPayload = cartItems.map(item => ({
         order_id: order.id,
         product_id: item.id,
@@ -387,7 +393,8 @@ export default function Checkout() {
         quantity: item.quantity,
         subtotal_fcfa: item.price_fcfa * item.quantity,
         variant_id: item.variant_id || null,
-        variant_label: item.variant_label || null
+        variant_label: item.config_label || item.variant_label || null,
+        option_value_ids: item.option_value_ids?.length ? item.option_value_ids : null,
       }))
 
       const { error: itemsError } = await supabase.from('order_items').insert(orderItemsPayload)
@@ -400,7 +407,7 @@ export default function Checkout() {
           orderId: order.id,
           orderNumber,
           items: cartItems.map(item => ({
-            name: item.variant_label ? `${item.name} (${item.variant_label})` : item.name,
+            name: (item.config_label || item.variant_label) ? `${item.name} (${item.config_label || item.variant_label})` : item.name,
             price_fcfa: item.price_fcfa,
             quantity: item.quantity
           })),

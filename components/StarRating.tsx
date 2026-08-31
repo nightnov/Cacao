@@ -14,7 +14,7 @@ export function StarRating({ rating, reviewCount, size = 14, showCount = true, c
 
   return (
     <div className="flex items-center gap-1">
-      <Star size={size} className="fill-gold text-gold flex-shrink-0" aria-hidden="true" />
+      <Star size={size} className="fill-accent text-accent flex-shrink-0" aria-hidden="true" />
       <span className={`${textSize} font-semibold text-ink tabular-nums`}>
         {rating.toFixed(1).replace('.', ',')}
       </span>

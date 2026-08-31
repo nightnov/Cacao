@@ -28,7 +28,7 @@ export function SoldByBlock({ sellerName = 'CACAO', avgRating = 0, reviewCount =
             <>
               {' · '}
               <span className="inline-flex items-center gap-0.5 align-middle">
-                <Star size={11} className="fill-gold text-gold" />
+                <Star size={11} className="fill-accent text-accent" />
                 {avgRating.toFixed(1)} ({reviewCount} avis)
               </span>
             </>

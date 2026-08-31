@@ -4,7 +4,13 @@ import React, { useEffect, useRef, useState } from 'react'
 import { ArrowDown, ArrowUp, Plus, Trash2, Upload } from 'lucide-react'
 import { Button } from '@/components/Button'
 import { getSupabaseClient } from '@/lib/supabase'
-import { groupOptions, type OptionValue, type ProductOption } from '@/lib/options'
+import {
+  groupOptions,
+  optionMode,
+  type OptionValue,
+  type ProductOption,
+  type SelectionMode,
+} from '@/lib/options'
 
 const BUCKET = 'product-images'
 const MAX_FILE_BYTES = 5 * 1024 * 1024
@@ -43,7 +49,7 @@ export function ProductOptionsPanel({ productId }: { productId: string }) {
       const supabase = getSupabaseClient()
       const { data: rawOptions, error: err } = await supabase
         .from('product_options')
-        .select('id, product_id, name, sort_order')
+        .select('id, product_id, name, sort_order, selection_mode')
         .eq('product_id', productId)
         .order('sort_order')
 
@@ -99,6 +105,22 @@ export function ProductOptionsPanel({ productId }: { productId: string }) {
       setError(err.message)
     } finally {
       setBusy(false)
+    }
+  }
+
+  /** Bascule choix unique / cumul pour une option. */
+  const setMode = async (option: ProductOption, mode: SelectionMode) => {
+    setOptions(cur => cur.map(o => (o.id === option.id ? { ...o, selection_mode: mode } : o)))
+    try {
+      const supabase = getSupabaseClient()
+      const { error: err } = await supabase
+        .from('product_options')
+        .update({ selection_mode: mode })
+        .eq('id', option.id)
+      if (err) throw err
+    } catch (err: any) {
+      setError(err.message)
+      await load()
     }
   }
 
@@ -277,7 +299,7 @@ export function ProductOptionsPanel({ productId }: { productId: string }) {
           <div className="space-y-5">
             {options.map(option => (
               <section key={option.id} className="border border-border rounded-lg p-4">
-                <div className="flex items-center justify-between gap-3 mb-4">
+                <div className="flex items-center justify-between gap-3 mb-3">
                   <h3 className="font-semibold text-ink">{option.name}</h3>
                   <Button
                     type="button"
@@ -289,6 +311,55 @@ export function ProductOptionsPanel({ productId }: { productId: string }) {
                   >
                     <Trash2 size={14} /> Supprimer l&apos;option
                   </Button>
+                </div>
+
+                {/*
+                  Mode de sélection.
+
+                  Une couleur, une capacité de mémoire et un processeur
+                  s'excluent : facturer « 16 Go + 32 Go » n'aurait aucun sens.
+                  Le stockage fait exception, une machine pouvant réellement
+                  recevoir deux disques, mais cela dépend du modèle : le cumul
+                  s'active donc option par option plutôt que d'être supposé.
+                */}
+                <div className="mb-4 p-3 rounded-lg bg-bg-raised border border-border">
+                  <p className="text-[11.5px] font-semibold text-ink-dim mb-2">
+                    Comment le client choisit
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    <label className="flex items-start gap-2 text-[13px] text-ink cursor-pointer">
+                      <input
+                        type="radio"
+                        name={`mode-${option.id}`}
+                        checked={optionMode(option) === 'single'}
+                        onChange={() => setMode(option, 'single')}
+                        className="mt-0.5 w-4 h-4 accent-gold"
+                      />
+                      <span>
+                        Choix unique
+                        <span className="block text-[11.5px] text-ink-dimmer">
+                          La nouvelle valeur remplace la précédente. À utiliser pour la
+                          couleur, la mémoire et le processeur.
+                        </span>
+                      </span>
+                    </label>
+                    <label className="flex items-start gap-2 text-[13px] text-ink cursor-pointer">
+                      <input
+                        type="radio"
+                        name={`mode-${option.id}`}
+                        checked={optionMode(option) === 'multiple'}
+                        onChange={() => setMode(option, 'multiple')}
+                        className="mt-0.5 w-4 h-4 accent-gold"
+                      />
+                      <span>
+                        Cumul autorisé
+                        <span className="block text-[11.5px] text-ink-dimmer">
+                          Le client peut en retenir plusieurs, et les suppléments
+                          s&apos;additionnent. Le résumé affiche par exemple « 512 Go, 1 To ».
+                        </span>
+                      </span>
+                    </label>
+                  </div>
                 </div>
 
                 <div className="space-y-4">

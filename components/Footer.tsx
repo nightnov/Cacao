@@ -84,7 +84,7 @@ export function Footer() {
 
           {rating && (
             <div className="flex items-center gap-2 mt-4">
-              <Star size={15} className="fill-gold text-gold" />
+              <Star size={15} className="fill-accent text-accent" />
               <span className="font-display text-[15px] text-ink tabular-nums">
                 {rating.avg.toFixed(1).replace('.', ',')}/5
               </span>

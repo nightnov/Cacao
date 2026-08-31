@@ -22,9 +22,11 @@ import { findMatchingVariant, variantLabel } from '@/lib/variants'
 import { categoryLabel } from '@/lib/categories'
 import { formatAmount } from '@/lib/format'
 import { PRICE, PRICE_OLD } from '@/lib/ui'
+import { stripDashes } from '@/lib/text'
 import { ProductGallery } from '@/components/ProductGallery'
 import { ProductConfigurator } from '@/components/ProductConfigurator'
 import { ProductDescription } from '@/components/ProductDescription'
+import { ConfigSummary } from '@/components/ConfigSummary'
 import {
   groupOptions,
   defaultSelection,
@@ -33,8 +35,10 @@ import {
   selectionImage,
   configLabel,
   configuredPrice,
+  toggleValue,
   type ProductOption,
   type OptionValue,
+  type Selection,
 } from '@/lib/options'
 
 interface Product {
@@ -93,7 +97,7 @@ export default function ProductDetail() {
 
   /** Configuration : options du produit et valeur retenue pour chacune. */
   const [options, setOptions] = useState<ProductOption[]>([])
-  const [selection, setSelection] = useState<Record<string, string>>({})
+  const [selection, setSelection] = useState<Selection>({})
 
   /** Vrai si le client a reçu ce produit : condition pour laisser un avis. */
   const [canReview, setCanReview] = useState(false)
@@ -249,7 +253,10 @@ export default function ProductDetail() {
         try {
           const { data: rawOptions, error: optErr } = await supabase
             .from('product_options')
-            .select('id, product_id, name, sort_order')
+            // `selection_mode` n'existe qu'après la migration 035. En cas
+            // d'échec, le bloc `catch` laisse simplement la fiche sans options,
+            // et `optionMode` retombe de toute façon sur le choix unique.
+            .select('id, product_id, name, sort_order, selection_mode')
             .eq('product_id', typedProduct.id)
             .order('sort_order')
 
@@ -565,7 +572,7 @@ export default function ProductDetail() {
 
             {product.short_description && (
               <p className="text-[14px] text-ink-dim leading-[1.6] mb-3">
-                {product.short_description}
+                {stripDashes(product.short_description)}
               </p>
             )}
 
@@ -610,14 +617,19 @@ export default function ProductDetail() {
                 le stockage retenus, et les répéter à dix centimètres disait deux
                 fois la même chose. Le détail vit dans la section Description. */}
 
-            <div className="my-5">
+            <div className="my-5 space-y-5">
               <ProductConfigurator
                 options={options}
                 selection={selection}
-                onSelect={(optionId, valueId) =>
-                  setSelection(s => ({ ...s, [optionId]: valueId }))
+                /* `toggleValue` connaît le mode de l'option : en choix unique
+                   la valeur remplace la précédente, en choix multiple elle
+                   s'ajoute. La page n'a pas à refaire ce raisonnement. */
+                onToggle={(option, valueId) =>
+                  setSelection(s => toggleValue(option, s, valueId))
                 }
               />
+
+              <ConfigSummary options={options} selection={selection} basePrice={basePrice} />
             </div>
 
             {/* Ancien sélecteur de variantes, conservé pour les produits saisis
@@ -753,7 +765,11 @@ export default function ProductDetail() {
           l'ordre de lecture.
         */}
         <div className="mb-16 space-y-8">
-          <ProductDescription description={product.description} blocks={configBlocks} />
+          <ProductDescription
+            description={stripDashes(product.description)}
+            options={options}
+            blocks={configBlocks}
+          />
 
           {/* Caractéristiques techniques héritées de `specs`. Conservées sous la
               description pour les produits saisis avant la configuration, et
@@ -848,49 +864,8 @@ export default function ProductDetail() {
               AVIS CLIENTS{reviewCount > 0 ? ` (${reviewCount})` : ''}
             </h2>
             <div className="max-w-2xl space-y-8">
-              {/* Un client connecté qui n'a pas encore reçu ce produit voit
-                  pourquoi il ne peut pas noter, plutôt qu'une zone vide. */}
-              {isLoggedIn && !showReviewForm && (
-                <p className="text-[13px] text-ink-dim bg-bg-sunken border border-border rounded-xl px-5 py-4">
-                  Les avis sont réservés aux clients ayant reçu ce produit. Le formulaire
-                  apparaîtra ici une fois votre commande livrée.
-                </p>
-              )}
-              {showReviewForm && (
-                <form onSubmit={handleSubmitReview} className="bg-bg-sunken rounded-xl p-5 border border-border">
-                  <p className="text-sm font-semibold text-ink mb-3">
-                    {myExistingReview ? 'Modifier votre avis' : 'Laisser un avis'}
-                  </p>
-                  <div className="flex items-center gap-1 mb-3">
-                    {[1, 2, 3, 4, 5].map(star => (
-                      <button
-                        key={star}
-                        type="button"
-                        onClick={() => setMyRating(star)}
-                        aria-label={`${star} étoiles`}
-                      >
-                        <Star
-                          size={24}
-                          className={star <= (myRating || myExistingReview?.rating || 0) ? 'fill-gold text-gold' : 'text-border-strong'}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                  <textarea
-                    value={myComment}
-                    onChange={e => setMyComment(e.target.value)}
-                    placeholder="Votre avis (optionnel)"
-                    rows={2}
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent mb-3 bg-bg-panel"
-                  />
-                  <Button type="submit" variant="solid" disabled={submittingReview || myRating === 0}>
-                    {submittingReview ? 'Envoi...' : 'Publier'}
-                  </Button>
-                </form>
-              )}
-
               {reviews.length === 0 ? (
-                <p className="text-sm text-ink-dimmer">Aucun avis pour le moment. Soyez le premier à donner votre avis sur ce produit.</p>
+                <p className="text-sm text-ink-dimmer">Aucun avis pour le moment. Les avis sont publiés par les clients ayant reçu ce produit.</p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-[230px,1fr] gap-7 items-start">
                   {/* Synthèse : note moyenne et répartition, toutes deux calculées
@@ -945,6 +920,47 @@ export default function ProductDetail() {
                     ))}
                   </div>
                 </div>
+              )}
+
+              {/* Un client connecté qui n'a pas encore reçu ce produit voit
+                  pourquoi il ne peut pas noter, plutôt qu'une zone vide. */}
+              {isLoggedIn && !showReviewForm && (
+                <p className="text-[13px] text-ink-dim bg-bg-sunken border border-border rounded-xl px-5 py-4">
+                  Les avis sont réservés aux clients ayant reçu ce produit. Le formulaire
+                  apparaîtra ici une fois votre commande livrée.
+                </p>
+              )}
+              {showReviewForm && (
+                <form onSubmit={handleSubmitReview} className="bg-bg-sunken rounded-xl p-5 border border-border">
+                  <p className="text-sm font-semibold text-ink mb-3">
+                    {myExistingReview ? 'Modifier votre avis' : 'Laisser un avis'}
+                  </p>
+                  <div className="flex items-center gap-1 mb-3">
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setMyRating(star)}
+                        aria-label={`${star} étoiles`}
+                      >
+                        <Star
+                          size={24}
+                          className={star <= (myRating || myExistingReview?.rating || 0) ? 'fill-accent text-accent' : 'text-border-strong'}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    value={myComment}
+                    onChange={e => setMyComment(e.target.value)}
+                    placeholder="Votre avis (optionnel)"
+                    rows={2}
+                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent mb-3 bg-bg-panel"
+                  />
+                  <Button type="submit" variant="solid" disabled={submittingReview || myRating === 0}>
+                    {submittingReview ? 'Envoi...' : 'Publier'}
+                  </Button>
+                </form>
               )}
             </div>
           </section>

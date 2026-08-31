@@ -7,9 +7,12 @@
  * 81 lignes à saisir pour un seul produit.
  *
  * Tout ce qui est calculé ici sert à l'AFFICHAGE. Le montant facturé est
- * recalculé côté serveur à partir des identifiants de valeurs — voir
+ * recalculé côté serveur à partir des identifiants de valeurs, voir
  * `lib/pricing.server.ts`.
  */
+
+/** `single` : la nouvelle valeur remplace. `multiple` : elles s'additionnent. */
+export type SelectionMode = 'single' | 'multiple'
 
 export interface OptionValue {
   id: string
@@ -21,6 +24,7 @@ export interface OptionValue {
   block_title: string | null
   block_image_url: string | null
   block_body: string | null
+  block_sort_order?: number
   is_active: boolean
   is_default: boolean
   sort_order: number
@@ -31,7 +35,23 @@ export interface ProductOption {
   product_id: string
   name: string
   sort_order: number
+  selection_mode?: SelectionMode
   values: OptionValue[]
+}
+
+/**
+ * Valeurs retenues, par option.
+ *
+ * Une LISTE et non une valeur unique, même en choix unique : c'est ce qui
+ * permet au stockage d'en cumuler plusieurs sans dupliquer toute la mécanique.
+ * En choix unique, la liste ne contient jamais plus d'un élément.
+ */
+export type Selection = Record<string, string[]>
+
+export function optionMode(option: ProductOption): SelectionMode {
+  // Défaut prudent : le choix unique ne peut pas produire une facture absurde
+  // du type « 16 Go + 32 Go », contrairement au cumul.
+  return option.selection_mode === 'multiple' ? 'multiple' : 'single'
 }
 
 /** Valeurs proposables au client : les valeurs inactives restent en base. */
@@ -40,39 +60,72 @@ export function activeValues(option: ProductOption): OptionValue[] {
 }
 
 /**
- * Sélection à l'ouverture de la fiche.
+ * Sélection à l'ouverture de la fiche, dite « configuration de base ».
  *
  * On retient la valeur marquée par défaut en administration ; à défaut, la
  * première valeur active. Laisser une option sans réponse afficherait un prix
- * incomplet et bloquerait l'ajout au panier sans que le client comprenne
- * pourquoi.
+ * incomplet et bloquerait l'achat sans que le client comprenne pourquoi.
+ *
+ * Même en choix multiple, une seule valeur est présélectionnée : c'est au
+ * client d'ajouter un second disque, pas au site de le décider pour lui.
  */
-export function defaultSelection(options: ProductOption[]): Record<string, string> {
-  const selection: Record<string, string> = {}
+export function defaultSelection(options: ProductOption[]): Selection {
+  const selection: Selection = {}
   for (const option of options) {
     const values = activeValues(option)
     if (values.length === 0) continue
     const chosen = values.find(v => v.is_default) || values[0]
-    selection[option.id] = chosen.id
+    selection[option.id] = [chosen.id]
   }
   return selection
 }
 
-/** Valeurs retenues, dans l'ordre d'affichage des options. */
-export function selectedValues(
-  options: ProductOption[],
-  selection: Record<string, string>
-): OptionValue[] {
+/**
+ * Applique un clic sur une valeur.
+ *
+ * En choix unique, la valeur remplace la précédente : sélectionner 32 Go après
+ * 16 Go doit donner 32 Go, jamais les deux.
+ *
+ * En choix multiple, elle s'ajoute ou se retire. La dernière valeur ne peut pas
+ * être retirée : une option sans réponse afficherait un prix incomplet.
+ */
+export function toggleValue(
+  option: ProductOption,
+  selection: Selection,
+  valueId: string
+): Selection {
+  const current = selection[option.id] || []
+
+  if (optionMode(option) === 'single') {
+    return { ...selection, [option.id]: [valueId] }
+  }
+
+  if (current.includes(valueId)) {
+    if (current.length === 1) return selection
+    return { ...selection, [option.id]: current.filter(id => id !== valueId) }
+  }
+  return { ...selection, [option.id]: [...current, valueId] }
+}
+
+/** Valeurs retenues, dans l'ordre d'affichage des options puis des valeurs. */
+export function selectedValues(options: ProductOption[], selection: Selection): OptionValue[] {
   const out: OptionValue[] = []
   for (const option of options) {
-    const value = option.values.find(v => v.id === selection[option.id])
-    if (value) out.push(value)
+    const ids = selection[option.id] || []
+    for (const value of option.values) {
+      if (ids.includes(value.id)) out.push(value)
+    }
   }
   return out
 }
 
+/** Valeurs de la configuration de base, telle que définie en administration. */
+export function baseValues(options: ProductOption[]): OptionValue[] {
+  return selectedValues(options, defaultSelection(options))
+}
+
 /**
- * Prix affiché pour la configuration retenue.
+ * Prix pour une sélection donnée.
  *
  * Borné à zéro : un cumul de réductions ne doit pas afficher un prix négatif.
  * La même borne existe côté serveur, où elle fait foi.
@@ -80,7 +133,7 @@ export function selectedValues(
 export function configuredPrice(
   basePrice: number,
   options: ProductOption[],
-  selection: Record<string, string>
+  selection: Selection
 ): number {
   const extra = selectedValues(options, selection).reduce(
     (sum, v) => sum + (Number(v.price_delta_fcfa) || 0),
@@ -90,36 +143,43 @@ export function configuredPrice(
 }
 
 /** Identifiants transmis au panier, seule donnée qui compte au paiement. */
-export function selectionIds(
-  options: ProductOption[],
-  selection: Record<string, string>
-): string[] {
+export function selectionIds(options: ProductOption[], selection: Selection): string[] {
   return selectedValues(options, selection).map(v => v.id)
 }
 
-/** Résumé lisible, par exemple « Noir · 1 To · 16 Go ». */
-export function configLabel(
-  options: ProductOption[],
-  selection: Record<string, string>
-): string {
+/**
+ * Résumé lisible, par exemple « Noir, 1 To, 16 Go ».
+ *
+ * Séparé par des virgules et non par des tirets : les tirets sont proscrits
+ * dans les textes affichés au client.
+ */
+export function configLabel(options: ProductOption[], selection: Selection): string {
   return selectedValues(options, selection)
     .map(v => v.label)
-    .join(' · ')
+    .join(', ')
 }
 
 /**
  * Image imposée par la configuration.
  *
- * La dernière valeur choisie qui porte une image l'emporte — en pratique, la
+ * La dernière valeur choisie qui porte une image l'emporte, en pratique la
  * couleur. Une option sans image ne remplace rien plutôt que d'effacer le
  * visuel du produit.
  */
-export function selectionImage(
-  options: ProductOption[],
-  selection: Record<string, string>
-): string | null {
+export function selectionImage(options: ProductOption[], selection: Selection): string | null {
   const withImage = selectedValues(options, selection).filter(v => v.image_url)
   return withImage.length > 0 ? withImage[withImage.length - 1].image_url : null
+}
+
+/** Vrai quand le client s'est écarté de la configuration de base. */
+export function differsFromBase(options: ProductOption[], selection: Selection): boolean {
+  const base = defaultSelection(options)
+  for (const option of options) {
+    const a = [...(selection[option.id] || [])].sort().join(',')
+    const b = [...(base[option.id] || [])].sort().join(',')
+    if (a !== b) return true
+  }
+  return false
 }
 
 /**
@@ -129,7 +189,13 @@ export function selectionImage(
  * l'affichage, mais l'administration a besoin de les voir pour les réactiver.
  */
 export function groupOptions(
-  rawOptions: { id: string; product_id: string; name: string; sort_order: number }[],
+  rawOptions: {
+    id: string
+    product_id: string
+    name: string
+    sort_order: number
+    selection_mode?: SelectionMode
+  }[],
   rawValues: OptionValue[]
 ): ProductOption[] {
   return [...rawOptions]

@@ -83,7 +83,7 @@ export function ProductGallery({
         {current?.type === 'video' && embedUrl ? (
           <iframe
             src={embedUrl}
-            title={`Vidéo de présentation — ${productName}`}
+            title={`Vidéo de présentation de ${productName}`}
             className="relative w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen

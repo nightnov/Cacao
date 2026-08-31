@@ -340,7 +340,7 @@ export default function Account() {
                       className="bg-bg-panel border border-border rounded-2xl p-5 text-left hover:border-border-strong transition-colors"
                     >
                       <stat.icon size={18} className="text-ink-dimmer mb-2" strokeWidth={1.5} />
-                      <p className="text-2xl font-semibold text-ink">{loadingOrders ? '—' : stat.value}</p>
+                      <p className="text-2xl font-semibold text-ink">{loadingOrders ? '…' : stat.value}</p>
                       <p className="text-xs text-ink-dimmer">{stat.label}</p>
                     </button>
                   ))}
@@ -457,7 +457,7 @@ export default function Account() {
                     <div className="space-y-3 text-sm">
                       <div>
                         <p className="text-ink-dimmer text-xs uppercase">Nom complet</p>
-                        <p className="text-ink">{displayName !== 'Bienvenue' ? displayName : '—'}</p>
+                        <p className="text-ink">{displayName !== 'Bienvenue' ? displayName : 'Non renseigné'}</p>
                       </div>
                       <div>
                         <p className="text-ink-dimmer text-xs uppercase">E-mail</p>
@@ -465,7 +465,7 @@ export default function Account() {
                       </div>
                       <div>
                         <p className="text-ink-dimmer text-xs uppercase">Téléphone</p>
-                        <p className="text-ink">{profile.phone || '—'}</p>
+                        <p className="text-ink">{profile.phone || 'Non renseigné'}</p>
                       </div>
                     </div>
                     <Button variant="solid" className="w-full mt-5" onClick={() => setActiveSection('addresses')}>
@@ -643,7 +643,7 @@ export default function Account() {
                         </div>
                         <div className="flex items-center gap-0.5 mb-2">
                           {[1, 2, 3, 4, 5].map(i => (
-                            <Star key={i} size={14} className={i <= review.rating ? 'fill-gold text-gold' : 'text-border-strong'} />
+                            <Star key={i} size={14} className={i <= review.rating ? 'fill-accent text-accent' : 'text-border-strong'} />
                           ))}
                         </div>
                         {review.comment && <p className="text-sm text-ink-dim">{review.comment}</p>}

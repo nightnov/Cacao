@@ -39,14 +39,27 @@ interface Order {
   shipping_address: { city: string; address: string } | null
 }
 
+/**
+ * Pastilles d'état de commande.
+ *
+ * Elles étaient écrites en couleurs de thème clair (`bg-blue-100 text-blue-700`)
+ * héritées d'une version antérieure du site : sur fond sombre, « En attente »
+ * affichait du gris foncé sur gris foncé, illisible.
+ *
+ * Le cadre est désormais neutre et identique pour tous les états ; seul le point
+ * porte la couleur. Sept pastilles vivement teintées dans une même liste de
+ * commandes se disputaient l'attention sans hiérarchie.
+ */
+const STATUS_PILL = 'bg-bg-raised text-ink-dim'
+
 const statusLabels: Record<string, { label: string; color: string; dot: string }> = {
-  pending: { label: 'En attente', color: 'bg-bg-raised text-gray-700', dot: 'bg-gray-400' },
-  confirmed: { label: 'Confirmée', color: 'bg-blue-100 text-blue-700', dot: 'bg-blue-500' },
-  preparing: { label: 'En préparation', color: 'bg-yellow-100 text-yellow-700', dot: 'bg-yellow-500' },
-  shipped: { label: 'Expédiée', color: 'bg-purple-100 text-purple-700', dot: 'bg-purple-500' },
-  delivered: { label: 'Livrée', color: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
-  cancelled: { label: 'Annulée', color: 'bg-red-100 text-red-700', dot: 'bg-red-500' },
-  refunded: { label: 'Remboursée', color: 'bg-red-100 text-red-700', dot: 'bg-red-500' }
+  pending: { label: 'En attente', color: STATUS_PILL, dot: 'bg-ink-faint' },
+  confirmed: { label: 'Confirmée', color: STATUS_PILL, dot: 'bg-info' },
+  preparing: { label: 'En préparation', color: STATUS_PILL, dot: 'bg-gold' },
+  shipped: { label: 'Expédiée', color: STATUS_PILL, dot: 'bg-ink' },
+  delivered: { label: 'Livrée', color: STATUS_PILL, dot: 'bg-green-bright' },
+  cancelled: { label: 'Annulée', color: STATUS_PILL, dot: 'bg-danger' },
+  refunded: { label: 'Remboursée', color: STATUS_PILL, dot: 'bg-danger' }
 }
 
 interface AccountSection {
@@ -303,7 +316,7 @@ export default function Account() {
             })}
             <button
               onClick={logout}
-              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-[13.5px] font-semibold text-red-600 bg-bg-panel border border-border md:border-0 md:bg-transparent hover:bg-red-50 transition-colors whitespace-nowrap flex-shrink-0 md:mt-1 md:border-t md:border-border md:rounded-none md:pt-3"
+              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-[13.5px] font-semibold text-danger bg-bg-panel border border-border md:border-0 md:bg-transparent hover:bg-bg-raised transition-colors whitespace-nowrap flex-shrink-0 md:mt-1 md:border-t md:border-border md:rounded-none md:pt-3"
             >
               <LogOut size={16} strokeWidth={1.9} /> Déconnexion
             </button>
@@ -353,7 +366,7 @@ export default function Account() {
                     <div className="bg-bg-panel rounded-2xl border-2 border-dashed border-border p-10 text-center">
                       <ShoppingBag size={26} className="text-ink-dimmer mx-auto mb-3" strokeWidth={1.5} />
                       <p className="text-ink-dim mb-4">Vous n&apos;avez pas encore passé de commande.</p>
-                      <Link href="/products"><Button variant="primary">Découvrir les produits</Button></Link>
+                      <Link href="/products"><Button variant="sober">Découvrir les produits</Button></Link>
                     </div>
                   ) : (
                     <div className="bg-bg-panel rounded-2xl border border-border divide-y divide-border">
@@ -455,7 +468,7 @@ export default function Account() {
                         <p className="text-ink">{profile.phone || '—'}</p>
                       </div>
                     </div>
-                    <Button variant="primary" className="w-full mt-5" onClick={() => setActiveSection('addresses')}>
+                    <Button variant="solid" className="w-full mt-5" onClick={() => setActiveSection('addresses')}>
                       Modifier mes informations
                     </Button>
                   </div>
@@ -470,7 +483,7 @@ export default function Account() {
                   <div className="bg-bg-panel rounded-2xl border-2 border-dashed border-border p-12 text-center">
                     <Heart size={28} className="text-ink-dimmer mx-auto mb-3" strokeWidth={1.5} />
                     <p className="text-ink-dim mb-4">Aucun favori pour le moment.</p>
-                    <Link href="/products"><Button variant="primary">Découvrir les produits</Button></Link>
+                    <Link href="/products"><Button variant="sober">Découvrir les produits</Button></Link>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-5 gap-y-8">
@@ -509,7 +522,7 @@ export default function Account() {
                     <ShoppingBag size={28} className="text-ink-dimmer mx-auto mb-3" strokeWidth={1.5} />
                     <p className="text-ink-dim mb-4">Vous n&apos;avez pas encore passé de commande.</p>
                     <Link href="/products">
-                      <Button variant="primary">Découvrir les produits</Button>
+                      <Button variant="sober">Découvrir les produits</Button>
                     </Link>
                   </div>
                 ) : (
@@ -680,7 +693,7 @@ export default function Account() {
                     />
                   </div>
                   <div className="flex items-center gap-4 pt-2">
-                    <Button type="submit" variant="primary" disabled={savingProfile}>
+                    <Button type="submit" variant="solid" disabled={savingProfile}>
                       {savingProfile ? 'Enregistrement...' : 'Enregistrer'}
                     </Button>
                     {profileSaved && <span className="text-sm text-green-bright font-semibold">✓ Enregistré</span>}
@@ -693,7 +706,7 @@ export default function Account() {
               <div className="bg-bg-panel rounded-2xl border border-border p-8">
                 <h2 className="font-serif font-semibold text-xl text-ink mb-1">Paramètres</h2>
                 <p className="text-sm text-ink-dimmer mb-6">Gestion de votre compte.</p>
-                <Button type="button" variant="outline" onClick={logout}>
+                <Button type="button" variant="sober" onClick={logout}>
                   Se déconnecter
                 </Button>
               </div>

@@ -99,7 +99,7 @@ export default function Favorites() {
             <h2 className="font-serif font-semibold text-xl text-ink mb-2">Aucun favori pour le moment</h2>
             <p className="text-ink-dimmer mb-6">Explorez le catalogue et ajoutez les produits qui vous plaisent en cliquant sur le cœur.</p>
             <Link href="/products">
-              <Button variant="primary">Découvrir les produits</Button>
+              <Button variant="sober">Découvrir les produits</Button>
             </Link>
           </div>
         ) : (

@@ -93,7 +93,7 @@ export default function CheckoutSuccess() {
           <h1 className="font-serif font-semibold text-3xl text-ink mb-3">Commande introuvable</h1>
           <p className="text-ink-dim mb-8">Nous n&apos;avons pas trouvé cette commande.</p>
           <Link href="/products">
-            <Button variant="primary">Retour au catalogue</Button>
+            <Button variant="sober">Retour au catalogue</Button>
           </Link>
         </div>
         <Footer />
@@ -107,7 +107,7 @@ export default function CheckoutSuccess() {
 
       <div className="flex-1 max-w-2xl mx-auto w-full px-5 sm:px-10 py-16">
         <div className="bg-bg-panel rounded-lg border border-border p-8">
-          <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+          <div className="w-14 h-14 rounded-full bg-green/15 flex items-center justify-center mx-auto mb-6">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3FCE7A" strokeWidth="2.5">
               <polyline points="20 6 9 17 4 12" />
             </svg>
@@ -167,7 +167,7 @@ export default function CheckoutSuccess() {
           </div>
 
           <Link href="/products" className="block mt-8">
-            <Button variant="outline" className="w-full">Continuer les achats</Button>
+            <Button variant="sober" className="w-full">Continuer les achats</Button>
           </Link>
         </div>
       </div>

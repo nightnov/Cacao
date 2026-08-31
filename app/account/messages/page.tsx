@@ -156,7 +156,7 @@ function MessagesContent() {
               placeholder="Écrivez votre message..."
               className="flex-1 px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold resize-none text-sm"
             />
-            <Button type="submit" variant="primary" disabled={sending || !body.trim()}>
+            <Button type="submit" variant="solid" disabled={sending || !body.trim()}>
               Envoyer
             </Button>
           </form>

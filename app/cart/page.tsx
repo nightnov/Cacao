@@ -92,7 +92,7 @@ export default function Cart() {
             <h2 className="font-serif font-semibold text-2xl text-ink mb-3">Panier vide</h2>
             <p className="text-ink-dim mb-8">Explorez notre catalogue et ajoutez vos produits préférés.</p>
             <Link href="/products">
-              <Button variant="primary">Continuer les achats</Button>
+              <Button variant="sober">Continuer les achats</Button>
             </Link>
           </div>
         </div>
@@ -159,7 +159,7 @@ export default function Cart() {
 
                 <button
                   onClick={() => removeFromCart(item.id, item.variant_id)}
-                  className="text-ink-dimmer hover:text-red-600 transition-colors flex-shrink-0"
+                  className="text-ink-dimmer hover:text-danger transition-colors flex-shrink-0"
                   aria-label="Retirer du panier"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -207,7 +207,7 @@ export default function Cart() {
                 <span className="text-ink">{formatAmount(total - discount)} FCFA</span>
               </div>
               <Link href="/checkout">
-                <Button variant="primary" className="w-full">
+                <Button variant="solid" className="w-full">
                   Passer commande
                 </Button>
               </Link>

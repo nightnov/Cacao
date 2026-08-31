@@ -84,7 +84,7 @@ function ReturnContent() {
 
           {state === 'paid' && (
             <>
-              <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-6">
+              <div className="w-14 h-14 rounded-full bg-green/15 flex items-center justify-center mx-auto mb-6">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3FCE7A" strokeWidth="2.5">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
@@ -94,14 +94,14 @@ function ReturnContent() {
                 Votre commande <strong>{orderNumber}</strong> est confirmée. Vous recevrez bientôt des nouvelles de la livraison.
               </p>
               <Link href="/account">
-                <Button variant="primary">Voir mes commandes</Button>
+                <Button variant="sober">Voir mes commandes</Button>
               </Link>
             </>
           )}
 
           {state === 'pending' && (
             <>
-              <div className="w-14 h-14 rounded-full bg-yellow-100 flex items-center justify-center mx-auto mb-6">
+              <div className="w-14 h-14 rounded-full bg-gold/15 flex items-center justify-center mx-auto mb-6">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B45309" strokeWidth="2.5">
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
@@ -112,14 +112,14 @@ function ReturnContent() {
                 Votre commande <strong>{orderNumber}</strong> est enregistrée. La confirmation du paiement peut prendre quelques minutes. Vous pouvez suivre son statut dans votre compte.
               </p>
               <Link href="/account">
-                <Button variant="outline">Voir mes commandes</Button>
+                <Button variant="sober">Voir mes commandes</Button>
               </Link>
             </>
           )}
 
           {state === 'failed' && (
             <>
-              <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-6">
+              <div className="w-14 h-14 rounded-full bg-danger/15 flex items-center justify-center mx-auto mb-6">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B91C1C" strokeWidth="2.5">
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
@@ -130,7 +130,7 @@ function ReturnContent() {
                 Le paiement de la commande <strong>{orderNumber}</strong> n&apos;a pas abouti. Vous pouvez réessayer depuis votre panier.
               </p>
               <Link href="/cart">
-                <Button variant="primary">Retour au panier</Button>
+                <Button variant="sober">Retour au panier</Button>
               </Link>
             </>
           )}
@@ -140,7 +140,7 @@ function ReturnContent() {
               <h1 className="font-serif font-semibold text-2xl text-ink mb-2">Commande introuvable</h1>
               <p className="text-ink-dim mb-8">Nous n&apos;avons pas pu retrouver cette commande.</p>
               <Link href="/account">
-                <Button variant="outline">Voir mes commandes</Button>
+                <Button variant="sober">Voir mes commandes</Button>
               </Link>
             </>
           )}

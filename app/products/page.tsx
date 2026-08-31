@@ -5,10 +5,12 @@ import { useSearchParams } from 'next/navigation'
 import { Navbar } from '@/components/Navbar'
 import { TrustBar } from '@/components/TrustBar'
 import { Footer } from '@/components/Footer'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import { ProductCard } from '@/components/ProductCard'
 import Link from 'next/link'
 import { SlidersHorizontal } from 'lucide-react'
 import { labelFor } from '@/lib/categories'
+import { btn } from '@/lib/ui'
 import { useCategories } from '@/hooks/useCategories'
 
 interface Product {
@@ -195,19 +197,18 @@ function ProductsContent() {
       {/* En-tête de rayon : titre compact et compteur, façon page de série */}
       <header className="border-b border-border bg-gradient-to-b from-bg-panel to-bg">
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-10 py-6">
-          <nav aria-label="Fil d'Ariane" className="flex items-center gap-2 text-[12px] text-ink-dimmer mb-3">
-            <Link href="/" className="hover:text-ink transition-colors">Accueil</Link>
-            <span aria-hidden="true">/</span>
-            {category ? (
-              <>
-                <Link href="/products" className="hover:text-ink transition-colors">Catalogue</Link>
-                <span aria-hidden="true">/</span>
-                <span className="text-ink">{labelFor(category, categories)}</span>
-              </>
-            ) : (
-              <span className="text-ink">Catalogue</span>
-            )}
-          </nav>
+          <Breadcrumb
+            className="mb-3"
+            items={
+              category
+                ? [
+                    { label: 'Accueil', href: '/' },
+                    { label: 'Catalogue', href: '/products' },
+                    { label: labelFor(category, categories) },
+                  ]
+                : [{ label: 'Accueil', href: '/' }, { label: 'Catalogue' }]
+            }
+          />
 
           <h1 className="font-display text-[24px] sm:text-[30px] text-ink">
             {search
@@ -337,10 +338,8 @@ function ProductsContent() {
                 <p className="text-ink-dimmer max-w-md mx-auto mb-6">
                   Ce produit n&apos;est pas encore disponible dans notre catalogue. Il sera peut-être ajouté lors d&apos;une prochaine mise à jour. N&apos;hésitez pas à revenir vérifier, ou à parcourir le catalogue complet en attendant.
                 </p>
-                <Link href="/products">
-                  <button className="px-6 py-2.5 bg-ink hover:bg-ink-dim text-ink-invert rounded-full font-semibold text-sm transition-colors">
-                    Voir tout le catalogue
-                  </button>
+                <Link href="/products" className={btn('solid', 'md')}>
+                  Voir tout le catalogue
                 </Link>
               </div>
             ) : (

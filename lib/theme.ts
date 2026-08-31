@@ -79,10 +79,10 @@ export const TOKEN_LABELS: Record<TokenKey, string> = {
  * Doit rester identique au bloc `:root` de app/globals.css.
  */
 export const DEFAULT_TOKENS: Record<TokenKey, string> = {
-  bg: '#222427',
-  'bg-panel': '#1C2021',
-  'bg-sunken': '#171A1C',
-  'bg-raised': '#2A2D31',
+  bg: '#1A1D1F',
+  'bg-panel': '#24272B',
+  'bg-sunken': '#151719',
+  'bg-raised': '#2E3237',
   ink: '#EEF2F7',
   'ink-dim': '#B3B8BE',
   'ink-dimmer': '#8E959D',

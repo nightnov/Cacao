@@ -715,14 +715,14 @@ export default function Checkout() {
               </div>
 
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mt-4">
+                <div className="bg-danger/10 border border-danger/30 text-danger px-4 py-3 rounded-lg text-sm mt-4">
                   {error}
                 </div>
               )}
 
               <Button
                 type="submit"
-                variant="primary"
+                variant="solid"
                 className="w-full mt-6"
                 disabled={submitting || shippingFees.length === 0}
               >

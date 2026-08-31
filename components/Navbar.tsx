@@ -122,7 +122,12 @@ export function Navbar() {
   const badge = 'absolute -top-1.5 right-0 bg-gold text-ink-invert text-[9px] font-extrabold rounded-full min-w-[15px] h-[15px] px-1 flex items-center justify-center'
 
   return (
-    <nav className="bg-bg-panel border-b border-border sticky top-0 z-30">
+    /* En-tête figé. Le fond reste très peu transparent : sous une barre trop
+       translucide, le contenu qui défile derrière rend les libellés illisibles.
+       Le flou fait l'essentiel du travail, l'opacité reste haute.
+       `supports-[backdrop-filter]` : sans flou disponible, on retombe sur un
+       fond plein plutôt que sur une barre à moitié transparente. */
+    <nav className="sticky top-0 z-40 border-b border-border bg-bg-panel shadow-header supports-[backdrop-filter]:bg-bg-panel/85 supports-[backdrop-filter]:backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-3 flex items-center gap-4 lg:gap-6">
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}

@@ -69,9 +69,21 @@ const config: Config = {
         '4xl': '32px',
         '5xl': '44px',
       },
+      /**
+       * Ombres volontairement à peine perceptibles.
+       *
+       * Sur un fond sombre, une ombre noire ne crée pas de relief : elle
+       * creuse un halo plus noir que le fond, qui se lit comme une salissure.
+       * Les valeurs précédentes (jusqu'à 40 % d'opacité sur 36 px) alourdissaient
+       * chaque carte. La profondeur vient désormais de la bordure et de l'écart
+       * de teinte entre le fond et le panneau ; l'ombre ne fait que les asseoir.
+       */
       boxShadow: {
-        card: '0 1px 2px rgba(0,0,0,.25), 0 6px 18px rgba(0,0,0,.28)',
-        'card-hover': '0 2px 6px rgba(0,0,0,.3), 0 16px 36px rgba(0,0,0,.4)',
+        card: '0 1px 2px rgba(0,0,0,.14)',
+        'card-hover': '0 2px 4px rgba(0,0,0,.16), 0 10px 28px rgba(0,0,0,.18)',
+        // En-tête figé : marque la séparation quand le contenu passe dessous,
+        // sans dessiner une barre sombre en permanence.
+        header: '0 1px 0 rgba(0,0,0,.2), 0 6px 20px rgba(0,0,0,.12)',
       },
     },
   },

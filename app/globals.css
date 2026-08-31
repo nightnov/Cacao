@@ -13,10 +13,14 @@
   s'affiche en Nuit plutôt qu'en noir sur noir.
 */
 :root {
-  --c-bg: 34 36 39;              /* #222427 */
-  --c-bg-panel: 28 32 33;        /* #1C2021 */
-  --c-bg-sunken: 23 26 28;       /* #171A1C */
-  --c-bg-raised: 42 45 49;       /* #2A2D31 */
+  /* Les cartes sont plus CLAIRES que le fond, et non l'inverse comme
+     auparavant. Un panneau plus sombre que sa page se lit comme un trou ;
+     plus clair, il avance vers le lecteur. C'est ce léger palier — et non
+     l'ombre — qui donne le relief. */
+  --c-bg: 26 29 31;              /* #1A1D1F */
+  --c-bg-panel: 36 39 43;        /* #24272B */
+  --c-bg-sunken: 21 23 25;       /* #151719 */
+  --c-bg-raised: 46 50 55;       /* #2E3237 */
   --c-ink: 238 242 247;          /* #EEF2F7 */
   --c-ink-dim: 179 184 190;      /* #B3B8BE */
   --c-ink-dimmer: 142 149 157;   /* #8E959D */
@@ -43,7 +47,13 @@ html {
   scroll-behavior: smooth;
   width: 100%;
   max-width: 100vw;
-  overflow-x: hidden;
+  /* `clip` et non `hidden`.
+     `overflow-x: hidden` fait de <html> et <body> des conteneurs de
+     défilement, ce qui neutralise `position: sticky` sur leurs descendants :
+     l'en-tête défilait hors de l'écran malgré sa déclaration `sticky`.
+     `clip` rogne le débordement horizontal sans créer ce conteneur, donc la
+     barre reste figée en haut. */
+  overflow-x: clip;
   /* Indique au navigateur que l'interface est sombre : les champs de
      formulaire natifs et les barres de défilement suivent le thème. */
   color-scheme: dark;
@@ -57,7 +67,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
   width: 100%;
   max-width: 100vw;
-  overflow-x: hidden;
+  /* Même raison que sur <html> : `hidden` ferait de <body> un conteneur de
+     défilement et décrocherait l'en-tête figé. */
+  overflow-x: clip;
 }
 
 h1, h2, h3, h4, h5, h6 {

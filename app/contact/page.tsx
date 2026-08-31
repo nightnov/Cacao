@@ -152,11 +152,11 @@ export default function Contact() {
                 </p>
                 <div className="flex flex-wrap gap-3">
                   <Link href="/account/login">
-                    <Button variant="primary">Se connecter</Button>
+                    <Button variant="solid">Se connecter</Button>
                   </Link>
                   {waLink && (
                     <a href={waLink} target="_blank" rel="noopener noreferrer">
-                      <Button variant="secondary">Écrire sur WhatsApp</Button>
+                      <Button variant="sober">Écrire sur WhatsApp</Button>
                     </a>
                   )}
                 </div>
@@ -196,7 +196,7 @@ export default function Contact() {
 
                 <Button
                   type="submit"
-                  variant="primary"
+                  variant="solid"
                   className="w-full"
                   disabled={sending || !body.trim()}
                 >

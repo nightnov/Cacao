@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import { Button } from '@/components/Button'
 import { ProductCard } from '@/components/ProductCard'
 import { FavoriteButton } from '@/components/FavoriteButton'
@@ -367,7 +368,7 @@ export default function ProductDetail() {
           <h1 className="font-serif font-semibold text-3xl text-ink mb-3">Produit introuvable</h1>
           <p className="text-ink-dim mb-8">Ce produit n&apos;existe pas ou n&apos;est plus disponible.</p>
           <Link href="/products">
-            <Button variant="primary">Retour au catalogue</Button>
+            <Button variant="sober">Retour au catalogue</Button>
           </Link>
         </div>
         <Footer />
@@ -401,17 +402,17 @@ export default function ProductDetail() {
       <div className="flex-1 max-w-6xl mx-auto w-full px-5 sm:px-10 py-8">
         {/* Fil d'Ariane. Le nom produit est tronqué : les références PC dépassent
             100 caractères et faisaient passer le fil d'Ariane sur deux lignes. */}
-        <nav aria-label="Fil d'Ariane" className="flex items-center gap-1.5 text-sm text-ink-dimmer mb-6 min-w-0">
-          <Link href="/" className="hover:text-ink whitespace-nowrap">Accueil</Link>
-          <span aria-hidden="true">/</span>
-          <Link href="/products" className="hover:text-ink whitespace-nowrap">Catalogue</Link>
-          <span aria-hidden="true">/</span>
-          <Link href={`/products?category=${product.category}`} className="hover:text-ink whitespace-nowrap">
-            {categoryLabel[product.category] || product.category}
-          </Link>
-          <span aria-hidden="true" className="hidden sm:inline">/</span>
-          <span className="text-ink truncate hidden sm:inline" title={product.name}>{product.name}</span>
-        </nav>
+        {/* Le nom du produit ne figure pas dans le fil : les références PC
+            dépassent 100 caractères et le faisaient passer sur deux lignes.
+            Le titre juste en dessous le donne déjà. */}
+        <Breadcrumb
+          className="mb-6"
+          items={[
+            { label: 'Accueil', href: '/' },
+            { label: 'Catalogue', href: '/products' },
+            { label: categoryLabel[product.category] || product.category },
+          ]}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.05fr,1fr] gap-8 lg:gap-12 mb-12 items-start">
           {/* Gallery */}
@@ -510,7 +511,7 @@ export default function ProductDetail() {
 
           {/* Bloc d'achat. Collant sur grand écran : l'acheteur garde le prix et
               le bouton sous les yeux pendant qu'il parcourt la galerie et les specs. */}
-          <div className="lg:sticky lg:top-6">
+          <div className="lg:sticky lg:top-24">
             {/* Le libellé de catégorie a été retiré ici : il doublonnait avec le fil d'Ariane. */}
             <h1 className="font-serif font-semibold text-xl sm:text-2xl leading-snug text-ink mb-2">{product.name}</h1>
 
@@ -630,7 +631,7 @@ export default function ProductDetail() {
                   <p className="text-xs text-ink-dimmer">Choisissez une option pour chaque caractéristique ci-dessus.</p>
                 )}
                 {allOptionsSelected && !matchedVariant && (
-                  <p className="text-xs text-red-600">Cette combinaison n&apos;est pas disponible.</p>
+                  <p className="text-xs text-danger">Cette combinaison n&apos;est pas disponible.</p>
                 )}
               </div>
             )}
@@ -657,7 +658,7 @@ export default function ProductDetail() {
 
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
-                variant="secondary"
+                variant="sober"
                 size="lg"
                 className="flex-1"
                 disabled={!canAddToCart}
@@ -672,7 +673,7 @@ export default function ProductDetail() {
                   : 'Ajouter au panier'}
               </Button>
               <Button
-                variant="primary"
+                variant="solid"
                 size="lg"
                 className="flex-1"
                 disabled={!canAddToCart}
@@ -838,7 +839,7 @@ export default function ProductDetail() {
                     rows={2}
                     className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold mb-3 bg-bg-panel"
                   />
-                  <Button type="submit" variant="primary" disabled={submittingReview || myRating === 0}>
+                  <Button type="submit" variant="solid" disabled={submittingReview || myRating === 0}>
                     {submittingReview ? 'Envoi...' : 'Publier'}
                   </Button>
                 </form>
@@ -920,10 +921,10 @@ export default function ProductDetail() {
             </p>
             <div className="flex flex-wrap gap-3">
               <Link href="/products?category=accessoire">
-                <Button variant="primary">Voir les accessoires</Button>
+                <Button variant="sober">Voir les accessoires</Button>
               </Link>
               <Link href="/products?category=ecrans">
-                <Button variant="secondary">Ajouter un écran</Button>
+                <Button variant="sober">Ajouter un écran</Button>
               </Link>
             </div>
           </div>

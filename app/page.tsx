@@ -5,9 +5,18 @@ import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { ProductCard } from '@/components/ProductCard'
+import { PromoCarousel } from '@/components/PromoCarousel'
 import { getSupabaseClient } from '@/lib/supabase'
+import { btn } from '@/lib/ui'
 import {
-  Laptop, MapPin, ShieldCheck, Truck, RotateCcw, Headphones,
+  DEFAULT_HERO_SETTINGS,
+  HERO_SETTING_KEYS,
+  parseHeroSettings,
+  type HeroSettings,
+  type PromoSlide,
+} from '@/lib/hero'
+import {
+  MapPin, ShieldCheck, Truck, RotateCcw, Headphones,
   Keyboard, Mouse, HardDrive, CreditCard, ArrowRight
 } from 'lucide-react'
 import { useCategories } from '@/hooks/useCategories'
@@ -97,7 +106,8 @@ export default function Home() {
   const categories = useCategories()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  const [bannerUrl, setBannerUrl] = useState<string | null>(null)
+  const [slides, setSlides] = useState<PromoSlide[]>([])
+  const [heroSettings, setHeroSettings] = useState<HeroSettings>(DEFAULT_HERO_SETTINGS)
   const [newsletterEmail, setNewsletterEmail] = useState('')
   const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
 
@@ -112,18 +122,32 @@ export default function Home() {
         setLoading(false)
       }
     }
-    const fetchBanner = async () => {
+    /**
+     * Bandeau promotionnel et réglages de la zone d'accueil.
+     *
+     * En cas d'échec — migration 031 pas encore exécutée, réseau coupé — on
+     * garde les valeurs par défaut : le texte s'affiche, le carrousel reste
+     * vide. Mieux vaut une accroche seule qu'une page d'accueil amputée.
+     */
+    const fetchHero = async () => {
       try {
         const supabase = getSupabaseClient()
-        const { data } = await supabase
-          .from('site_settings').select('value').eq('key', 'homepage_banner_url').maybeSingle()
-        setBannerUrl(data?.value || null)
+        const [settingsRes, slidesRes] = await Promise.all([
+          supabase.from('site_settings').select('key, value').in('key', HERO_SETTING_KEYS as unknown as string[]),
+          supabase
+            .from('promo_slides')
+            .select('id, image_url, link_url, alt_text, sort_order, is_active')
+            .eq('is_active', true)
+            .order('sort_order', { ascending: true }),
+        ])
+        setHeroSettings(parseHeroSettings(settingsRes.data))
+        setSlides((slidesRes.data as PromoSlide[]) || [])
       } catch (error) {
-        console.error('Erreur lors du chargement de la bannière:', error)
+        console.error('Erreur lors du chargement du bandeau promotionnel:', error)
       }
     }
     fetchProducts()
-    fetchBanner()
+    fetchHero()
   }, [])
 
   const handleNewsletterSubmit = async (e: React.FormEvent) => {
@@ -144,7 +168,12 @@ export default function Home() {
 
   const popular = [...products].sort((a, b) => (b.view_count || 0) - (a.view_count || 0)).slice(0, 4)
   const deals = products.filter(p => !!p.compare_at_price_fcfa && p.compare_at_price_fcfa > p.price_fcfa).slice(0, 4)
-  const heroProduct = popular.find(p => p.image_urls?.length > 0) || popular[0] || null
+
+  // Le carrousel n'apparaît que s'il a réellement quelque chose à montrer :
+  // un cadre vide dans la zone d'accueil ressemble à une image qui n'a pas
+  // chargé. Sans image, le texte occupe seul toute la largeur.
+  const showCarousel = heroSettings.carouselEnabled && slides.length > 0
+  const showHeroText = heroSettings.textEnabled
 
   // Rayons les plus fournis. Un rayon dont tous les produits figurent déjà
   // dans « meilleures ventes » est masqué : sur un petit catalogue, il
@@ -186,9 +215,20 @@ export default function Home() {
           les mêmes garanties en bas de page, en plus détaillé. Elle reste en
           revanche sur le catalogue, qui n'a pas cette section. */}
 
-      {/* Hero : texte à gauche, grande vitrine promotionnelle à droite */}
+      {/*
+        Zone d'accueil : deux blocs indépendants, pilotés depuis l'administration.
+        Le texte d'accroche et le bandeau promotionnel s'activent séparément —
+        couper l'un donne toute la largeur à l'autre, couper les deux fait
+        disparaître la zone plutôt que de laisser un cadre vide.
+      */}
+      {(showHeroText || showCarousel) && (
       <section className="border-b border-border bg-gradient-to-b from-bg-panel to-bg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-8 lg:py-10 grid grid-cols-1 lg:grid-cols-[355px,1fr] gap-7 items-stretch">
+        <div
+          className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-10 lg:py-14 grid grid-cols-1 gap-8 items-stretch ${
+            showHeroText && showCarousel ? 'lg:grid-cols-[355px,1fr]' : 'lg:grid-cols-1'
+          }`}
+        >
+          {showHeroText && (
           <div className="flex flex-col justify-center">
             <span className="inline-flex self-start items-center gap-2 border border-border-strong text-ink-dim text-[10px] font-bold tracking-[0.6px] px-3 py-1.5 rounded-full mb-4">
               <MapPin size={12} strokeWidth={2} /> LIVRAISON PARTOUT EN CÔTE D&apos;IVOIRE
@@ -203,10 +243,12 @@ export default function Home() {
                 ressort autant, et le doré reste disponible pour ce qui doit
                 vraiment alerter. */}
             <div className="flex gap-2.5 flex-wrap">
-              <Link href="/products" className="px-6 py-3 bg-ink hover:bg-ink-dim text-ink-invert rounded-lg font-bold text-[13px] transition-colors active:scale-[0.98]">
+              {/* Une seule action pleine par écran : elle porte le parcours
+                  principal. La seconde reste encadrée, sans aplat. */}
+              <Link href="/products" className={btn('solid', 'lg')}>
                 Voir le catalogue
               </Link>
-              <Link href="/products?category=accessoire" className="px-6 py-3 border border-border-strong hover:border-ink-dimmer text-ink rounded-lg font-bold text-[13px] transition-colors active:scale-[0.98]">
+              <Link href="/products?category=accessoire" className={btn('sober', 'lg')}>
                 Nos accessoires
               </Link>
             </div>
@@ -215,58 +257,30 @@ export default function Home() {
                 barre située juste au-dessus, et la section « Pourquoi CACAO »
                 les reprenait une troisième fois. Elle est retirée. */}
           </div>
+          )}
 
-          {/* Vitrine : bannière définie dans l'admin, sinon le produit le plus consulté */}
-          {/* Hauteur FIXE et non min-height : avec `w-full` + `object-contain`,
-              une image sans hauteur imposée se dimensionne sur son ratio et
-              atteignait 805 px, entraînant toute la section avec elle. */}
-          {bannerUrl ? (
-            <Link href="/products" className="group relative rounded-xl overflow-hidden border border-border-mid bg-bg-sunken h-[220px] sm:h-[280px] lg:h-[330px]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={bannerUrl} alt="Offre en cours" className="w-full h-full object-cover" />
-              <span className="absolute top-4 left-4 bg-gold text-ink-invert text-[10px] font-extrabold px-3 py-1.5 rounded">
-                EN CE MOMENT
-              </span>
-            </Link>
-          ) : heroProduct ? (
-            <Link
-              href={`/products/${heroProduct.slug}`}
-              className="group relative rounded-xl overflow-hidden border border-border-mid bg-bg-sunken h-[220px] sm:h-[280px] lg:h-[330px] flex items-center justify-center"
-            >
-              <span className="absolute top-4 left-4 z-10 bg-gold text-ink-invert text-[10px] font-extrabold px-3 py-1.5 rounded">
-                EN CE MOMENT
-              </span>
-              {heroProduct.image_urls?.[0] ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={heroProduct.image_urls[0]}
-                  alt={heroProduct.name}
-                  className="max-w-full max-h-full object-contain p-6 pb-16 transition-transform duration-500 group-hover:scale-[1.03]"
-                />
-              ) : (
-                <Laptop size={80} strokeWidth={1} className="text-border-mid" />
-              )}
-              <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/95 via-black/70 to-transparent flex items-end justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="font-display text-[15px] text-ink line-clamp-1">{heroProduct.name}</p>
-                  <p className="text-[11px] text-ink-dim mt-0.5">Voir la fiche produit</p>
-                </div>
-                <p className="font-display text-[19px] text-ink whitespace-nowrap tabular-nums flex-shrink-0">
-                  {formatAmount(heroProduct.price_fcfa)} FCFA
-                </p>
-              </div>
-            </Link>
-          ) : (
-            <div className="rounded-xl border border-dashed border-border-mid bg-bg-sunken h-[220px] lg:h-[330px] flex flex-col items-center justify-center text-center p-8">
-              <Laptop size={44} strokeWidth={1} className="text-border-mid mb-4" />
-              <p className="font-display text-[15px] text-ink-dim">CATALOGUE EN PRÉPARATION</p>
-              <p className="text-[12px] text-ink-faint mt-2 max-w-xs">
-                Les premiers produits seront mis en ligne très prochainement.
-              </p>
-            </div>
+          {/*
+            Bandeau promotionnel. Rien n'y est ajouté par le code : ni badge,
+            ni nom de produit, ni prix, ni dégradé noir. La zone affiche les
+            images publiées en administration, et rien d'autre.
+
+            Le repli automatique sur le produit le plus consulté a été retiré :
+            il mettait en vitrine un contenu que personne n'avait choisi.
+
+            Hauteur FIXE et non min-height : avec `object-contain`, une image
+            sans hauteur imposée se dimensionne sur son ratio et atteignait
+            805 px, entraînant toute la section avec elle.
+          */}
+          {showCarousel && (
+            <PromoCarousel
+              slides={slides}
+              intervalMs={heroSettings.intervalMs}
+              className="h-[220px] sm:h-[300px] lg:h-[360px]"
+            />
           )}
         </div>
       </section>
+      )}
 
       {/* Gammes : prix « à partir de » calculé sur les vrais produits en ligne */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-11">

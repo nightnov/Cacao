@@ -1,20 +1,14 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/Button'
 import { useAdminAuth } from '@/hooks/useAdminAuth'
+import { PromoBannerPanel } from '@/components/admin/PromoBannerPanel'
 import { SHOP_INFO_KEYS, invalidateShopInfoCache } from '@/hooks/useShopInfo'
 
 export default function AdminSettings() {
   const { user } = useAdminAuth()
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const [bannerUrl, setBannerUrl] = useState<string | null>(null)
-  const [uploadingBanner, setUploadingBanner] = useState(false)
-  const [bannerError, setBannerError] = useState('')
-  const [bannerSuccess, setBannerSuccess] = useState(false)
-
   const [email, setEmail] = useState('')
   const [emailLoading, setEmailLoading] = useState(false)
   const [emailError, setEmailError] = useState('')
@@ -39,18 +33,6 @@ export default function AdminSettings() {
   }, [user])
 
   useEffect(() => {
-    const fetchBanner = async () => {
-      const supabase = getSupabaseClient()
-      const { data } = await supabase
-        .from('site_settings')
-        .select('value')
-        .eq('key', 'homepage_banner_url')
-        .maybeSingle()
-
-      setBannerUrl(data?.value || null)
-    }
-    fetchBanner()
-
     const fetchSocial = async () => {
       const supabase = getSupabaseClient()
       const { data } = await supabase
@@ -128,65 +110,6 @@ export default function AdminSettings() {
       console.error('Erreur enregistrement réseaux sociaux:', err)
     } finally {
       setSavingSocial(false)
-    }
-  }
-
-  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setBannerError('')
-    setBannerSuccess(false)
-
-    if (!file.type.startsWith('image/')) {
-      setBannerError('Le fichier doit être une image')
-      return
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      setBannerError('L\'image dépasse 5 Mo')
-      return
-    }
-
-    setUploadingBanner(true)
-    try {
-      const supabase = getSupabaseClient()
-      const ext = file.name.split('.').pop()
-      const path = `banners/${crypto.randomUUID()}.${ext}`
-
-      const { error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(path, file)
-      if (uploadError) throw uploadError
-
-      const { data } = supabase.storage.from('product-images').getPublicUrl(path)
-
-      const { error: saveError } = await supabase
-        .from('site_settings')
-        .upsert({ key: 'homepage_banner_url', value: data.publicUrl, updated_at: new Date().toISOString() })
-      if (saveError) throw saveError
-
-      setBannerUrl(data.publicUrl)
-      setBannerSuccess(true)
-      setTimeout(() => setBannerSuccess(false), 2000)
-    } catch (err: any) {
-      setBannerError(err.message || 'Erreur lors de l\'envoi de la bannière')
-    } finally {
-      setUploadingBanner(false)
-      if (fileInputRef.current) fileInputRef.current.value = ''
-    }
-  }
-
-  const handleRemoveBanner = async () => {
-    setBannerError('')
-    try {
-      const supabase = getSupabaseClient()
-      const { error: saveError } = await supabase
-        .from('site_settings')
-        .upsert({ key: 'homepage_banner_url', value: null, updated_at: new Date().toISOString() })
-      if (saveError) throw saveError
-      setBannerUrl(null)
-    } catch (err: any) {
-      setBannerError(err.message || 'Erreur lors de la suppression')
     }
   }
 
@@ -316,45 +239,10 @@ export default function AdminSettings() {
         </form>
       </div>
 
-      {/* Bannière homepage */}
-      <div className="bg-bg-panel rounded-lg border border-border p-6">
-        <h2 className="font-serif font-semibold text-xl text-ink mb-1">Bannière de la page d&apos;accueil</h2>
-        <p className="text-sm text-ink-dimmer mb-4">
-          Cette image s&apos;affiche en grand format sur la page d&apos;accueil, au-dessus du catalogue. Format recommandé : image large (ratio proche de 3:1, ex. 1600×530 px), JPG ou PNG, 5 Mo max.
-        </p>
-
-        {bannerError && (
-          <div className="bg-danger/10 border border-danger/30 text-danger px-4 py-3 rounded mb-4 text-sm">{bannerError}</div>
-        )}
-        {bannerSuccess && (
-          <div className="bg-green/10 border border-green/30 text-green-bright px-4 py-3 rounded mb-4 text-sm font-semibold">
-            ✓ Bannière mise à jour
-          </div>
-        )}
-
-        {bannerUrl ? (
-          <div className="mb-4">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={bannerUrl} alt="Bannière actuelle" className="w-full rounded-lg border border-border object-cover aspect-[3/1]" />
-          </div>
-        ) : (
-          <div className="mb-4 aspect-[3/1] rounded-lg border-2 border-dashed border-border flex items-center justify-center text-ink-dimmer text-sm">
-            Aucune bannière définie
-          </div>
-        )}
-
-        <div className="flex gap-3">
-          <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploadingBanner}>
-            {uploadingBanner ? 'Envoi...' : bannerUrl ? 'Remplacer l\'image' : 'Ajouter une image'}
-          </Button>
-          {bannerUrl && (
-            <Button type="button" variant="outline" onClick={handleRemoveBanner} disabled={uploadingBanner}>
-              Retirer
-            </Button>
-          )}
-        </div>
-        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
-      </div>
+      {/* Bandeau promotionnel : plusieurs images, ordre, liens et disposition.
+          Remplace l'ancienne image unique, qui ne permettait ni d'en publier
+          plusieurs ni de choisir la mise en page de la zone d'accueil. */}
+      <PromoBannerPanel />
 
       {/* Réseaux sociaux */}
       <div className="bg-bg-panel rounded-lg border border-border p-6">

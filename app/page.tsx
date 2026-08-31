@@ -301,45 +301,64 @@ export default function Home() {
                       }`}
                     />
                   ) : (
+                    /* Aucune photo chargée : l'icône occupe une bonne part du
+                       carré, sinon la zone paraît vide et déséquilibre la
+                       carte face à celles qui en ont une. */
                     <div
                       className={`w-full h-full flex items-center justify-center ${
                         empty ? 'text-ink-faint' : 'text-border-strong'
                       }`}
                     >
-                      <Icon size={64} strokeWidth={1} />
+                      <Icon size={88} strokeWidth={0.9} />
                     </div>
                   )}
                 </div>
 
-                <div className="p-6 flex flex-col flex-1">
+                {/* Chaque bloc occupe la même hauteur d'une carte à l'autre :
+                    titre, accroche sur deux lignes réservées, emplacement de
+                    prix conservé même vide, bouton collé en bas. Sans ces
+                    hauteurs fixes, une carte sans prix remontait son bouton et
+                    la rangée perdait son alignement. */}
+                <div className="px-5 pt-4 pb-5 flex flex-col flex-1">
                   <h3
-                    className={`font-display text-[21px] leading-tight mb-2 ${empty ? 'text-ink-dimmer' : 'text-ink'}`}
+                    className={`font-display text-[20px] leading-tight mb-1.5 ${empty ? 'text-ink-dimmer' : 'text-ink'}`}
                   >
                     {cat.short.toUpperCase()}
                   </h3>
-                  <p className="text-[14px] text-ink-dimmer leading-[1.5] min-h-[42px]">
+
+                  <p className="text-[13.5px] text-ink-dimmer leading-[1.45] min-h-[40px]">
                     {cat.tagline || GAMME_PITCH[cat.value] || ''}
                   </p>
 
-                  {min !== null ? (
-                    <>
-                      <p className="text-[14px] text-ink-dim mt-5">
-                        À partir de{' '}
-                        <span className="font-display text-[18px] text-gold tabular-nums">
-                          {formatAmount(min)} FCFA
-                        </span>
-                      </p>
-                      <span className="mt-5 block text-center bg-gold text-ink-invert font-bold text-[14.5px] rounded-lg py-3.5 group-hover:bg-gold-dim transition-colors">
+                  <div className="mt-auto pt-4">
+                    <p className="text-[13.5px] text-ink-dim min-h-[22px]">
+                      {min !== null && (
+                        <>
+                          À partir de{' '}
+                          <span className="font-display text-[17px] text-gold tabular-nums">
+                            {formatAmount(min)} FCFA
+                          </span>
+                        </>
+                      )}
+                    </p>
+
+                    {min !== null ? (
+                      /* La bordure dorée est invisible sur le fond doré, mais
+                         elle donne au bouton actif exactement la même hauteur
+                         qu'au bouton « Bientôt disponible », qui en a une. Sans
+                         elle, les boutons se décalaient de deux pixels d'une
+                         carte à l'autre. */
+                      <span className="mt-3 block text-center bg-gold border border-gold text-ink-invert font-bold text-[14px] rounded-lg py-3 group-hover:bg-gold-dim group-hover:border-gold-dim transition-colors">
                         Découvrir {cat.short}
                       </span>
-                    </>
-                  ) : (
-                    /* Aucun produit dans ce rayon : la carte n'est pas
-                       cliquable et n'annonce rien qui n'existe pas. */
-                    <span className="mt-auto pt-5 block text-center border border-border-mid text-ink-faint text-[14px] rounded-lg py-3.5">
-                      Bientôt disponible
-                    </span>
-                  )}
+                    ) : (
+                      /* Aucun produit dans ce rayon : la carte n'est pas
+                         cliquable et n'annonce rien qui n'existe pas. */
+                      <span className="mt-3 block text-center border border-border-mid text-ink-faint text-[14px] rounded-lg py-3">
+                        Bientôt disponible
+                      </span>
+                    )}
+                  </div>
                 </div>
               </>
             )

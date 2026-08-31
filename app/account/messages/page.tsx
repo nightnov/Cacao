@@ -106,7 +106,7 @@ function MessagesContent() {
   if (authLoading || !isLoggedIn) {
     return (
       <main className="min-h-screen bg-bg-panel flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-gold border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-ink-dim border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
   }
@@ -130,7 +130,7 @@ function MessagesContent() {
               messages.map(msg => (
                 <div key={msg.id} className={`flex ${msg.sender === 'customer' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] rounded-lg px-4 py-3 ${
-                    msg.sender === 'customer' ? 'bg-gold text-ink-invert' : 'bg-bg-sunken text-ink'
+                    msg.sender === 'customer' ? 'bg-ink text-ink-invert' : 'bg-bg-sunken text-ink'
                   }`}>
                     {msg.product_name && (
                       <p className={`text-xs mb-1 font-semibold ${msg.sender === 'customer' ? 'text-white/80' : 'text-ink-dimmer'}`}>

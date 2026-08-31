@@ -80,7 +80,7 @@ export default function CheckoutSuccess() {
   if (authLoading || loading) {
     return (
       <main className="min-h-screen bg-bg-panel flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-gold border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-ink-dim border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
   }
@@ -162,7 +162,7 @@ export default function CheckoutSuccess() {
             </div>
             <div className="flex justify-between text-lg font-bold text-ink pt-2 border-t border-border">
               <span>Total</span>
-              <span className="text-gold">{formatAmount(order.total_fcfa)} FCFA</span>
+              <span className="text-ink">{formatAmount(order.total_fcfa)} FCFA</span>
             </div>
           </div>
 

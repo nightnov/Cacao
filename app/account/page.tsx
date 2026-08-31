@@ -214,7 +214,7 @@ export default function Account() {
   if (authLoading || !isLoggedIn) {
     return (
       <main className="min-h-screen bg-bg-panel flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-gold border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-ink-dim border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
   }
@@ -233,7 +233,7 @@ export default function Account() {
 
       <div className="flex-1 max-w-6xl mx-auto px-5 sm:px-10 py-6 sm:py-9 w-full">
         <nav aria-label="Fil d'Ariane" className="text-[13px] text-ink-dimmer mb-4">
-          <Link href="/" className="hover:text-gold">Accueil</Link>
+          <Link href="/" className="hover:text-ink">Accueil</Link>
           {' / '}
           <span className="text-ink">Mon compte</span>
         </nav>
@@ -251,7 +251,7 @@ export default function Account() {
           </div>
           <button
             onClick={() => setActiveSection('addresses')}
-            className="hidden sm:block text-[13px] font-bold text-gold hover:underline whitespace-nowrap"
+            className="hidden sm:block text-[13px] font-bold text-ink hover:underline whitespace-nowrap"
           >
             Modifier mes infos
           </button>
@@ -274,7 +274,7 @@ export default function Account() {
                   <Link
                     key={section.key}
                     href={section.href}
-                    className={`${base} bg-bg-panel border border-border md:border-0 md:bg-transparent text-ink-dim hover:text-gold md:hover:bg-bg-sunken`}
+                    className={`${base} bg-bg-panel border border-border md:border-0 md:bg-transparent text-ink-dim hover:text-ink md:hover:bg-bg-sunken`}
                   >
                     <Icon size={16} strokeWidth={1.9} /> {section.label}
                     {section.key === 'messages' && unreadMessages > 0 && (
@@ -293,8 +293,8 @@ export default function Account() {
                   aria-current={active ? 'page' : undefined}
                   className={`${base} ${
                     active
-                      ? 'bg-bg-raised text-white md:bg-gold/5 md:text-gold'
-                      : 'bg-bg-panel border border-border md:border-0 md:bg-transparent text-ink-dim hover:text-gold md:hover:bg-bg-sunken'
+                      ? 'bg-bg-raised text-white md:bg-bg-sunken md:text-ink'
+                      : 'bg-bg-panel border border-border md:border-0 md:bg-transparent text-ink-dim hover:text-ink md:hover:bg-bg-sunken'
                   }`}
                 >
                   <Icon size={16} strokeWidth={1.9} /> {section.label}
@@ -324,9 +324,9 @@ export default function Account() {
                     <button
                       key={stat.label}
                       onClick={() => setActiveSection(stat.section)}
-                      className="bg-bg-panel border border-border rounded-2xl p-5 text-left hover:border-gold transition-colors"
+                      className="bg-bg-panel border border-border rounded-2xl p-5 text-left hover:border-border-strong transition-colors"
                     >
-                      <stat.icon size={18} className="text-gold mb-2" strokeWidth={1.5} />
+                      <stat.icon size={18} className="text-ink-dimmer mb-2" strokeWidth={1.5} />
                       <p className="text-2xl font-semibold text-ink">{loadingOrders ? '—' : stat.value}</p>
                       <p className="text-xs text-ink-dimmer">{stat.label}</p>
                     </button>
@@ -338,7 +338,7 @@ export default function Account() {
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="font-serif font-semibold text-xl text-ink">Mes commandes récentes</h2>
                     {orders.length > 0 && (
-                      <button onClick={() => setActiveSection('orders')} className="text-sm text-gold font-semibold hover:underline">
+                      <button onClick={() => setActiveSection('orders')} className="text-sm text-ink font-semibold hover:underline">
                         Voir toutes mes commandes →
                       </button>
                     )}
@@ -351,7 +351,7 @@ export default function Account() {
                     </div>
                   ) : orders.length === 0 ? (
                     <div className="bg-bg-panel rounded-2xl border-2 border-dashed border-border p-10 text-center">
-                      <ShoppingBag size={26} className="text-gold mx-auto mb-3" strokeWidth={1.5} />
+                      <ShoppingBag size={26} className="text-ink-dimmer mx-auto mb-3" strokeWidth={1.5} />
                       <p className="text-ink-dim mb-4">Vous n&apos;avez pas encore passé de commande.</p>
                       <Link href="/products"><Button variant="primary">Découvrir les produits</Button></Link>
                     </div>
@@ -369,7 +369,7 @@ export default function Account() {
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img src={thumb} alt="" className="w-full h-full object-cover" />
                               ) : (
-                                <ShoppingBag size={16} className="text-gold" />
+                                <ShoppingBag size={16} className="text-ink-dimmer" />
                               )}
                             </div>
                             <div className="min-w-0 flex-1">
@@ -394,7 +394,7 @@ export default function Account() {
                                 {new Date(order.created_at).toLocaleDateString('fr-CI', { day: 'numeric', month: 'short', year: 'numeric' })}
                               </p>
                             </div>
-                            <button onClick={() => setActiveSection('orders')} className="text-xs text-gold font-semibold hover:underline flex-shrink-0 whitespace-nowrap">
+                            <button onClick={() => setActiveSection('orders')} className="text-xs text-ink font-semibold hover:underline flex-shrink-0 whitespace-nowrap">
                               Détails →
                             </button>
                           </div>
@@ -410,14 +410,14 @@ export default function Account() {
                     <div className="flex items-center justify-between mb-4">
                       <h2 className="font-serif font-semibold text-xl text-ink">Mes produits favoris</h2>
                       {favorites.length > 0 && (
-                        <button onClick={() => setActiveSection('favorites')} className="text-sm text-gold font-semibold hover:underline">
+                        <button onClick={() => setActiveSection('favorites')} className="text-sm text-ink font-semibold hover:underline">
                           Voir tous mes favoris →
                         </button>
                       )}
                     </div>
                     {favorites.length === 0 ? (
                       <div className="bg-bg-panel rounded-2xl border-2 border-dashed border-border p-10 text-center">
-                        <Heart size={26} className="text-gold mx-auto mb-3" strokeWidth={1.5} />
+                        <Heart size={26} className="text-ink-dimmer mx-auto mb-3" strokeWidth={1.5} />
                         <p className="text-ink-dim">Aucun favori pour le moment.</p>
                       </div>
                     ) : (
@@ -468,7 +468,7 @@ export default function Account() {
                 <h2 className="font-serif font-semibold text-xl text-ink mb-6">Mes favoris</h2>
                 {favorites.length === 0 ? (
                   <div className="bg-bg-panel rounded-2xl border-2 border-dashed border-border p-12 text-center">
-                    <Heart size={28} className="text-gold mx-auto mb-3" strokeWidth={1.5} />
+                    <Heart size={28} className="text-ink-dimmer mx-auto mb-3" strokeWidth={1.5} />
                     <p className="text-ink-dim mb-4">Aucun favori pour le moment.</p>
                     <Link href="/products"><Button variant="primary">Découvrir les produits</Button></Link>
                   </div>
@@ -506,7 +506,7 @@ export default function Account() {
                   </div>
                 ) : orders.length === 0 ? (
                   <div className="bg-bg-panel rounded-2xl border-2 border-dashed border-border p-12 text-center">
-                    <ShoppingBag size={28} className="text-gold mx-auto mb-3" strokeWidth={1.5} />
+                    <ShoppingBag size={28} className="text-ink-dimmer mx-auto mb-3" strokeWidth={1.5} />
                     <p className="text-ink-dim mb-4">Vous n&apos;avez pas encore passé de commande.</p>
                     <Link href="/products">
                       <Button variant="primary">Découvrir les produits</Button>
@@ -609,7 +609,7 @@ export default function Account() {
 
                 {reviews.length === 0 ? (
                   <div className="bg-bg-panel rounded-2xl border-2 border-dashed border-border p-12 text-center">
-                    <Star size={28} className="text-gold mx-auto mb-3" strokeWidth={1.5} />
+                    <Star size={28} className="text-ink-dimmer mx-auto mb-3" strokeWidth={1.5} />
                     <p className="text-ink-dim">Vous n&apos;avez encore laissé aucun avis.</p>
                   </div>
                 ) : (
@@ -704,9 +704,9 @@ export default function Account() {
                 <h2 className="font-serif font-semibold text-xl text-ink mb-1">Aide</h2>
                 <p className="text-sm text-ink-dimmer mb-6">Besoin d&apos;assistance ?</p>
                 <div className="flex flex-col gap-3 max-w-xs">
-                  <Link href="/faq" className="text-gold font-semibold hover:underline">Questions fréquentes →</Link>
-                  <Link href="/contact" className="text-gold font-semibold hover:underline">Nous contacter →</Link>
-                  <Link href="/account/messages" className="text-gold font-semibold hover:underline">Mes messages →</Link>
+                  <Link href="/faq" className="text-ink font-semibold hover:underline">Questions fréquentes →</Link>
+                  <Link href="/contact" className="text-ink font-semibold hover:underline">Nous contacter →</Link>
+                  <Link href="/account/messages" className="text-ink font-semibold hover:underline">Mes messages →</Link>
                 </div>
               </div>
             )}

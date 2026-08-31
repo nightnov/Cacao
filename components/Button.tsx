@@ -18,7 +18,7 @@ export function Button({ variant = 'primary', size = 'md', children, className =
   ].join(' ')
 
   const variants = {
-    primary: 'bg-gold text-ink-invert hover:bg-gold-dim disabled:hover:bg-gold',
+    primary: 'bg-ink border border-ink text-ink-invert hover:bg-ink-dim hover:border-ink-dim disabled:hover:bg-ink',
     secondary: 'bg-bg-raised text-white hover:bg-bg-sunken disabled:hover:bg-bg-raised',
     outline: 'border-2 border-border-strong text-ink hover:bg-bg-raised hover:text-white disabled:hover:bg-transparent disabled:hover:text-ink'
   }

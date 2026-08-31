@@ -19,7 +19,7 @@ export function StarRating({ rating, reviewCount, size = 14, showCount = true, c
         {rating.toFixed(1).replace('.', ',')}
       </span>
       {showCount && typeof reviewCount === 'number' && (
-        <span className={`${textSize} text-gold font-semibold tabular-nums`}>
+        <span className={`${textSize} text-ink font-semibold tabular-nums`}>
           ({reviewCount} avis)
         </span>
       )}

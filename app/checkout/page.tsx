@@ -425,7 +425,7 @@ export default function Checkout() {
   if (authLoading || cartItems.length === 0) {
     return (
       <main className="min-h-screen bg-bg-panel flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-gold border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-ink-dim border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
   }
@@ -510,13 +510,13 @@ export default function Checkout() {
                           aria-pressed={mode === opt.mode}
                           className={`w-full text-left px-4 py-3 rounded-lg border transition-colors ${
                             mode === opt.mode
-                              ? 'border-gold bg-gold/5'
+                              ? 'border-ink-dimmer bg-bg-raised'
                               : 'border-border hover:border-border-strong'
                           }`}
                         >
                           <span className="flex items-center justify-between gap-3">
                             <span className="text-sm font-semibold text-ink">{opt.label}</span>
-                            <span className="text-sm font-bold text-gold whitespace-nowrap">
+                            <span className="text-sm font-bold text-ink whitespace-nowrap">
                               {opt.fcfa === 0 ? 'Gratuit' : `${formatAmount(opt.fcfa)} FCFA`}
                             </span>
                           </span>
@@ -564,9 +564,9 @@ export default function Checkout() {
                           type="button"
                           onClick={requestLocation}
                           disabled={locating}
-                          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-border-strong hover:border-gold disabled:opacity-50 text-ink rounded-lg font-semibold text-sm transition-colors"
+                          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-border-strong hover:border-border-strong disabled:opacity-50 text-ink rounded-lg font-semibold text-sm transition-colors"
                         >
-                          <LocateFixed size={16} className="text-gold" />
+                          <LocateFixed size={16} className="text-ink-dim" />
                           {locating ? 'Recherche…' : 'Partager ma position'}
                         </button>
                         <p className="text-[12px] text-ink-dimmer mt-1.5">
@@ -691,13 +691,13 @@ export default function Checkout() {
                           }
                         }}
                         placeholder="Code de réduction"
-                        className="flex-1 min-w-0 px-3 py-2 text-[13px] bg-bg-raised border border-border-mid rounded-lg text-ink outline-none focus:border-gold transition-colors"
+                        className="flex-1 min-w-0 px-3 py-2 text-[13px] bg-bg-raised border border-border-mid rounded-lg text-ink outline-none focus:border-border-strong transition-colors"
                       />
                       <button
                         type="button"
                         onClick={applyPromo}
                         disabled={checkingPromo || !promoInput.trim()}
-                        className="px-4 py-2 text-[13px] font-bold rounded-lg border border-border-strong text-ink hover:border-gold disabled:opacity-40 transition-colors whitespace-nowrap"
+                        className="px-4 py-2 text-[13px] font-bold rounded-lg border border-border-strong text-ink hover:border-border-strong disabled:opacity-40 transition-colors whitespace-nowrap"
                       >
                         {checkingPromo ? '…' : 'Appliquer'}
                       </button>
@@ -710,7 +710,7 @@ export default function Checkout() {
 
                 <div className="flex justify-between text-lg font-bold text-ink pt-2 border-t border-border">
                   <span>Total</span>
-                  <span className="text-gold">{formatAmount(total)} FCFA</span>
+                  <span className="text-ink">{formatAmount(total)} FCFA</span>
                 </div>
               </div>
 
@@ -729,7 +729,7 @@ export default function Checkout() {
                 {submitting ? 'Envoi en cours...' : 'Confirmer la commande'}
               </Button>
 
-              <Link href="/cart" className="block text-center text-sm text-gold hover:underline mt-4">
+              <Link href="/cart" className="block text-center text-sm text-ink hover:underline mt-4">
                 Retour au panier
               </Link>
             </div>

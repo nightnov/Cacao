@@ -67,7 +67,7 @@ export default function Favorites() {
   if (authLoading || !isLoggedIn) {
     return (
       <main className="min-h-screen bg-bg-panel flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-gold border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-ink-dim border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
   }
@@ -94,7 +94,7 @@ export default function Favorites() {
         ) : products.length === 0 ? (
           <div className="bg-bg-panel rounded-2xl border-2 border-dashed border-border p-16 text-center">
             <div className="w-14 h-14 rounded-full bg-bg-sunken flex items-center justify-center mx-auto mb-4">
-              <Heart size={22} className="text-gold" strokeWidth={1.8} />
+              <Heart size={22} className="text-ink-dimmer" strokeWidth={1.8} />
             </div>
             <h2 className="font-serif font-semibold text-xl text-ink mb-2">Aucun favori pour le moment</h2>
             <p className="text-ink-dimmer mb-6">Explorez le catalogue et ajoutez les produits qui vous plaisent en cliquant sur le cœur.</p>

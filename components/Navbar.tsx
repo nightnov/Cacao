@@ -118,7 +118,7 @@ export function Navbar() {
   const avatarLetter = (firstName || user?.email || '?').charAt(0).toUpperCase()
   const isAdmin = user?.id === ADMIN_UUID
 
-  const act = 'relative flex flex-col items-center gap-1 text-[10.5px] font-medium text-ink-dim hover:text-gold transition-colors'
+  const act = 'relative flex flex-col items-center gap-1 text-[10.5px] font-medium text-ink-dim hover:text-ink transition-colors'
   const badge = 'absolute -top-1.5 right-0 bg-gold text-ink-invert text-[9px] font-extrabold rounded-full min-w-[15px] h-[15px] px-1 flex items-center justify-center'
 
   return (
@@ -134,7 +134,7 @@ export function Navbar() {
         </button>
 
         {/* Le mot-symbole seul ramène toujours à l'accueil, depuis n'importe quelle page */}
-        <Link href="/" className="font-display font-bold text-xl sm:text-2xl tracking-[2px] text-ink hover:text-gold transition-colors flex-shrink-0">
+        <Link href="/" className="font-display font-bold text-xl sm:text-2xl tracking-[2px] text-ink hover:text-ink-dim transition-colors flex-shrink-0">
           CACAO
         </Link>
 
@@ -143,7 +143,7 @@ export function Navbar() {
 
         {/* Recherche : occupe l'espace disponible entre la marque et les actions */}
         <div className="hidden sm:block relative flex-1 min-w-0 max-w-md ml-auto">
-          <div className="flex items-center gap-2 bg-bg-raised border border-border-mid rounded-lg px-3 py-2 focus-within:border-gold transition-colors">
+          <div className="flex items-center gap-2 bg-bg-raised border border-border-mid rounded-lg px-3 py-2 focus-within:border-border-strong transition-colors">
             <Search size={16} className="text-ink-dimmer flex-shrink-0" />
             <input
               ref={searchInputRef}
@@ -167,7 +167,7 @@ export function Navbar() {
                   <button
                     key={s}
                     onClick={() => handleSearchSubmit(s)}
-                    className="px-3 py-1.5 bg-bg-raised border border-border-mid hover:border-gold hover:text-gold rounded-lg text-[13px] text-ink-dim transition-colors"
+                    className="px-3 py-1.5 bg-bg-raised border border-border-mid hover:border-border-strong hover:text-ink rounded-lg text-[13px] text-ink-dim transition-colors"
                   >
                     {s}
                   </button>
@@ -197,12 +197,12 @@ export function Navbar() {
                 {isAccountMenuOpen && (
                   <div className="absolute right-0 top-12 w-64 bg-bg-panel rounded-xl border border-border shadow-card-hover overflow-hidden z-50">
                     <div className="px-4 py-3 border-b border-border flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gold text-ink-invert font-bold flex items-center justify-center flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-bg-raised border border-border-strong text-ink font-bold flex items-center justify-center flex-shrink-0">
                         {avatarLetter}
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-ink truncate">{displayName}</p>
-                        <Link href="/account" className="text-xs text-gold hover:underline" onClick={() => setIsAccountMenuOpen(false)}>
+                        <Link href="/account" className="text-xs text-ink-dim hover:text-ink hover:underline" onClick={() => setIsAccountMenuOpen(false)}>
                           Voir mon profil
                         </Link>
                       </div>
@@ -211,7 +211,7 @@ export function Navbar() {
                     {isAdmin && (
                       <>
                         <Link href="/admin" onClick={() => setIsAccountMenuOpen(false)}
-                          className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gold hover:bg-bg-raised transition-colors">
+                          className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-ink hover:bg-bg-raised transition-colors">
                           <LayoutDashboard size={16} strokeWidth={1.8} /> Tableau de bord admin
                         </Link>
                         <div className="border-t border-border" />
@@ -283,7 +283,7 @@ export function Navbar() {
             </div>
 
             <Link href="/" className="flex items-center gap-3 py-2.5 text-sm font-semibold text-ink" onClick={() => setIsMenuOpen(false)}>
-              <Home size={17} strokeWidth={1.8} className="text-gold" /> Accueil
+              <Home size={17} strokeWidth={1.8} className="text-ink-dimmer" /> Accueil
             </Link>
 
             <p className="text-[11px] font-semibold text-ink-dimmer mt-3 mb-1">RAYONS</p>
@@ -296,10 +296,10 @@ export function Navbar() {
                 <Link
                   key={cat.value}
                   href={`/products?category=${cat.value}`}
-                  className="flex items-center gap-3 py-2 text-sm text-ink-dim hover:text-gold transition-colors"
+                  className="flex items-center gap-3 py-2 text-sm text-ink-dim hover:text-ink transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <Icon size={17} strokeWidth={1.8} className="text-gold" />
+                  <Icon size={17} strokeWidth={1.8} className="text-ink-dimmer" />
                   {cat.label}
                 </Link>
               )
@@ -312,7 +312,7 @@ export function Navbar() {
                 <Link href="/account" className="py-2 text-sm text-ink-dim" onClick={() => setIsMenuOpen(false)}>Mon compte</Link>
                 <Link href="/account/favorites" className="py-2 text-sm text-ink-dim" onClick={() => setIsMenuOpen(false)}>Mes favoris</Link>
                 {isAdmin && (
-                  <Link href="/admin" className="py-2 text-sm font-semibold text-gold" onClick={() => setIsMenuOpen(false)}>
+                  <Link href="/admin" className="py-2 text-sm font-semibold text-ink" onClick={() => setIsMenuOpen(false)}>
                     Tableau de bord admin
                   </Link>
                 )}

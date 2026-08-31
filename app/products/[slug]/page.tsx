@@ -402,11 +402,11 @@ export default function ProductDetail() {
         {/* Fil d'Ariane. Le nom produit est tronqué : les références PC dépassent
             100 caractères et faisaient passer le fil d'Ariane sur deux lignes. */}
         <nav aria-label="Fil d'Ariane" className="flex items-center gap-1.5 text-sm text-ink-dimmer mb-6 min-w-0">
-          <Link href="/" className="hover:text-gold whitespace-nowrap">Accueil</Link>
+          <Link href="/" className="hover:text-ink whitespace-nowrap">Accueil</Link>
           <span aria-hidden="true">/</span>
-          <Link href="/products" className="hover:text-gold whitespace-nowrap">Catalogue</Link>
+          <Link href="/products" className="hover:text-ink whitespace-nowrap">Catalogue</Link>
           <span aria-hidden="true">/</span>
-          <Link href={`/products?category=${product.category}`} className="hover:text-gold whitespace-nowrap">
+          <Link href={`/products?category=${product.category}`} className="hover:text-ink whitespace-nowrap">
             {categoryLabel[product.category] || product.category}
           </Link>
           <span aria-hidden="true" className="hidden sm:inline">/</span>
@@ -422,7 +422,7 @@ export default function ProductDetail() {
                   <button
                     onClick={() => setSelectedMedia({ type: 'video', value: product.video_url! })}
                     className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 flex items-center justify-center bg-bg-raised ${
-                      selectedMedia?.type === 'video' ? 'border-gold' : 'border-transparent'
+                      selectedMedia?.type === 'video' ? 'border-ink' : 'border-transparent'
                     }`}
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
@@ -437,7 +437,7 @@ export default function ProductDetail() {
                     aria-label={`Voir la photo ${i + 1}`}
                     className={`w-14 h-14 rounded-lg overflow-hidden border-2 bg-bg-panel transition-colors ${
                       selectedMedia?.type === 'image' && selectedMedia.value === url
-                        ? 'border-gold'
+                        ? 'border-ink'
                         : 'border-border hover:border-ink-faint'
                     }`}
                   >
@@ -482,7 +482,7 @@ export default function ProductDetail() {
                   onClick={() => setSelectedMedia({ type: 'video', value: product.video_url! })}
                   aria-label="Voir la vidéo"
                   className={`w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border-2 flex items-center justify-center bg-bg-raised ${
-                    selectedMedia?.type === 'video' ? 'border-gold' : 'border-border'
+                    selectedMedia?.type === 'video' ? 'border-ink' : 'border-border'
                   }`}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="white" aria-hidden="true">
@@ -497,7 +497,7 @@ export default function ProductDetail() {
                   aria-label={`Voir la photo ${i + 1}`}
                   className={`w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden border-2 bg-bg-panel ${
                     selectedMedia?.type === 'image' && selectedMedia.value === url
-                      ? 'border-gold'
+                      ? 'border-ink'
                       : 'border-border'
                   }`}
                 >
@@ -561,7 +561,7 @@ export default function ProductDetail() {
               <ul className="flex flex-wrap gap-x-4 gap-y-1.5 my-4 text-sm text-ink-dim">
                 {specEntries.slice(0, 4).map(([key, value]) => (
                   <li key={key} className="flex items-center gap-1.5">
-                    <span className="w-1 h-1 rounded-full bg-gold"></span>
+                    <span className="w-1 h-1 rounded-full bg-ink-dimmer"></span>
                     {String(value)}
                   </li>
                 ))}
@@ -585,7 +585,7 @@ export default function ProductDetail() {
                         <Icon
                           size={19}
                           strokeWidth={1.7}
-                          className="text-gold flex-shrink-0 mt-0.5"
+                          className="text-ink-dimmer flex-shrink-0 mt-0.5"
                           aria-hidden="true"
                         />
                         <span className="text-[13.5px] text-ink leading-[1.45]">
@@ -616,7 +616,7 @@ export default function ProductDetail() {
                              et une pastille très allongée se lit mal. */
                           className={`px-5 py-2.5 rounded-xl text-[13.5px] border-2 transition-colors ${
                             selectedOptions[option.name] === value
-                              ? 'border-gold bg-gold/5 text-gold font-semibold'
+                              ? 'border-ink-dimmer bg-bg-raised text-ink font-semibold'
                               : 'border-border text-ink-dim hover:border-border-strong'
                           }`}
                         >
@@ -640,14 +640,14 @@ export default function ProductDetail() {
                 <div className="flex items-center border-2 border-border-strong rounded-full">
                   <button
                     onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                    className="w-10 h-10 flex items-center justify-center text-ink hover:text-gold"
+                    className="w-10 h-10 flex items-center justify-center text-ink hover:text-ink"
                   >
                     −
                   </button>
                   <span className="w-8 text-center font-semibold">{quantity}</span>
                   <button
                     onClick={() => setQuantity(q => q + 1)}
-                    className="w-10 h-10 flex items-center justify-center text-ink hover:text-gold"
+                    className="w-10 h-10 flex items-center justify-center text-ink hover:text-ink"
                   >
                     +
                   </button>
@@ -699,7 +699,7 @@ export default function ProductDetail() {
             <div className="flex items-center justify-center gap-4 mt-3">
               <Link
                 href={`/account/messages?productId=${product.id}&productName=${encodeURIComponent(product.name)}`}
-                className="text-sm text-gold hover:underline"
+                className="text-sm text-ink hover:underline"
               >
                 Une question sur ce produit ?
               </Link>
@@ -707,7 +707,7 @@ export default function ProductDetail() {
               <button
                 type="button"
                 onClick={handleShare}
-                className="text-sm text-ink-dim hover:text-gold transition-colors"
+                className="text-sm text-ink-dim hover:text-ink transition-colors"
               >
                 {shared ? 'Lien copié ✓' : 'Partager'}
               </button>
@@ -735,7 +735,7 @@ export default function ProductDetail() {
                 onClick={() => setActiveTab(tab.key)}
                 className={`pb-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${
                   activeTab === tab.key
-                    ? 'border-gold text-ink'
+                    ? 'border-ink text-ink'
                     : 'border-transparent text-ink-dimmer hover:text-ink'
                 }`}
               >
@@ -797,13 +797,13 @@ export default function ProductDetail() {
                   }
                 ].map(({ icon: Icon, t, p }) => (
                   <div key={t} className="bg-bg-panel border border-border rounded-xl p-5">
-                    <Icon size={20} strokeWidth={1.8} className="text-gold mb-2.5" />
+                    <Icon size={20} strokeWidth={1.8} className="text-ink-dimmer mb-2.5" />
                     <h4 className="text-[13.5px] font-bold text-ink mb-1.5">{t}</h4>
                     <p className="text-[12px] text-ink-dimmer leading-[1.65]">{p}</p>
                   </div>
                 ))}
               </div>
-              <Link href="/legal/terms" className="inline-block mt-5 text-[13px] text-gold font-bold hover:underline">
+              <Link href="/legal/terms" className="inline-block mt-5 text-[13px] text-ink font-bold hover:underline">
                 Voir les conditions complètes →
               </Link>
             </div>
@@ -851,7 +851,7 @@ export default function ProductDetail() {
                   {/* Synthèse : note moyenne et répartition, toutes deux calculées
                       sur les avis réellement enregistrés. */}
                   <div className="bg-bg-panel border border-border rounded-xl p-5 text-center">
-                    <p className="font-display text-[40px] text-gold leading-none">
+                    <p className="font-display text-[40px] text-ink leading-none">
                       {avgRating.toFixed(1).replace('.', ',')}
                     </p>
                     <div className="flex justify-center my-2">
@@ -868,7 +868,7 @@ export default function ProductDetail() {
                           <div key={star} className="flex items-center gap-2 text-[10.5px] text-ink-dimmer">
                             <span className="w-5 flex-shrink-0">{star}★</span>
                             <span className="flex-1 h-1.5 bg-bg-raised rounded-full overflow-hidden">
-                              <span className="block h-full bg-gold" style={{ width: `${pct}%` }} />
+                              <span className="block h-full bg-ink-dimmer" style={{ width: `${pct}%` }} />
                             </span>
                             <span className="w-4 text-right tabular-nums flex-shrink-0">{n}</span>
                           </div>
@@ -911,7 +911,7 @@ export default function ProductDetail() {
             existent réellement au catalogue, pour ne pas mener à une page
             vide. */}
         {canBuildPack && (
-          <div className="mb-12 rounded-2xl border border-gold/30 bg-gold/5 p-6 sm:p-8">
+          <div className="mb-12 rounded-2xl border border-border-strong bg-bg-panel p-6 sm:p-8">
             <h2 className="font-display text-[19px] text-ink mb-2">COMPLÉTEZ VOTRE POSTE</h2>
             <p className="text-[14px] text-ink-dim leading-[1.6] mb-5 max-w-2xl">
               Écran, clavier, souris ou sacoche : ajoutez ce qu&apos;il vous faut autour de cette

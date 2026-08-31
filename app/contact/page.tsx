@@ -81,7 +81,7 @@ export default function Contact() {
               {shop.email && (
                 <div>
                   <h3 className="font-semibold text-ink mb-2">Email</h3>
-                  <a href={`mailto:${shop.email}`} className="text-ink-dim hover:text-gold">
+                  <a href={`mailto:${shop.email}`} className="text-ink-dim hover:text-ink">
                     {shop.email}
                   </a>
                 </div>
@@ -92,7 +92,7 @@ export default function Contact() {
                   <h3 className="font-semibold text-ink mb-2">Téléphone</h3>
                   <a
                     href={`tel:${shop.phone.replace(/\s/g, '')}`}
-                    className="text-ink-dim hover:text-gold"
+                    className="text-ink-dim hover:text-ink"
                   >
                     {shop.phone}
                   </a>
@@ -106,7 +106,7 @@ export default function Contact() {
                     href={waLink}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-gold font-semibold hover:underline"
+                    className="text-ink font-semibold hover:underline"
                   >
                     Ouvrir une discussion →
                   </a>
@@ -136,7 +136,7 @@ export default function Contact() {
                 <p className="text-ink font-semibold mb-1">Message envoyé.</p>
                 <p className="text-ink-dim text-sm">
                   Il est arrivé dans notre messagerie. Vous retrouverez la réponse dans{' '}
-                  <Link href="/account/messages" className="text-gold hover:underline">
+                  <Link href="/account/messages" className="text-ink hover:underline">
                     vos messages
                   </Link>
                   .

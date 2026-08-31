@@ -76,7 +76,7 @@ function ReturnContent() {
         <div className="bg-bg-panel rounded-lg border border-border p-8">
           {state === 'checking' && (
             <>
-              <div className="w-10 h-10 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
+              <div className="w-10 h-10 border-4 border-ink-dim border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
               <h1 className="font-serif font-semibold text-2xl text-ink mb-2">Vérification du paiement...</h1>
               <p className="text-ink-dim">Merci de patienter quelques instants.</p>
             </>

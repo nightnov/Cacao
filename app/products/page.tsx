@@ -117,7 +117,7 @@ function ProductsContent() {
 
   const hasActiveFilters = !!priceMin || !!priceMax || !!selectedCpu
 
-  const inputCls = 'w-full px-3 py-2 text-[13px] bg-bg-raised border border-border-mid rounded-lg text-ink outline-none focus:border-gold transition-colors'
+  const inputCls = 'w-full px-3 py-2 text-[13px] bg-bg-raised border border-border-mid rounded-lg text-ink outline-none focus:border-border-strong transition-colors'
 
   const FiltersPanel = (
     <div className="space-y-6">
@@ -141,7 +141,7 @@ function ProductsContent() {
                 onClick={() => setSelectedCpu(selectedCpu === cpu ? '' : cpu)}
                 className={`px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-colors ${
                   selectedCpu === cpu
-                    ? 'bg-gold/10 text-gold border-gold'
+                    ? 'bg-bg-raised text-ink border-border-strong'
                     : 'bg-bg-raised border-border-mid text-ink-dim hover:border-border-strong'
                 }`}
               >
@@ -159,7 +159,7 @@ function ProductsContent() {
         <div className="flex flex-col">
           <Link
             href="/products"
-            className={`text-[13px] py-1.5 transition-colors ${!category ? 'text-gold font-bold' : 'text-ink-dimmer hover:text-ink'}`}
+            className={`text-[13px] py-1.5 transition-colors ${!category ? 'text-ink font-bold' : 'text-ink-dimmer hover:text-ink'}`}
           >
             Tous les produits
           </Link>
@@ -167,7 +167,7 @@ function ProductsContent() {
             <Link
               key={cat.value}
               href={`/products?category=${cat.value}`}
-              className={`text-[13px] py-1.5 transition-colors ${category === cat.value ? 'text-gold font-bold' : 'text-ink-dimmer hover:text-ink'}`}
+              className={`text-[13px] py-1.5 transition-colors ${category === cat.value ? 'text-ink font-bold' : 'text-ink-dimmer hover:text-ink'}`}
             >
               {cat.label}
             </Link>
@@ -179,7 +179,7 @@ function ProductsContent() {
         <button
           type="button"
           onClick={() => { setPriceMin(''); setPriceMax(''); setSelectedCpu('') }}
-          className="text-[13px] text-gold font-bold hover:underline"
+          className="text-[13px] text-ink-dim font-bold hover:text-ink hover:underline"
         >
           Réinitialiser les filtres
         </button>
@@ -196,11 +196,11 @@ function ProductsContent() {
       <header className="border-b border-border bg-gradient-to-b from-bg-panel to-bg">
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-10 py-6">
           <nav aria-label="Fil d'Ariane" className="flex items-center gap-2 text-[12px] text-ink-dimmer mb-3">
-            <Link href="/" className="hover:text-gold transition-colors">Accueil</Link>
+            <Link href="/" className="hover:text-ink transition-colors">Accueil</Link>
             <span aria-hidden="true">/</span>
             {category ? (
               <>
-                <Link href="/products" className="hover:text-gold transition-colors">Catalogue</Link>
+                <Link href="/products" className="hover:text-ink transition-colors">Catalogue</Link>
                 <span aria-hidden="true">/</span>
                 <span className="text-ink">{labelFor(category, categories)}</span>
               </>
@@ -232,7 +232,7 @@ function ProductsContent() {
           <div className="lg:hidden mb-5 flex gap-2 overflow-x-auto no-scrollbar pb-1">
             <Link href="/products" className="flex-shrink-0">
               <span className={`inline-block px-3.5 py-2 rounded-lg text-[13px] font-medium border transition-colors ${
-                !category ? 'bg-gold/10 text-gold border-gold' : 'bg-bg-panel border-border text-ink-dim'
+                !category ? 'bg-bg-raised text-ink border-border-strong' : 'bg-bg-panel border-border text-ink-dim'
               }`}>
                 Tous
               </span>
@@ -240,7 +240,7 @@ function ProductsContent() {
             {categories.map(cat => (
               <Link key={cat.value} href={`/products?category=${cat.value}`} className="flex-shrink-0">
                 <span className={`inline-block px-3.5 py-2 rounded-lg text-[13px] font-medium border whitespace-nowrap transition-colors ${
-                  category === cat.value ? 'bg-gold/10 text-gold border-gold' : 'bg-bg-panel border-border text-ink-dim'
+                  category === cat.value ? 'bg-bg-raised text-ink border-border-strong' : 'bg-bg-panel border-border text-ink-dim'
                 }`}>
                   {cat.label}
                 </span>
@@ -256,7 +256,7 @@ function ProductsContent() {
             onClick={() => setShowFilters(!showFilters)}
             aria-expanded={showFilters}
             className={`lg:hidden flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-bold border transition-colors ${
-              hasActiveFilters ? 'bg-gold/10 text-gold border-gold' : 'bg-bg-panel border-border text-ink'
+              hasActiveFilters ? 'bg-bg-raised text-ink border-border-strong' : 'bg-bg-panel border-border text-ink'
             }`}
           >
             <SlidersHorizontal size={14} /> Filtrer
@@ -267,7 +267,7 @@ function ProductsContent() {
             <select
               value={sort}
               onChange={e => setSort(e.target.value)}
-              className="px-3.5 py-2 bg-bg-raised border border-border-mid rounded-lg text-[13px] text-ink outline-none focus:border-gold cursor-pointer transition-colors"
+              className="px-3.5 py-2 bg-bg-raised border border-border-mid rounded-lg text-[13px] text-ink outline-none focus:border-border-strong cursor-pointer transition-colors"
             >
               {sortOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -338,7 +338,7 @@ function ProductsContent() {
                   Ce produit n&apos;est pas encore disponible dans notre catalogue. Il sera peut-être ajouté lors d&apos;une prochaine mise à jour. N&apos;hésitez pas à revenir vérifier, ou à parcourir le catalogue complet en attendant.
                 </p>
                 <Link href="/products">
-                  <button className="px-6 py-2.5 bg-gold hover:bg-gold-dim text-ink-invert rounded-full font-semibold text-sm transition-colors">
+                  <button className="px-6 py-2.5 bg-ink hover:bg-ink-dim text-ink-invert rounded-full font-semibold text-sm transition-colors">
                     Voir tout le catalogue
                   </button>
                 </Link>

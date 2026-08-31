@@ -67,15 +67,15 @@ export function Footer() {
   }, [])
 
   const hasSocial = social.facebook || social.instagram || social.tiktok || social.youtube
-  const socialLink = 'w-9 h-9 rounded-lg bg-bg-raised border border-border-mid flex items-center justify-center text-ink-dim hover:text-gold hover:border-gold transition-colors'
-  const colLink = 'text-[13px] text-ink-dimmer hover:text-gold transition-colors'
+  const socialLink = 'w-9 h-9 rounded-lg bg-bg-raised border border-border-mid flex items-center justify-center text-ink-dim hover:text-ink hover:border-border-strong transition-colors'
+  const colLink = 'text-[13px] text-ink-dimmer hover:text-ink transition-colors'
 
   return (
     <footer className="bg-bg-panel border-t border-border mt-14">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-11 grid grid-cols-2 lg:grid-cols-[1.4fr,1fr,1fr,1fr] gap-8 lg:gap-10">
         {/* Marque */}
         <div className="col-span-2 lg:col-span-1">
-          <Link href="/" className="font-display font-bold text-xl tracking-[2px] text-ink hover:text-gold transition-colors">
+          <Link href="/" className="font-display font-bold text-xl tracking-[2px] text-ink hover:text-ink-dim transition-colors">
             CACAO
           </Link>
           <p className="text-[13px] text-ink-dimmer mt-3.5 leading-[1.65] max-w-xs">
@@ -154,7 +154,7 @@ export function Footer() {
             <li><Link href="/legal/terms" className={colLink}>Conditions générales</Link></li>
             <li><Link href="/legal/privacy" className={colLink}>Confidentialité</Link></li>
             <li className="flex items-start gap-2 text-[13px] text-ink-dimmer pt-1">
-              <MapPin size={14} className="text-gold flex-shrink-0 mt-0.5" />
+              <MapPin size={14} className="text-ink-dimmer flex-shrink-0 mt-0.5" />
               Abidjan, Côte d&apos;Ivoire
             </li>
           </ul>

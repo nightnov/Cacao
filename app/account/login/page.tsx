@@ -85,7 +85,7 @@ export default function AccountLogin() {
 
             <p className="text-xs text-ink-dimmer text-center mt-6">
               Pas encore de compte ?{' '}
-              <Link href="/account/signup" className="text-gold hover:underline font-semibold">
+              <Link href="/account/signup" className="text-ink hover:underline font-semibold">
                 Créer un compte
               </Link>
             </p>

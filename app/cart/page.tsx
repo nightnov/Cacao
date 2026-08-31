@@ -128,7 +128,7 @@ export default function Cart() {
                 </Link>
 
                 <div className="flex-1 min-w-0">
-                  <Link href={`/products/${item.slug}`} className="font-semibold text-ink hover:text-gold transition-colors line-clamp-1">
+                  <Link href={`/products/${item.slug}`} className="font-semibold text-ink hover:text-ink transition-colors line-clamp-1">
                     {item.name}
                   </Link>
                   {item.variant_label && (
@@ -140,14 +140,14 @@ export default function Cart() {
                 <div className="flex items-center border-2 border-border-strong rounded-full flex-shrink-0">
                   <button
                     onClick={() => updateCartItemQuantity(item.id, item.quantity - 1, item.variant_id)}
-                    className="w-8 h-8 flex items-center justify-center text-ink hover:text-gold"
+                    className="w-8 h-8 flex items-center justify-center text-ink hover:text-ink"
                   >
                     −
                   </button>
                   <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
                   <button
                     onClick={() => updateCartItemQuantity(item.id, item.quantity + 1, item.variant_id)}
-                    className="w-8 h-8 flex items-center justify-center text-ink hover:text-gold"
+                    className="w-8 h-8 flex items-center justify-center text-ink hover:text-ink"
                   >
                     +
                   </button>
@@ -193,7 +193,7 @@ export default function Cart() {
                 <div className="bg-bg-raised border border-border rounded-lg px-3 py-2.5 mb-2">
                   <p className="text-xs text-ink-dim">
                     Plus que{' '}
-                    <strong className="text-gold">{formatAmount(missingForDiscount)} FCFA</strong>{' '}
+                    <strong className="text-ink">{formatAmount(missingForDiscount)} FCFA</strong>{' '}
                     d&apos;articles pour obtenir {volume.percent} % de remise automatique.
                   </p>
                 </div>
@@ -204,14 +204,14 @@ export default function Cart() {
               </p>
               <div className="flex justify-between text-lg font-bold text-ink pt-4 border-t border-border mb-6">
                 <span>Total</span>
-                <span className="text-gold">{formatAmount(total - discount)} FCFA</span>
+                <span className="text-ink">{formatAmount(total - discount)} FCFA</span>
               </div>
               <Link href="/checkout">
                 <Button variant="primary" className="w-full">
                   Passer commande
                 </Button>
               </Link>
-              <Link href="/products" className="block text-center text-sm text-gold hover:underline mt-4">
+              <Link href="/products" className="block text-center text-sm text-ink hover:underline mt-4">
                 Continuer les achats
               </Link>
             </div>

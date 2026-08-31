@@ -3,13 +3,12 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
-import { TrustBar } from '@/components/TrustBar'
 import { Footer } from '@/components/Footer'
 import { ProductCard } from '@/components/ProductCard'
 import { getSupabaseClient } from '@/lib/supabase'
 import {
   Laptop, MapPin, ShieldCheck, Truck, RotateCcw, Headphones,
-  Keyboard, Mouse, HardDrive, CreditCard
+  Keyboard, Mouse, HardDrive, CreditCard, ArrowRight
 } from 'lucide-react'
 import { useCategories } from '@/hooks/useCategories'
 import { formatAmount } from '@/lib/format'
@@ -66,11 +65,22 @@ function ProductSection({ title, products, href }: { title: string; products: Pr
   if (products.length === 0) return null
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-11">
-      <div className="flex items-end justify-between gap-4 mb-5">
+      {/* Titre à gauche, bouton à droite, tous deux centrés sur la même ligne.
+          Le bouton reste sobre — contour fin, fond transparent : le doré est
+          réservé aux signaux rares, il n'a rien à faire sur un lien courant. */}
+      <div className="flex items-center justify-between gap-4 mb-5">
         <h2 className="font-display text-[19px] sm:text-[22px] text-ink">{title}</h2>
         {href && (
-          <Link href={href} className="text-[12.5px] font-bold text-gold hover:underline whitespace-nowrap">
-            Voir tout →
+          <Link
+            href={href}
+            className="group/lien inline-flex items-center gap-2 border border-border-strong hover:border-ink-dimmer text-ink-dim hover:text-ink text-[12.5px] font-semibold rounded-lg px-4 py-2 transition-colors whitespace-nowrap"
+          >
+            Voir tout
+            <ArrowRight
+              size={14}
+              strokeWidth={2}
+              className="transition-transform group-hover/lien:translate-x-0.5"
+            />
           </Link>
         )}
       </div>
@@ -172,45 +182,38 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-bg">
       <Navbar />
-      <TrustBar />
+      {/* Pas de barre d'avantages ici : la section « Pourquoi CACAO » reprend
+          les mêmes garanties en bas de page, en plus détaillé. Elle reste en
+          revanche sur le catalogue, qui n'a pas cette section. */}
 
       {/* Hero : texte à gauche, grande vitrine promotionnelle à droite */}
       <section className="border-b border-border bg-gradient-to-b from-bg-panel to-bg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-8 lg:py-10 grid grid-cols-1 lg:grid-cols-[355px,1fr] gap-7 items-stretch">
           <div className="flex flex-col justify-center">
-            <span className="inline-flex self-start items-center gap-2 border border-gold/40 text-gold text-[10px] font-bold tracking-[0.6px] px-3 py-1.5 rounded-full mb-4">
+            <span className="inline-flex self-start items-center gap-2 border border-border-strong text-ink-dim text-[10px] font-bold tracking-[0.6px] px-3 py-1.5 rounded-full mb-4">
               <MapPin size={12} strokeWidth={2} /> LIVRAISON PARTOUT EN CÔTE D&apos;IVOIRE
             </span>
             <h1 className="font-display text-[28px] sm:text-[34px] lg:text-[38px] leading-[1.06] text-ink mb-3">
-              LA PERFORMANCE,<br />SANS <span className="text-gold">COMPROMIS.</span>
+              LA PERFORMANCE,<br />SANS COMPROMIS.
             </h1>
             <p className="text-[13.5px] text-ink-dim leading-[1.65] mb-6">
               Ordinateurs portables, bureau et gaming. Commandez en ligne, payez en mobile money, recevez chez vous.
             </p>
+            {/* Action principale en clair sur sombre plutôt qu'en doré : elle
+                ressort autant, et le doré reste disponible pour ce qui doit
+                vraiment alerter. */}
             <div className="flex gap-2.5 flex-wrap">
-              <Link href="/products" className="px-6 py-3 bg-gold hover:bg-gold-dim text-ink-invert rounded-lg font-bold text-[13px] transition-colors active:scale-[0.98]">
+              <Link href="/products" className="px-6 py-3 bg-ink hover:bg-ink-dim text-ink-invert rounded-lg font-bold text-[13px] transition-colors active:scale-[0.98]">
                 Voir le catalogue
               </Link>
-              <Link href="/products?category=accessoire" className="px-6 py-3 border border-border-strong hover:border-gold text-ink rounded-lg font-bold text-[13px] transition-colors active:scale-[0.98]">
+              <Link href="/products?category=accessoire" className="px-6 py-3 border border-border-strong hover:border-ink-dimmer text-ink rounded-lg font-bold text-[13px] transition-colors active:scale-[0.98]">
                 Nos accessoires
               </Link>
             </div>
 
-            <div className="flex flex-col sm:flex-row lg:flex-col xl:flex-row gap-4 sm:gap-6 mt-7 pt-5 border-t border-border">
-              {[
-                { icon: ShieldCheck, t: 'Paiement sécurisé', s: 'Mobile money ou carte' },
-                { icon: Truck, t: 'Moins de 5 jours', s: 'Livraison suivie' },
-                { icon: RotateCcw, t: 'Retour 14 jours', s: 'Sans justification' }
-              ].map(({ icon: Icon, t, s }) => (
-                <div key={t} className="flex gap-2.5 items-start">
-                  <Icon size={17} strokeWidth={1.9} className="text-gold flex-shrink-0 mt-0.5" />
-                  <span>
-                    <span className="block text-[12px] font-bold text-ink">{t}</span>
-                    <span className="block text-[10.5px] text-ink-dimmer">{s}</span>
-                  </span>
-                </div>
-              ))}
-            </div>
+            {/* La rangée d'avantages qui figurait ici répétait mot pour mot la
+                barre située juste au-dessus, et la section « Pourquoi CACAO »
+                les reprenait une troisième fois. Elle est retirée. */}
           </div>
 
           {/* Vitrine : bannière définie dans l'admin, sinon le produit le plus consulté */}
@@ -248,7 +251,7 @@ export default function Home() {
                   <p className="font-display text-[15px] text-ink line-clamp-1">{heroProduct.name}</p>
                   <p className="text-[11px] text-ink-dim mt-0.5">Voir la fiche produit</p>
                 </div>
-                <p className="font-display text-[19px] text-gold whitespace-nowrap tabular-nums flex-shrink-0">
+                <p className="font-display text-[19px] text-ink whitespace-nowrap tabular-nums flex-shrink-0">
                   {formatAmount(heroProduct.price_fcfa)} FCFA
                 </p>
               </div>
@@ -285,10 +288,10 @@ export default function Home() {
 
             const inner = (
               <>
-                {/* Format carré et image quasi bord à bord, comme sur la
-                    référence : la machine occupe le cadre au lieu de flotter
-                    au milieu d'une marge. */}
-                <div className="relative aspect-square bg-bg-sunken overflow-hidden">
+                {/* Aucun fond propre, et hauteur fixe comme sur les cartes
+                    produit : les PNG détourés se posent sur la teinte de la
+                    carte, sans bande qui la couperait en deux. */}
+                <div className="relative h-[210px] sm:h-[240px] overflow-hidden">
                   {cat.imageUrl ? (
                     <img
                       src={cat.imageUrl}
@@ -331,24 +334,20 @@ export default function Home() {
                   </p>
 
                   <div className="mt-auto pt-4">
-                    <p className="text-[13.5px] text-ink-dim min-h-[22px]">
-                      {min !== null && (
-                        <>
-                          À partir de{' '}
-                          <span className="font-display text-[17px] text-gold tabular-nums">
-                            {formatAmount(min)} FCFA
-                          </span>
-                        </>
-                      )}
+                    {/* Prix discret dans cette section : c'est un repère de
+                        gamme, pas une offre. La mise en avant du montant
+                        appartient aux vrais produits, plus bas. */}
+                    <p className="text-[13px] text-ink-dimmer min-h-[20px] tabular-nums">
+                      {min !== null && <>À partir de {formatAmount(min)} FCFA</>}
                     </p>
 
                     {min !== null ? (
-                      /* La bordure dorée est invisible sur le fond doré, mais
-                         elle donne au bouton actif exactement la même hauteur
-                         qu'au bouton « Bientôt disponible », qui en a une. Sans
-                         elle, les boutons se décalaient de deux pixels d'une
-                         carte à l'autre. */
-                      <span className="mt-3 block text-center bg-gold border border-gold text-ink-invert font-bold text-[14px] rounded-lg py-3 group-hover:bg-gold-dim group-hover:border-gold-dim transition-colors">
+                      /* La bordure de même couleur que le fond est invisible,
+                         mais elle donne au bouton actif exactement la même
+                         hauteur qu'au bouton « Bientôt disponible », qui en a
+                         une. Sans elle, les boutons se décalaient de deux
+                         pixels d'une carte à l'autre. */
+                      <span className="mt-3 block text-center bg-ink border border-ink text-ink-invert font-bold text-[14px] rounded-lg py-3 group-hover:bg-ink-dim group-hover:border-ink-dim transition-colors">
                         Découvrir {cat.short}
                       </span>
                     ) : (
@@ -373,7 +372,7 @@ export default function Home() {
               <Link
                 key={cat.value}
                 href={`/products?category=${cat.value}`}
-                className={`group ${base} bg-bg-panel border-border hover:border-gold`}
+                className={`group ${base} bg-bg-panel border-border hover:border-border-strong`}
               >
                 {inner}
               </Link>
@@ -408,19 +407,19 @@ export default function Home() {
 
       {/* Accessoires */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-11">
-        <div className="bg-gradient-to-r from-bg-panel to-gold/5 border border-gold/25 rounded-xl p-6 sm:p-8 flex flex-col lg:flex-row items-start lg:items-center gap-6">
+        <div className="bg-gradient-to-r from-bg-panel to-bg-raised border border-border rounded-xl p-6 sm:p-8 flex flex-col lg:flex-row items-start lg:items-center gap-6">
           <div className="flex-1">
             <h3 className="font-display text-[19px] sm:text-[21px] text-ink mb-2">COMPLÉTEZ VOTRE ÉQUIPEMENT</h3>
             <p className="text-[13px] text-ink-dim leading-[1.6] max-w-lg mb-4">
               Claviers, souris, casques, sacoches, câbles et adaptateurs. Tout ce qu&apos;il faut autour de votre machine, au même endroit.
             </p>
-            <Link href="/products?category=accessoire" className="inline-block px-6 py-3 bg-gold hover:bg-gold-dim text-ink-invert rounded-lg font-bold text-[13px] transition-colors">
+            <Link href="/products?category=accessoire" className="inline-block px-6 py-3 bg-ink hover:bg-ink-dim text-ink-invert rounded-lg font-bold text-[13px] transition-colors">
               Voir les accessoires
             </Link>
           </div>
           <div className="flex gap-2.5 lg:ml-auto flex-shrink-0">
             {[Keyboard, Mouse, Headphones, HardDrive].map((Icon, i) => (
-              <span key={i} className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-bg-raised border border-border-strong flex items-center justify-center text-gold">
+              <span key={i} className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-bg-raised border border-border-strong flex items-center justify-center text-ink-dim">
                 <Icon size={21} strokeWidth={1.7} />
               </span>
             ))}
@@ -441,7 +440,7 @@ export default function Home() {
             { icon: Headphones, t: 'Conseil avant achat', p: 'Une question sur une configuration ? On répond avant que vous commandiez.' }
           ].map(({ icon: Icon, t, p }) => (
             <div key={t} className="bg-bg-panel border border-border rounded-xl p-5">
-              <span className="w-9 h-9 rounded-lg bg-gold/12 text-gold flex items-center justify-center mb-3">
+              <span className="w-9 h-9 rounded-lg bg-bg-raised text-ink-dim flex items-center justify-center mb-3">
                 <Icon size={17} strokeWidth={1.9} />
               </span>
               <h4 className="text-[13px] font-bold text-ink mb-1.5">{t}</h4>
@@ -468,12 +467,12 @@ export default function Home() {
                 value={newsletterEmail}
                 onChange={e => setNewsletterEmail(e.target.value)}
                 placeholder="Votre adresse e-mail"
-                className="flex-1 min-w-[200px] px-4 py-3 bg-bg-raised border border-border-mid focus:border-gold rounded-lg text-[13px] text-ink outline-none transition-colors"
+                className="flex-1 min-w-[200px] px-4 py-3 bg-bg-raised border border-border-mid focus:border-border-strong rounded-lg text-[13px] text-ink outline-none transition-colors"
               />
               <button
                 type="submit"
                 disabled={newsletterStatus === 'loading'}
-                className="px-6 py-3 bg-gold hover:bg-gold-dim text-ink-invert rounded-lg font-bold text-[13px] transition-colors disabled:opacity-45 disabled:cursor-not-allowed"
+                className="px-6 py-3 bg-ink hover:bg-ink-dim text-ink-invert rounded-lg font-bold text-[13px] transition-colors disabled:opacity-45 disabled:cursor-not-allowed"
               >
                 {newsletterStatus === 'loading' ? 'Envoi…' : 'S’abonner'}
               </button>

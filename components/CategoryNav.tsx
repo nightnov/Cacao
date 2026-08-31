@@ -32,7 +32,7 @@ function CategoryNavInner() {
           aria-current={active === cat.value ? 'page' : undefined}
           className={
             active === cat.value
-              ? 'text-gold font-bold'
+              ? 'text-ink font-bold'
               : 'text-ink-dim hover:text-ink transition-colors'
           }
         >

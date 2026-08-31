@@ -20,7 +20,7 @@ export function SoldByBlock({ sellerName = 'CACAO', avgRating = 0, reviewCount =
       <div className="min-w-0 flex-1">
         <p className="text-sm text-ink flex items-center gap-1.5">
           <span className="font-semibold truncate">{sellerName}</span>
-          <ShieldCheck size={14} className="text-gold flex-shrink-0" />
+          <ShieldCheck size={14} className="text-ink-dimmer flex-shrink-0" />
         </p>
         <p className="text-xs text-ink-dimmer">
           Vendu et expédié par {sellerName}

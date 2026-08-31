@@ -134,7 +134,7 @@ export default function Signup() {
 
             <p className="text-xs text-ink-dimmer text-center mt-6">
               Déjà un compte ?{' '}
-              <Link href="/account/login" className="text-gold hover:underline font-semibold">
+              <Link href="/account/login" className="text-ink hover:underline font-semibold">
                 Se connecter
               </Link>
             </p>

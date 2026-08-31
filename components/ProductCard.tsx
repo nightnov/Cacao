@@ -65,7 +65,7 @@ export function ProductCard({
       {/* Hauteur fixe plutôt que proportionnelle : toutes les images occupent
           la même place quelle que soit la largeur de la colonne, et la carte
           ne devient pas démesurée sur grand écran. */}
-      <div className="relative h-[210px] sm:h-[240px] flex items-center justify-center flex-shrink-0">
+      <div className="relative h-[250px] sm:h-[300px] flex items-center justify-center flex-shrink-0">
         {displayImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -116,7 +116,7 @@ export function ProductCard({
           du nom est réservée sur deux lignes : les références PC sont longues,
           et sans cette réserve les prix se décalaient d'une carte à l'autre. */}
       <div className="px-5 pt-1 pb-5">
-        <h3 className="font-display text-[16px] text-ink line-clamp-2 min-h-[2.5rem] leading-[1.25] group-hover:text-gold transition-colors">
+        <h3 className="font-display text-[16px] text-ink line-clamp-2 min-h-[2.5rem] leading-[1.25] group-hover:text-ink-dim transition-colors">
           {name}
         </h3>
 

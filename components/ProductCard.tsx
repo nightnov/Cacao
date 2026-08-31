@@ -17,17 +17,22 @@ interface ProductCardProps {
   created_at?: string
   avg_rating?: number | null
   review_count?: number
-  specs?: Record<string, unknown>
 }
 
 const NEW_THRESHOLD_DAYS = 14
 
-function specsSummary(specs?: Record<string, unknown>): string | null {
-  if (!specs) return null
-  const parts = [specs.cpu, specs.ram && `${specs.ram} RAM`, specs.storage].filter(Boolean)
-  return parts.length > 0 ? parts.join(' · ') : null
-}
-
+/**
+ * Carte produit des grilles : accueil, catalogue, « vous aimerez aussi ».
+ *
+ * Un seul cadre, une seule teinte de fond. La zone image n'a volontairement
+ * aucun fond propre : les photos étant des PNG détourés, le fond de la carte
+ * doit passer derrière le produit. Lui donner sa propre teinte créait une
+ * bande visible qui coupait la carte en deux.
+ *
+ * Aucune caractéristique technique ici. Processeur, mémoire et stockage
+ * appartiennent à la fiche produit : les répéter dans la grille éloignait le
+ * nom de son prix, alors que les deux se lisent ensemble.
+ */
 export function ProductCard({
   id,
   name,
@@ -38,14 +43,14 @@ export function ProductCard({
   created_at,
   avg_rating,
   review_count,
-  specs
 }: ProductCardProps) {
   const hasPromo = !!compare_at_price_fcfa && compare_at_price_fcfa > price_fcfa
   const discount = hasPromo
     ? Math.round(((compare_at_price_fcfa! - price_fcfa) / compare_at_price_fcfa!) * 100)
     : 0
-  const isNew = !!created_at && Date.now() - new Date(created_at).getTime() < NEW_THRESHOLD_DAYS * 24 * 60 * 60 * 1000
-  const summary = specsSummary(specs)
+  const isNew =
+    !!created_at &&
+    Date.now() - new Date(created_at).getTime() < NEW_THRESHOLD_DAYS * 24 * 60 * 60 * 1000
 
   // Une seule photo sur la carte. Le choix de la couleur appartient à la fiche
   // produit, où la variante a un prix réel : le proposer ici laissait croire à
@@ -57,17 +62,18 @@ export function ProductCard({
       href={`/products/${slug}`}
       className="group flex flex-col bg-bg-panel border border-border rounded-xl overflow-hidden transition-all duration-200 hover:border-border-strong hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
     >
-      {/* Cadre carré plutôt qu'une hauteur fixe : à 387 px de large, une bande
-          de 158 px écrasait la machine sur une fine ligne. Le carré suit la
-          largeur de la colonne et garde la même proportion à toutes les
-          tailles d'écran. */}
-      <div className="relative aspect-square bg-bg-sunken flex items-center justify-center overflow-hidden flex-shrink-0">
+      {/* Hauteur fixe plutôt que proportionnelle : toutes les images occupent
+          la même place quelle que soit la largeur de la colonne, et la carte
+          ne devient pas démesurée sur grand écran. */}
+      <div className="relative h-[210px] sm:h-[240px] flex items-center justify-center flex-shrink-0">
         {displayImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={displayImage}
             alt={name}
             loading="lazy"
+            /* `contain` et non `cover` : un PNG détouré recadré perdrait
+               justement ce qu'on cherche à montrer. */
             className="w-full h-full object-contain p-5 transition-transform duration-500 ease-out group-hover:scale-[1.05]"
           />
         ) : (
@@ -106,37 +112,31 @@ export function ProductCard({
         />
       </div>
 
-      {/* Chaque zone occupe la même hauteur d'une carte à l'autre : nom sur
-          deux lignes réservées, ligne de caractéristiques conservée même vide,
-          prix collé en bas. Sans ces hauteurs fixes, un produit sans
-          caractéristiques remontait son prix et la rangée perdait son
-          alignement. */}
-      <div className="flex flex-col flex-1 px-5 pt-4 pb-5">
-        {/* Nom en display : les références PC sont longues, deux lignes maximum */}
-        <h3 className="font-display text-[17px] text-ink line-clamp-2 min-h-[2.65rem] leading-[1.25] group-hover:text-gold transition-colors">
+      {/* Nom et prix forment un seul groupe, sans rien entre eux. La hauteur
+          du nom est réservée sur deux lignes : les références PC sont longues,
+          et sans cette réserve les prix se décalaient d'une carte à l'autre. */}
+      <div className="px-5 pt-1 pb-5">
+        <h3 className="font-display text-[16px] text-ink line-clamp-2 min-h-[2.5rem] leading-[1.25] group-hover:text-gold transition-colors">
           {name}
         </h3>
 
-        <p className="text-[12.5px] text-ink-dimmer leading-[1.45] mt-1.5 line-clamp-2 min-h-[36px]">
-          {summary}
-        </p>
-
-        {!!review_count && avg_rating != null && (
-          <div className="mt-1.5">
-            <StarRating rating={avg_rating} reviewCount={review_count} size={12} compact />
-          </div>
-        )}
-
-        <div className="mt-auto pt-3 flex items-baseline gap-2.5 flex-wrap">
-          <span className="font-display text-[22px] text-ink tabular-nums leading-tight">
+        <div className="mt-1.5 flex items-baseline gap-2.5 flex-wrap">
+          <span className="font-display text-[21px] text-ink tabular-nums leading-tight">
             {formatAmount(price_fcfa)} FCFA
           </span>
           {hasPromo && (
-            <span className="text-[13.5px] text-ink-faint line-through tabular-nums">
+            <span className="text-[13px] text-ink-faint line-through tabular-nums">
               {formatAmount(compare_at_price_fcfa!)}
             </span>
           )}
         </div>
+
+        {/* Sous le prix, pour ne pas séparer le nom de son montant. */}
+        {!!review_count && avg_rating != null && (
+          <div className="mt-2">
+            <StarRating rating={avg_rating} reviewCount={review_count} size={12} compact />
+          </div>
+        )}
       </div>
     </Link>
   )

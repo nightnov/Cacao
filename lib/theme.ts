@@ -1,8 +1,27 @@
 import { getSupabaseClient } from '@/lib/supabase'
 
 /**
- * Les 18 tokens de couleur du site. Cette liste fait autorité : toute clé
- * absente d'ici est ignorée, y compris si elle est présente en base.
+ * Palette servant de repli et de retour à l'état d'origine.
+ *
+ * Elle était écrite en dur — « nuit » — dans sept fichiers. Une seule constante
+ * évite qu'un oubli n'en renvoie une partie vers une palette abandonnée.
+ */
+export const DEFAULT_THEME_SLUG = 'cacao-premium'
+export const DEFAULT_THEME_NAME = 'CACAO Premium'
+
+/**
+ * Les tokens de couleur du site. Cette liste fait autorité : toute clé absente
+ * d'ici est ignorée, y compris si elle est présente en base.
+ *
+ * La couleur suit une hiérarchie, et chaque token a un rôle unique :
+ *   `accent`   les prix réels et les liens importants ;
+ *   `action`   les boutons portant l'action principale d'un écran ;
+ *   `cat-*`    un détail par rayon — bouton de gamme, survol, petit trait ;
+ *   `gold`     les promotions exceptionnelles, et rien d'autre.
+ *
+ * `gold` conserve son nom de clé bien que son rôle se soit resserré : il est
+ * enregistré tel quel dans les thèmes déjà en base, et le renommer aurait
+ * effacé la couleur de chaque palette existante.
  */
 export const TOKEN_KEYS = [
   'bg',
@@ -17,6 +36,13 @@ export const TOKEN_KEYS = [
   'border',
   'border-mid',
   'border-strong',
+  'accent',
+  'accent-dim',
+  'action',
+  'cat-portable',
+  'cat-bureau',
+  'cat-gaming',
+  'cat-accessoire',
   'gold',
   'gold-dim',
   'green',
@@ -46,8 +72,18 @@ export const TOKEN_GROUPS: { title: string; hint: string; keys: TokenKey[] }[] =
     keys: ['border', 'border-mid', 'border-strong'],
   },
   {
-    title: 'Accent et signaux',
-    hint: "L'accent porte les boutons et les prix. Les signaux servent aux messages.",
+    title: 'Couleur commerciale',
+    hint: 'Porte les prix, les liens importants et le bouton principal de chaque écran.',
+    keys: ['accent', 'accent-dim', 'action'],
+  },
+  {
+    title: 'Accents par rayon',
+    hint: 'Employés avec parcimonie : bouton de gamme, teinte du survol, petit trait. Jamais un cadre ou un texte entier.',
+    keys: ['cat-portable', 'cat-bureau', 'cat-gaming', 'cat-accessoire'],
+  },
+  {
+    title: 'Promotion et signaux',
+    hint: "La couleur promotionnelle est réservée aux offres exceptionnelles. L'employer partout lui retire tout effet.",
     keys: ['gold', 'gold-dim', 'green', 'green-bright', 'info', 'danger'],
   },
 ]
@@ -65,8 +101,15 @@ export const TOKEN_LABELS: Record<TokenKey, string> = {
   border: 'Trait',
   'border-mid': 'Trait moyen',
   'border-strong': 'Trait marqué',
-  gold: 'Accent',
-  'gold-dim': 'Accent foncé',
+  accent: 'Prix et liens',
+  'accent-dim': 'Prix et liens (survol)',
+  action: 'Bouton principal',
+  'cat-portable': 'Accent Portables',
+  'cat-bureau': 'Accent Bureau',
+  'cat-gaming': 'Accent Gaming',
+  'cat-accessoire': 'Accent Accessoires',
+  gold: 'Promotion',
+  'gold-dim': 'Promotion (survol)',
   green: 'Succès',
   'green-bright': 'Succès clair',
   info: 'Information',
@@ -74,23 +117,30 @@ export const TOKEN_LABELS: Record<TokenKey, string> = {
 }
 
 /**
- * Thème « Nuit ». Sert de secours si la base est injoignable et de base de
+ * Palette par défaut. Sert de secours si la base est injoignable et de base de
  * comparaison quand un thème enregistré ne définit qu'une partie des tokens.
  * Doit rester identique au bloc `:root` de app/globals.css.
  */
 export const DEFAULT_TOKENS: Record<TokenKey, string> = {
-  bg: '#1A1D1F',
-  'bg-panel': '#24272B',
-  'bg-sunken': '#151719',
-  'bg-raised': '#2E3237',
-  ink: '#EEF2F7',
-  'ink-dim': '#B3B8BE',
-  'ink-dimmer': '#8E959D',
-  'ink-faint': '#6F767E',
-  'ink-invert': '#1A1A1A',
-  border: '#35383C',
-  'border-mid': '#3E4247',
-  'border-strong': '#4E5257',
+  bg: '#17191C',
+  'bg-panel': '#212429',
+  'bg-sunken': '#121417',
+  'bg-raised': '#2A2E35',
+  ink: '#EDEFF2',
+  'ink-dim': '#B6BDC9',
+  'ink-dimmer': '#949CAA',
+  'ink-faint': '#737B88',
+  'ink-invert': '#0E1013',
+  border: '#2B3037',
+  'border-mid': '#363C45',
+  'border-strong': '#454C58',
+  accent: '#36A8FF',
+  'accent-dim': '#1F87E8',
+  action: '#36A8FF',
+  'cat-portable': '#38D6F0',
+  'cat-bureau': '#E8994A',
+  'cat-gaming': '#A472FF',
+  'cat-accessoire': '#3FD9A4',
   gold: '#FDC700',
   'gold-dim': '#E0B000',
   green: '#00A63E',
@@ -145,7 +195,7 @@ export function contrastRatio(a: string, b: string): number {
  * Les valeurs restent malgré tout filtrées : seules les clés de TOKEN_KEYS sont
  * lues, et seulement si leur valeur est un hexadécimal à six chiffres.
  *
- * Les couleurs identiques au thème « Nuit » sont omises — elles sont déjà dans
+ * Les couleurs identiques à la palette par défaut sont omises — elles sont déjà dans
  * globals.css, les répéter n'alourdirait le HTML de chaque page pour rien.
  */
 export function buildThemeStyle(tokens: Tokens): Record<string, string> {
@@ -186,13 +236,15 @@ export interface ResolvedTheme {
  * le plus récemment gagne — c'est le comportement attendu quand on superpose
  * une opération courte à une saison plus longue.
  *
- * Toute erreur ramène au thème « Nuit » : la boutique doit rester lisible même
+ * Toute erreur ramène à la palette par défaut : la boutique doit rester lisible même
  * si la base ne répond pas.
  */
 export async function resolveTheme(): Promise<ResolvedTheme> {
   const fallback: ResolvedTheme = {
-    slug: 'nuit',
-    name: 'Nuit',
+    slug: DEFAULT_THEME_SLUG,
+    name: DEFAULT_THEME_NAME,
+    // Aucun token : le site retombe alors sur le bloc `:root` de globals.css,
+    // qui contient exactement la palette par défaut.
     tokens: {},
     scheduled: false,
   }
@@ -222,7 +274,7 @@ export async function resolveTheme(): Promise<ResolvedTheme> {
       }
     }
 
-    const slug = settingRes.data?.value || 'nuit'
+    const slug = settingRes.data?.value || DEFAULT_THEME_SLUG
     const { data } = await supabase
       .from('site_themes')
       .select('slug, name, tokens')

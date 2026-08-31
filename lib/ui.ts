@@ -19,7 +19,7 @@ const BTN_BASE = [
   'font-semibold transition-colors duration-150',
   RADIUS,
   'active:scale-[0.98]',
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
   // Un bouton bloqué (rupture de stock, formulaire incomplet) doit se voir :
   // sans cet état, il est identique à un bouton actif et le clic semble cassé.
   'disabled:opacity-45 disabled:cursor-not-allowed disabled:active:scale-100',
@@ -41,16 +41,24 @@ export const BTN_VARIANTS = {
   sober:
     'bg-transparent border border-border-strong text-ink hover:bg-bg-raised hover:border-ink-faint disabled:hover:bg-transparent',
   /**
-   * Action principale d'un écran — une seule à la fois. Clair sur sombre :
-   * il ressort autant qu'un aplat de couleur sans consommer l'accent.
+   * Action principale d'un écran — une seule à la fois : ajouter au panier,
+   * payer, valider. Elle porte la couleur commerciale, ce qui donne au parcours
+   * d'achat un point d'appui visible sans colorer le reste de la page.
    */
   solid:
+    'bg-action border border-action text-ink-invert hover:bg-accent-dim hover:border-accent-dim disabled:hover:bg-action',
+  /**
+   * Neutre plein. Pour une action forte qui n'est PAS commerciale — se
+   * déconnecter, confirmer un choix — là où le bleu induirait en erreur.
+   */
+  neutral:
     'bg-ink border border-ink text-ink-invert hover:bg-ink-dim hover:border-ink-dim disabled:hover:bg-ink',
   /**
-   * Réservé à ce qui doit vraiment alerter. Le doré est très clair : le texte
-   * posé dessus doit rester `ink-invert`, du blanc tomberait à 1,6:1.
+   * Promotion exceptionnelle uniquement. La couleur promotionnelle est très
+   * claire : le texte posé dessus doit rester `ink-invert`, du blanc tomberait
+   * sous 2:1.
    */
-  accent:
+  promo:
     'bg-gold border border-gold text-ink-invert hover:bg-gold-dim hover:border-gold-dim disabled:hover:bg-gold',
   /** Lien d'action sans cadre, pour les cas secondaires. */
   ghost:
@@ -86,3 +94,62 @@ export function btn(
 export const CARD = 'bg-bg-panel border border-border rounded-xl'
 export const CARD_HOVER =
   'transition-colors duration-200 hover:border-border-strong'
+
+/* ── Prix ────────────────────────────────────────────────────────────────
+ * Le prix réel est le seul chiffre que le visiteur cherche : il porte la
+ * couleur commerciale. Le prix barré reste gris et plus petit — le mettre en
+ * couleur mettrait sur un pied d'égalité un montant qu'on ne paie pas.
+ */
+export const PRICE = 'font-display text-accent tabular-nums leading-tight'
+export const PRICE_OLD = 'text-ink-faint line-through tabular-nums'
+
+/**
+ * Accent propre à chaque rayon.
+ *
+ * La table est explicite parce que Tailwind lit les classes dans le source :
+ * une classe composée à l'exécution (`text-cat-${value}`) ne serait jamais
+ * générée et la couleur n'existerait tout simplement pas.
+ *
+ * Un rayon inconnu — créé depuis l'administration — retombe sur la couleur
+ * commerciale plutôt que sur du vide.
+ */
+export const CATEGORY_ACCENT: Record<
+  string,
+  { text: string; border: string; bg: string; ring: string }
+> = {
+  portable: {
+    text: 'text-cat-portable',
+    border: 'group-hover:border-cat-portable/50',
+    bg: 'bg-cat-portable',
+    ring: 'group-hover:shadow-[0_0_0_1px_rgb(var(--c-cat-portable)/0.25)]',
+  },
+  bureau: {
+    text: 'text-cat-bureau',
+    border: 'group-hover:border-cat-bureau/50',
+    bg: 'bg-cat-bureau',
+    ring: 'group-hover:shadow-[0_0_0_1px_rgb(var(--c-cat-bureau)/0.25)]',
+  },
+  gaming: {
+    text: 'text-cat-gaming',
+    border: 'group-hover:border-cat-gaming/50',
+    bg: 'bg-cat-gaming',
+    ring: 'group-hover:shadow-[0_0_0_1px_rgb(var(--c-cat-gaming)/0.25)]',
+  },
+  accessoire: {
+    text: 'text-cat-accessoire',
+    border: 'group-hover:border-cat-accessoire/50',
+    bg: 'bg-cat-accessoire',
+    ring: 'group-hover:shadow-[0_0_0_1px_rgb(var(--c-cat-accessoire)/0.25)]',
+  },
+}
+
+const ACCENT_FALLBACK = {
+  text: 'text-accent',
+  border: 'group-hover:border-accent/50',
+  bg: 'bg-accent',
+  ring: 'group-hover:shadow-[0_0_0_1px_rgb(var(--c-accent)/0.25)]',
+}
+
+export function categoryAccent(value: string | null | undefined) {
+  return (value && CATEGORY_ACCENT[value]) || ACCENT_FALLBACK
+}

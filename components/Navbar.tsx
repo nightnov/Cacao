@@ -119,7 +119,7 @@ export function Navbar() {
   const isAdmin = user?.id === ADMIN_UUID
 
   const act = 'relative flex flex-col items-center gap-1 text-[10.5px] font-medium text-ink-dim hover:text-ink transition-colors'
-  const badge = 'absolute -top-1.5 right-0 bg-gold text-ink-invert text-[9px] font-extrabold rounded-full min-w-[15px] h-[15px] px-1 flex items-center justify-center'
+  const badge = 'absolute -top-1.5 right-0 bg-accent text-ink-invert text-[9px] font-extrabold rounded-full min-w-[15px] h-[15px] px-1 flex items-center justify-center'
 
   return (
     /* En-tête figé. Le fond reste très peu transparent : sous une barre trop
@@ -192,7 +192,7 @@ export function Navbar() {
             isLoggedIn ? (
               <div className="relative" ref={accountMenuRef}>
                 <button onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)} className={act} aria-expanded={isAccountMenuOpen}>
-                  <span className="w-[19px] h-[19px] rounded-full bg-gold text-ink-invert text-[10px] font-bold flex items-center justify-center">
+                  <span className="w-[19px] h-[19px] rounded-full bg-accent text-ink-invert text-[10px] font-bold flex items-center justify-center">
                     {avatarLetter}
                   </span>
                   <span>Compte</span>
@@ -235,7 +235,7 @@ export function Navbar() {
                       className="flex items-center gap-3 px-4 py-3 text-sm text-ink hover:bg-bg-raised transition-colors">
                       <MessageSquare size={16} strokeWidth={1.8} /> Messages
                       {unreadCount > 0 && (
-                        <span className="ml-auto bg-gold text-ink-invert text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                        <span className="ml-auto bg-accent text-ink-invert text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                           {unreadCount}
                         </span>
                       )}

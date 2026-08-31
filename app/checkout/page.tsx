@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { getSupabaseClient } from '@/lib/supabase'
 import { getCart, clearCart, CartItem } from '@/lib/cart'
 import { formatAmount } from '@/lib/format'
+import { PRICE } from '@/lib/ui'
 import {
   cartParcelSize,
   deliveryOptions,
@@ -451,7 +452,7 @@ export default function Checkout() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     required
-                    className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                    className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
                   />
                 </div>
 
@@ -463,7 +464,7 @@ export default function Checkout() {
                     onChange={(e) => setPhone(e.target.value)}
                     required
                     placeholder="07 00 00 00 00"
-                    className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                    className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
                   />
                 </div>
 
@@ -478,7 +479,7 @@ export default function Checkout() {
                       value={cityId}
                       onChange={e => setCityId(e.target.value)}
                       required
-                      className="w-full px-4 py-2.5 bg-bg-raised border border-border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-gold"
+                      className="w-full px-4 py-2.5 bg-bg-raised border border-border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-accent"
                     >
                       {shippingFees.map(fee => (
                         <option key={fee.id} value={fee.id}>
@@ -590,7 +591,7 @@ export default function Checkout() {
                     required
                     rows={3}
                     placeholder="Quartier, rue, repère..."
-                    className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                    className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
                   />
                 </div>
 
@@ -603,7 +604,7 @@ export default function Checkout() {
                     onChange={(e) => setNotes(e.target.value)}
                     rows={2}
                     placeholder="Instructions spéciales, informations complémentaires..."
-                    className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                    className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
                   />
                 </div>
               </div>
@@ -710,7 +711,7 @@ export default function Checkout() {
 
                 <div className="flex justify-between text-lg font-bold text-ink pt-2 border-t border-border">
                   <span>Total</span>
-                  <span className="text-ink">{formatAmount(total)} FCFA</span>
+                  <span className={PRICE}>{formatAmount(total)} FCFA</span>
                 </div>
               </div>
 

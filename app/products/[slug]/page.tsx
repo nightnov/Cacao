@@ -22,6 +22,7 @@ import { VariantOption, ProductVariant } from '@/types/admin'
 import { findMatchingVariant, variantLabel } from '@/lib/variants'
 import { categoryLabel } from '@/lib/categories'
 import { formatAmount } from '@/lib/format'
+import { PRICE, PRICE_OLD } from '@/lib/ui'
 
 interface Product {
   id: string
@@ -525,20 +526,24 @@ export default function ProductDetail() {
               </button>
             )}
 
-            <div className="flex items-baseline gap-2.5 mb-1 flex-wrap">
-              <span className={`text-3xl font-bold tabular-nums ${hasPromo ? 'text-green-bright' : 'text-ink'}`}>
+            {/* Le prix garde la même couleur qu'il soit remisé ou non : c'est
+                le prix à payer, et le passer au vert en promotion le faisait
+                changer de nature d'une fiche à l'autre. L'économie réalisée,
+                juste en dessous, dit déjà qu'il y a une offre. */}
+            <div className="flex items-baseline gap-2 mb-1 flex-wrap">
+              <span className={`${PRICE} text-3xl font-bold`}>
                 {hasVariants && !matchedVariant && <span className="text-base font-semibold">À partir de </span>}
                 {formatAmount(displayPrice)} FCFA
               </span>
               {hasPromo && (
-                <span className="text-base text-ink-dimmer line-through tabular-nums">
+                <span className={`${PRICE_OLD} text-[15px]`}>
                   {formatAmount(product.compare_at_price_fcfa!)}
                 </span>
               )}
             </div>
 
             {hasPromo && (
-              <p className="text-sm font-semibold text-green-bright mb-3 tabular-nums">
+              <p className="text-sm font-semibold text-gold mb-3 tabular-nums">
                 Vous économisez {formatAmount(product.compare_at_price_fcfa! - displayPrice)} FCFA
                 {' '}({Math.round(((product.compare_at_price_fcfa! - displayPrice) / product.compare_at_price_fcfa!) * 100)}%)
               </p>
@@ -837,7 +842,7 @@ export default function ProductDetail() {
                     onChange={e => setMyComment(e.target.value)}
                     placeholder="Votre avis (optionnel)"
                     rows={2}
-                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold mb-3 bg-bg-panel"
+                    className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent mb-3 bg-bg-panel"
                   />
                   <Button type="submit" variant="solid" disabled={submittingReview || myRating === 0}>
                     {submittingReview ? 'Envoi...' : 'Publier'}

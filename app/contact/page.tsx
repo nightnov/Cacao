@@ -62,7 +62,7 @@ export default function Contact() {
     : null
 
   const field =
-    'w-full px-4 py-2.5 bg-bg-raised border border-border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-gold'
+    'w-full px-4 py-2.5 bg-bg-raised border border-border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-accent'
 
   return (
     <main className="min-h-screen bg-bg-panel flex flex-col">

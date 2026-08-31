@@ -9,6 +9,7 @@ import { Button } from '@/components/Button'
 import { useAuth } from '@/hooks/useAuth'
 import { getSupabaseClient } from '@/lib/supabase'
 import { formatAmount } from '@/lib/format'
+import { PRICE } from '@/lib/ui'
 
 interface OrderItem {
   id: string
@@ -129,8 +130,8 @@ export default function CheckoutSuccess() {
           </div>
 
           {order.delivery_code && (
-            <div className="bg-gold/5 border border-gold/30 rounded-lg p-4 mb-6 text-center">
-              <p className="text-xs font-semibold text-gold uppercase mb-1">Code de livraison</p>
+            <div className="bg-accent/10 border border-accent/30 rounded-lg p-4 mb-6 text-center">
+              <p className="text-xs font-semibold text-accent uppercase mb-1">Code de livraison</p>
               <p className="text-3xl font-bold text-ink tracking-widest mb-2">{order.delivery_code}</p>
               <p className="text-xs text-ink-dim">
                 Gardez ce code précieusement. Ne le donnez au livreur qu&apos;au moment où il vous remet votre colis. Cela confirme que vous avez bien reçu votre commande.
@@ -162,7 +163,7 @@ export default function CheckoutSuccess() {
             </div>
             <div className="flex justify-between text-lg font-bold text-ink pt-2 border-t border-border">
               <span>Total</span>
-              <span className="text-ink">{formatAmount(order.total_fcfa)} FCFA</span>
+              <span className={PRICE}>{formatAmount(order.total_fcfa)} FCFA</span>
             </div>
           </div>
 

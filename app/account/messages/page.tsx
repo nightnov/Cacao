@@ -127,23 +127,41 @@ function MessagesContent() {
                 Aucun message pour l&apos;instant. Écrivez-nous si vous avez une question !
               </p>
             ) : (
-              messages.map(msg => (
-                <div key={msg.id} className={`flex ${msg.sender === 'customer' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] rounded-lg px-4 py-3 ${
-                    msg.sender === 'customer' ? 'bg-ink text-ink-invert' : 'bg-bg-sunken text-ink'
-                  }`}>
-                    {msg.product_name && (
-                      <p className={`text-xs mb-1 font-semibold ${msg.sender === 'customer' ? 'text-white/80' : 'text-ink-dimmer'}`}>
-                        📦 {msg.product_name}
+              messages.map(msg => {
+                const fromCustomer = msg.sender === 'customer'
+                /**
+                 * Les couleurs secondaires se déduisent du fond de LA BULLE, et
+                 * non du thème de la page.
+                 *
+                 * La bulle du client était claire et sa date écrite en
+                 * `text-white/70` : blanc sur blanc, donc invisible. Chaque
+                 * teinte est désormais choisie face au fond sur lequel elle se
+                 * pose réellement.
+                 *
+                 * Client : bulle sombre bleutée, texte clair.
+                 * Boutique : bulle claire, texte foncé.
+                 */
+                const bubble = fromCustomer
+                  ? 'bg-accent/15 border border-accent/30 text-ink'
+                  : 'bg-ink border border-ink text-ink-invert'
+                const secondary = fromCustomer ? 'text-ink-dimmer' : 'text-ink-invert/70'
+
+                return (
+                  <div key={msg.id} className={`flex ${fromCustomer ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[80%] rounded-lg px-4 py-3 ${bubble}`}>
+                      {msg.product_name && (
+                        <p className={`text-xs mb-1 font-semibold ${secondary}`}>
+                          📦 {msg.product_name}
+                        </p>
+                      )}
+                      <p className="text-sm whitespace-pre-wrap">{msg.body}</p>
+                      <p className={`text-xs mt-1 ${secondary}`}>
+                        {new Date(msg.created_at).toLocaleString('fr-CI', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                       </p>
-                    )}
-                    <p className="text-sm whitespace-pre-wrap">{msg.body}</p>
-                    <p className={`text-xs mt-1 ${msg.sender === 'customer' ? 'text-white/70' : 'text-ink-dimmer'}`}>
-                      {new Date(msg.created_at).toLocaleString('fr-CI', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                    </p>
+                    </div>
                   </div>
-                </div>
-              ))
+                )
+              })
             )}
             <div ref={bottomRef}></div>
           </div>
@@ -154,7 +172,7 @@ function MessagesContent() {
               onChange={(e) => setBody(e.target.value)}
               rows={2}
               placeholder="Écrivez votre message..."
-              className="flex-1 px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold resize-none text-sm"
+              className="flex-1 px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent resize-none text-sm"
             />
             <Button type="submit" variant="solid" disabled={sending || !body.trim()}>
               Envoyer

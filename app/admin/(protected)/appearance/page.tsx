@@ -7,6 +7,7 @@ import {
   TOKEN_KEYS,
   TOKEN_LABELS,
   DEFAULT_TOKENS,
+  DEFAULT_THEME_SLUG,
   contrastRatio,
   isValidHex,
   type TokenKey,
@@ -37,9 +38,23 @@ const CONTRAST_CHECKS: { fg: TokenKey; bg: TokenKey; label: string; min: number 
   { fg: 'ink-dimmer', bg: 'bg', label: 'Texte discret sur le fond', min: 4.5 },
   { fg: 'ink', bg: 'bg-panel', label: 'Texte principal sur une carte', min: 4.5 },
   { fg: 'ink-dimmer', bg: 'bg-panel', label: 'Texte discret sur une carte', min: 4.5 },
-  { fg: 'ink-invert', bg: 'gold', label: "Texte sur un bouton d'accent", min: 4.5 },
-  { fg: 'gold', bg: 'bg', label: "Prix et liens d'accent sur le fond", min: 4.5 },
   { fg: 'ink', bg: 'bg-raised', label: 'Texte dans un champ de saisie', min: 4.5 },
+
+  // Couleur commerciale : elle porte les prix, donc l'information la plus
+  // consultée du site. On la vérifie sur la carte et pas seulement sur le
+  // fond, parce qu'un prix se lit presque toujours à l'intérieur d'une carte.
+  { fg: 'accent', bg: 'bg-panel', label: 'Prix sur une carte', min: 4.5 },
+  { fg: 'accent', bg: 'bg', label: 'Liens importants sur le fond', min: 4.5 },
+  { fg: 'ink-invert', bg: 'action', label: 'Texte sur le bouton principal', min: 4.5 },
+
+  // Les accents de rayon habillent les boutons de gamme : le libellé posé
+  // dessus doit rester lisible, sinon « Découvrir Gaming » disparaît.
+  { fg: 'ink-invert', bg: 'cat-portable', label: 'Texte sur le bouton Portables', min: 4.5 },
+  { fg: 'ink-invert', bg: 'cat-bureau', label: 'Texte sur le bouton Bureau', min: 4.5 },
+  { fg: 'ink-invert', bg: 'cat-gaming', label: 'Texte sur le bouton Gaming', min: 4.5 },
+  { fg: 'ink-invert', bg: 'cat-accessoire', label: 'Texte sur le bouton Accessoires', min: 4.5 },
+
+  { fg: 'ink-invert', bg: 'gold', label: 'Texte sur un badge de promotion', min: 4.5 },
 ]
 
 const CARD = 'bg-bg-panel border border-border rounded-2xl'
@@ -47,8 +62,8 @@ const LABEL = 'block text-xs font-semibold text-ink-dim mb-1.5'
 
 export default function AdminAppearance() {
   const [themes, setThemes] = useState<Theme[]>([])
-  const [activeSlug, setActiveSlug] = useState('nuit')
-  const [editingSlug, setEditingSlug] = useState('nuit')
+  const [activeSlug, setActiveSlug] = useState(DEFAULT_THEME_SLUG)
+  const [editingSlug, setEditingSlug] = useState(DEFAULT_THEME_SLUG)
   const [draft, setDraft] = useState<Theme | null>(null)
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
@@ -69,14 +84,14 @@ export default function AdminAppearance() {
 
     const list = (themesRes.data || []) as Theme[]
     setThemes(list)
-    setActiveSlug(settingRes.data?.value || 'nuit')
+    setActiveSlug(settingRes.data?.value || DEFAULT_THEME_SLUG)
     setLoading(false)
     return list
   }
 
   useEffect(() => {
     load().then(list => {
-      const first = list.find(t => t.slug === 'nuit') || list[0]
+      const first = list.find(t => t.slug === DEFAULT_THEME_SLUG) || list[0]
       if (first) {
         setEditingSlug(first.slug)
         setDraft(structuredClone(first))
@@ -101,7 +116,7 @@ export default function AdminAppearance() {
     return scheduled?.slug || activeSlug
   }, [themes, activeSlug])
 
-  /** Tokens complétés par le thème Nuit, pour ne jamais calculer sur du vide. */
+  /** Tokens complétés par la palette par défaut, pour ne jamais calculer sur du vide. */
   const tokens = useMemo(() => {
     const t = { ...DEFAULT_TOKENS, ...(draft?.tokens || {}) }
     return t as Record<TokenKey, string>
@@ -175,7 +190,7 @@ export default function AdminAppearance() {
     const ok = await call({ action: 'delete', slug: draft.slug })
     if (ok) {
       setMessage({ kind: 'ok', text: 'Thème supprimé.' })
-      selectTheme('nuit')
+      selectTheme(DEFAULT_THEME_SLUG)
     }
   }
 
@@ -503,18 +518,60 @@ function ThemePreview({ t }: { t: Record<TokenKey, string> }) {
             <p className="text-[10px] mt-0.5" style={{ color: t['ink-dimmer'] }}>
               PC Portables
             </p>
-            <p className="text-sm font-bold mt-1.5 tabular-nums" style={{ color: t.gold }}>
-              299,000 FCFA
+            {/* Le prix prend la couleur commerciale et le prix barré reste
+                gris : l'aperçu doit montrer la hiérarchie réelle, sinon on
+                règle une couleur en croyant en régler une autre. */}
+            <p className="text-sm font-bold mt-1.5 tabular-nums" style={{ color: t.accent }}>
+              299,000 FCFA{' '}
+              <span
+                className="text-[10px] font-normal line-through"
+                style={{ color: t['ink-faint'] }}
+              >
+                349,000
+              </span>
             </p>
           </div>
         </div>
 
         <button
           className="w-full py-2 rounded-lg text-[11px] font-bold"
-          style={{ background: t.gold, color: t['ink-invert'] }}
+          style={{ background: t.action, color: t['ink-invert'] }}
         >
           Ajouter au panier
         </button>
+
+        {/* Les quatre accents de rayon, tels qu'ils apparaissent sur les
+            boutons de gamme de l'accueil. */}
+        <div className="grid grid-cols-4 gap-1.5">
+          {(
+            [
+              ['cat-portable', 'Port.'],
+              ['cat-bureau', 'Bur.'],
+              ['cat-gaming', 'Gam.'],
+              ['cat-accessoire', 'Acc.'],
+            ] as [TokenKey, string][]
+          ).map(([key, label]) => (
+            <div
+              key={key}
+              className="py-1.5 rounded text-[9px] font-bold text-center"
+              style={{ background: t[key], color: t['ink-invert'] }}
+            >
+              {label}
+            </div>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <span
+            className="text-[9px] font-extrabold px-1.5 py-[2px] rounded"
+            style={{ background: t.gold, color: t['ink-invert'] }}
+          >
+            -20%
+          </span>
+          <span className="text-[9.5px]" style={{ color: t['ink-faint'] }}>
+            promotion, usage rare
+          </span>
+        </div>
 
         <div
           className="rounded-lg px-2.5 py-2 border"

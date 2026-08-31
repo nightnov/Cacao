@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { FavoriteButton } from '@/components/FavoriteButton'
 import { StarRating } from '@/components/StarRating'
 import { formatAmount } from '@/lib/format'
+import { PRICE, PRICE_OLD, categoryAccent } from '@/lib/ui'
 
 interface ProductCardProps {
   id: string
@@ -39,6 +40,7 @@ export function ProductCard({
   slug,
   price_fcfa,
   compare_at_price_fcfa,
+  category,
   image_urls,
   created_at,
   avg_rating,
@@ -57,15 +59,30 @@ export function ProductCard({
   // une sélection alors que rien n'était retenu au passage au panier.
   const displayImage = image_urls?.[0]
 
+  // Teinte du rayon : elle ne sert qu'à la bordure du survol. Un rayon inconnu
+  // retombe sur la couleur commerciale plutôt que de n'avoir aucune teinte.
+  const accent = categoryAccent(category)
+
   return (
     <Link
       href={`/products/${slug}`}
-      className="group flex flex-col bg-bg-panel border border-border rounded-xl overflow-hidden transition-all duration-200 hover:border-border-strong hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+      /* Au survol : très léger soulèvement, ombre douce et bordure teintée par
+         le rayon. La couleur ne fait qu'affleurer — un contour franchement
+         lumineux attirerait l'œil sur le cadre plutôt que sur la machine. */
+      className={`group flex flex-col bg-bg-panel border border-border rounded-xl overflow-hidden shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover ${accent.border} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg`}
     >
       {/* Hauteur fixe plutôt que proportionnelle : toutes les images occupent
           la même place quelle que soit la largeur de la colonne, et la carte
           ne devient pas démesurée sur grand écran. */}
       <div className="relative h-[250px] sm:h-[300px] flex items-center justify-center flex-shrink-0">
+        {/* Halo sombre très diffus derrière l'image. Un PNG détouré posé à plat
+            sur un aplat uniforme paraît collé ; ce dégradé lui donne un sol.
+            `pointer-events-none` : il ne doit jamais intercepter le clic. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_50%_45%,rgb(var(--c-bg-raised)/0.55),transparent_70%)]"
+        />
+
         {displayImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -74,7 +91,7 @@ export function ProductCard({
             loading="lazy"
             /* `contain` et non `cover` : un PNG détouré recadré perdrait
                justement ce qu'on cherche à montrer. */
-            className="w-full h-full object-contain p-5 transition-transform duration-500 ease-out group-hover:scale-[1.05]"
+            className="relative w-full h-full object-contain p-5 transition-transform duration-500 ease-out group-hover:scale-[1.05]"
           />
         ) : (
           <svg
@@ -92,15 +109,19 @@ export function ProductCard({
           </svg>
         )}
 
-        {/* Un seul badge : la remise chiffrée prime sur la nouveauté.
-            Même retrait que le bouton favori en vis-à-vis, pour que les deux
-            coins restent alignés d'une carte à l'autre. */}
+        {/* Un seul badge, la remise primant sur la nouveauté. Même retrait que
+            le bouton favori en vis-à-vis, pour que les deux coins restent
+            alignés d'une carte à l'autre.
+
+            La remise est la seule vraie promotion : elle porte la couleur
+            promotionnelle. « Nouveau » est une information, pas une offre — il
+            reste neutre, sans quoi la couleur d'alerte perdrait son sens. */}
         {hasPromo ? (
-          <span className="absolute top-2.5 left-2.5 text-[9.5px] font-extrabold px-2 py-[3px] rounded text-ink-invert bg-green-bright tabular-nums tracking-wide">
+          <span className="absolute top-2.5 left-2.5 z-10 text-[9.5px] font-extrabold px-2 py-[3px] rounded text-ink-invert bg-gold tabular-nums tracking-wide">
             -{discount}%
           </span>
         ) : isNew ? (
-          <span className="absolute top-2.5 left-2.5 text-[9.5px] font-extrabold px-2 py-[3px] rounded text-ink-invert bg-gold tracking-wide">
+          <span className="absolute top-2.5 left-2.5 z-10 text-[9.5px] font-extrabold px-2 py-[3px] rounded text-ink-invert bg-ink tracking-wide">
             NOUVEAU
           </span>
         ) : null}
@@ -120,12 +141,16 @@ export function ProductCard({
           {name}
         </h3>
 
-        <div className="mt-1.5 flex items-baseline gap-2.5 flex-wrap">
-          <span className="font-display text-[21px] text-ink tabular-nums leading-tight">
+        {/* Le prix réel porte la couleur commerciale ; le prix barré reste gris
+            et plus petit. Les mettre tous deux en couleur donnerait le même
+            poids à un montant qu'on ne paie pas. Écart resserré à `gap-2` pour
+            qu'ils se lisent comme un seul bloc. */}
+        <div className="mt-1.5 flex items-baseline gap-2 flex-wrap">
+          <span className={`${PRICE} text-[21px]`}>
             {formatAmount(price_fcfa)} FCFA
           </span>
           {hasPromo && (
-            <span className="text-[13px] text-ink-faint line-through tabular-nums">
+            <span className={`${PRICE_OLD} text-[12.5px]`}>
               {formatAmount(compare_at_price_fcfa!)}
             </span>
           )}

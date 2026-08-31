@@ -7,7 +7,7 @@ import { Footer } from '@/components/Footer'
 import { ProductCard } from '@/components/ProductCard'
 import { PromoCarousel } from '@/components/PromoCarousel'
 import { getSupabaseClient } from '@/lib/supabase'
-import { btn } from '@/lib/ui'
+import { btn, categoryAccent } from '@/lib/ui'
 import {
   DEFAULT_HERO_SETTINGS,
   HERO_SETTING_KEYS,
@@ -75,20 +75,21 @@ function ProductSection({ title, products, href }: { title: string; products: Pr
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-11">
       {/* Titre à gauche, bouton à droite, tous deux centrés sur la même ligne.
-          Le bouton reste sobre — contour fin, fond transparent : le doré est
-          réservé aux signaux rares, il n'a rien à faire sur un lien courant. */}
+          Le cadre reste sobre — contour fin, fond transparent. Seule la flèche
+          porte la couleur commerciale : elle suffit à signaler qu'on peut aller
+          plus loin, sans transformer le lien en bouton coloré. */}
       <div className="flex items-center justify-between gap-4 mb-5">
         <h2 className="font-display text-[19px] sm:text-[22px] text-ink">{title}</h2>
         {href && (
           <Link
             href={href}
-            className="group/lien inline-flex items-center gap-2 border border-border-strong hover:border-ink-dimmer text-ink-dim hover:text-ink text-[12.5px] font-semibold rounded-lg px-4 py-2 transition-colors whitespace-nowrap"
+            className="group/lien inline-flex items-center gap-2 border border-border-strong hover:border-accent/60 text-ink-dim hover:text-ink text-[12.5px] font-semibold rounded-lg px-4 py-2 transition-colors whitespace-nowrap"
           >
             Voir tout
             <ArrowRight
               size={14}
               strokeWidth={2}
-              className="transition-transform group-hover/lien:translate-x-0.5"
+              className="text-accent transition-transform group-hover/lien:translate-x-0.5"
             />
           </Link>
         )}
@@ -298,6 +299,10 @@ export default function Home() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {gammes.map(({ cat, min, count }) => {
             const Icon = cat.icon
+            // Teinte du rayon : elle habille le bouton et le montant, rien
+            // d'autre. Colorer aussi le cadre et le titre ferait quatre cartes
+            // criardes là où on veut quatre familles reconnaissables.
+            const accent = categoryAccent(cat.value)
             const empty = count === 0
 
             const inner = (
@@ -351,17 +356,29 @@ export default function Home() {
                     {/* Prix discret dans cette section : c'est un repère de
                         gamme, pas une offre. La mise en avant du montant
                         appartient aux vrais produits, plus bas. */}
+                    {/* Seul le montant prend la teinte du rayon ; la mention
+                        « À partir de » reste grise. C'est le chiffre qu'on
+                        cherche, pas la formule qui l'introduit. */}
                     <p className="text-[13px] text-ink-dimmer min-h-[20px] tabular-nums">
-                      {min !== null && <>À partir de {formatAmount(min)} FCFA</>}
+                      {min !== null && (
+                        <>
+                          À partir de{' '}
+                          <span className={`font-semibold ${accent.text}`}>
+                            {formatAmount(min)} FCFA
+                          </span>
+                        </>
+                      )}
                     </p>
 
                     {min !== null ? (
-                      /* La bordure de même couleur que le fond est invisible,
-                         mais elle donne au bouton actif exactement la même
-                         hauteur qu'au bouton « Bientôt disponible », qui en a
-                         une. Sans elle, les boutons se décalaient de deux
-                         pixels d'une carte à l'autre. */
-                      <span className="mt-3 block text-center bg-ink border border-ink text-ink-invert font-bold text-[14px] rounded-lg py-3 group-hover:bg-ink-dim group-hover:border-ink-dim transition-colors">
+                      /* Le bouton de gamme porte la couleur du rayon : c'est
+                         le seul endroit de la carte où elle s'affiche en aplat,
+                         et elle suffit à distinguer les quatre familles.
+                         La bordure de même teinte est invisible, mais donne au
+                         bouton exactement la même hauteur qu'à « Bientôt
+                         disponible », qui en a une. Sans elle, les boutons se
+                         décalaient de deux pixels d'une carte à l'autre. */
+                      <span className={`mt-3 block text-center ${accent.bg} border border-transparent text-ink-invert font-bold text-[14px] rounded-lg py-3 transition-opacity group-hover:opacity-90`}>
                         Découvrir {cat.short}
                       </span>
                     ) : (

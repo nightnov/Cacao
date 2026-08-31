@@ -291,7 +291,7 @@ export default function Account() {
                   >
                     <Icon size={16} strokeWidth={1.9} /> {section.label}
                     {section.key === 'messages' && unreadMessages > 0 && (
-                      <span className="md:ml-auto bg-gold text-ink-invert text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                      <span className="md:ml-auto bg-accent text-ink-invert text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                         {unreadMessages}
                       </span>
                     )}
@@ -587,8 +587,8 @@ export default function Account() {
                               )}
 
                               {order.delivery_code && !['delivered', 'cancelled', 'refunded'].includes(order.status) && (
-                                <div className="bg-gold/5 border border-gold/30 rounded-lg p-3 mb-3 text-center">
-                                  <p className="text-[10px] font-semibold text-gold uppercase mb-0.5">Code de livraison</p>
+                                <div className="bg-accent/10 border border-accent/30 rounded-lg p-3 mb-3 text-center">
+                                  <p className="text-[10px] font-semibold text-accent uppercase mb-0.5">Code de livraison</p>
                                   <p className="text-xl font-bold text-ink tracking-widest">{order.delivery_code}</p>
                                   <p className="text-[10px] text-ink-dim mt-1">
                                     À donner au livreur uniquement à la remise du colis
@@ -668,7 +668,7 @@ export default function Account() {
                         value={profile.phone || ''}
                         onChange={(e) => setProfile(p => ({ ...p, phone: e.target.value }))}
                         placeholder="07 00 00 00 00"
-                        className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                        className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
                       />
                     </div>
                     <div>
@@ -678,7 +678,7 @@ export default function Account() {
                         value={profile.city || ''}
                         onChange={(e) => setProfile(p => ({ ...p, city: e.target.value }))}
                         placeholder="Abidjan"
-                        className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                        className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
                       />
                     </div>
                   </div>
@@ -689,7 +689,7 @@ export default function Account() {
                       value={profile.address || ''}
                       onChange={(e) => setProfile(p => ({ ...p, address: e.target.value }))}
                       placeholder="Quartier, rue, repère..."
-                      className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                      className="w-full px-4 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent"
                     />
                   </div>
                   <div className="flex items-center gap-4 pt-2">

@@ -25,9 +25,19 @@ import type { Config } from 'tailwindcss'
 const c = (name: string) => `rgb(var(--c-${name}) / <alpha-value>)`
 
 const config: Config = {
+  /**
+   * `lib` doit être scanné, pas seulement `app` et `components`.
+   *
+   * Le vocabulaire visuel partagé (boutons, prix, accents de rayon) vit dans
+   * `lib/ui.ts`. Tailwind ne génère que les classes qu'il voit écrites dans les
+   * fichiers listés ici : sans cette ligne, `bg-action` et `bg-cat-gaming`
+   * n'existaient tout simplement pas dans la feuille de style, et les boutons
+   * concernés s'affichaient sans fond.
+   */
   content: [
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './lib/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
@@ -44,6 +54,16 @@ const config: Config = {
         border: c('border'),
         'border-mid': c('border-mid'),
         'border-strong': c('border-strong'),
+        // Couleur commerciale : prix réels, liens importants, action principale.
+        accent: c('accent'),
+        'accent-dim': c('accent-dim'),
+        action: c('action'),
+        // Un accent par rayon, pour un détail — pas pour habiller une carte.
+        'cat-portable': c('cat-portable'),
+        'cat-bureau': c('cat-bureau'),
+        'cat-gaming': c('cat-gaming'),
+        'cat-accessoire': c('cat-accessoire'),
+        // Promotions exceptionnelles uniquement.
         gold: c('gold'),
         'gold-dim': c('gold-dim'),
         green: c('green'),

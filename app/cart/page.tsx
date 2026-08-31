@@ -7,6 +7,7 @@ import { Button } from '@/components/Button'
 import Link from 'next/link'
 import { getCart, updateCartItemQuantity, removeFromCart, CartItem, CART_EVENT } from '@/lib/cart'
 import { formatAmount } from '@/lib/format'
+import { PRICE } from '@/lib/ui'
 import { getSupabaseClient } from '@/lib/supabase'
 import {
   volumeDiscount,
@@ -204,7 +205,7 @@ export default function Cart() {
               </p>
               <div className="flex justify-between text-lg font-bold text-ink pt-4 border-t border-border mb-6">
                 <span>Total</span>
-                <span className="text-ink">{formatAmount(total - discount)} FCFA</span>
+                <span className={PRICE}>{formatAmount(total - discount)} FCFA</span>
               </div>
               <Link href="/checkout">
                 <Button variant="solid" className="w-full">

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { revalidateTag } from 'next/cache'
 import { THEME_CACHE_TAG } from '@/lib/theme.server'
-import { sanitizeTokens, TOKEN_KEYS } from '@/lib/theme'
+import { sanitizeTokens, TOKEN_KEYS, DEFAULT_THEME_SLUG } from '@/lib/theme'
 
 const ADMIN_UUID = 'f4e9e8fd-8e85-4045-a6e5-c2c62204c5ff'
 const DATE = /^\d{4}-\d{2}-\d{2}$/
@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
     if (setting?.value === body.slug) {
       await supabase
         .from('site_settings')
-        .upsert({ key: 'active_theme', value: 'nuit' }, { onConflict: 'key' })
+        .upsert({ key: 'active_theme', value: DEFAULT_THEME_SLUG }, { onConflict: 'key' })
     }
 
     const { error } = await supabase.from('site_themes').delete().eq('slug', body.slug)

@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Navbar } from '@/components/Navbar'
-import { TrustBar } from '@/components/TrustBar'
 import { Footer } from '@/components/Footer'
 import { Breadcrumb } from '@/components/Breadcrumb'
 import { ProductCard } from '@/components/ProductCard'
@@ -192,7 +191,12 @@ function ProductsContent() {
   return (
     <main className="min-h-screen bg-bg flex flex-col">
       <Navbar />
-      <TrustBar />
+      {/* La barre d'avantages a été retirée d'ici : elle occupait toute la
+          largeur au-dessus du fil d'Ariane et repoussait les produits sous la
+          ligne de flottaison. Sur un catalogue, ce sont les produits qui
+          doivent arriver en premier. Ces garanties restent présentes sur
+          l'accueil, dans la section « Pourquoi CACAO », et sur chaque fiche
+          produit juste sous le bouton d'achat — là où la question se pose. */}
 
       {/* En-tête de rayon : titre compact et compteur, façon page de série */}
       <header className="border-b border-border bg-gradient-to-b from-bg-panel to-bg">

@@ -90,34 +90,44 @@ export function categoryIcon(name: string | null | undefined): LucideIcon {
 }
 
 /**
- * Rayons de secours.
+ * Rayons de secours, affichés le temps que la vraie liste arrive de la base et
+ * si celle-ci est injoignable — un menu figé vaut mieux qu'une navigation vide.
  *
- * Ils reprennent exactement le contenu de la migration 021. Ils servent le
- * temps que la page charge la vraie liste, et si la base est injoignable — un
- * menu figé vaut mieux qu'une navigation vide.
+ * Cette liste doit refléter les rayons RÉELLEMENT visibles. Elle contenait
+ * encore « Écrans », « Stockage » et « Imprimantes » alors que la base ne les
+ * publie plus : pendant le bref instant du chargement, et sur toute page dont
+ * la lecture échouait, le menu du catalogue affichait donc des rayons que
+ * l'accueil, lui, n'affichait pas. C'est l'incohérence constatée entre les
+ * pages — le code portait une deuxième source de vérité.
  */
 export const FALLBACK_CATEGORIES: CategoryDef[] = [
   { value: 'portable', label: 'PC Portables', short: 'Portables', icon: Laptop },
   { value: 'bureau', label: 'PC Bureau', short: 'Bureau', icon: PcCase },
   { value: 'gaming', label: 'Gaming', short: 'Gaming', icon: Gamepad2 },
-  { value: 'ecrans', label: 'Écrans', short: 'Écrans', icon: Monitor },
   { value: 'accessoire', label: 'Accessoires', short: 'Accessoires', icon: Headphones },
   { value: 'composants', label: 'Composants', short: 'Composants', icon: Cpu },
-  { value: 'stockage', label: 'Stockage', short: 'Stockage', icon: HardDrive },
-  { value: 'imprimantes', label: 'Imprimantes', short: 'Imprimantes', icon: Printer },
 ]
 
 /**
  * Conservé sous son ancien nom : plusieurs écrans l'importent encore pour
- * afficher le nom d'un rayon à partir de sa clé. Ne connaît que les rayons
- * d'origine ; `labelFor` ci-dessous gère aussi ceux créés depuis
- * l'administration.
+ * afficher le nom d'un rayon à partir de sa clé.
  */
 export const CATEGORIES = FALLBACK_CATEGORIES
 
-export const categoryLabel: Record<string, string> = Object.fromEntries(
-  FALLBACK_CATEGORIES.map(c => [c.value, c.label])
-)
+/**
+ * Noms d'affichage, y compris pour les rayons retirés de la navigation.
+ *
+ * Volontairement plus large que `FALLBACK_CATEGORIES` : un produit rangé
+ * autrefois dans « Stockage » doit continuer d'afficher « Stockage » sur sa
+ * fiche et dans le fil d'Ariane. Sans ces entrées, il afficherait la clé brute
+ * « stockage ». Masquer un rayon le retire des menus, pas du vocabulaire.
+ */
+export const categoryLabel: Record<string, string> = {
+  ...Object.fromEntries(FALLBACK_CATEGORIES.map(c => [c.value, c.label])),
+  ecrans: 'Écrans',
+  stockage: 'Stockage',
+  imprimantes: 'Imprimantes',
+}
 
 /** Nom affichable d'un rayon, y compris pour un rayon créé après coup. */
 export function labelFor(value: string, list?: CategoryDef[]): string {

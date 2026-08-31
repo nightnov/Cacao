@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Play, Inter } from 'next/font/google'
 import './globals.css'
 import { getTheme } from '@/lib/theme.server'
-import { buildThemeStyle } from '@/lib/theme'
+import { buildThemeStyle, DEFAULT_TOKENS } from '@/lib/theme'
 
 // Play : display anguleuse pour les titres et les prix.
 // Inter : texte courant. Deux graisses par famille seulement, pour limiter
@@ -41,7 +41,10 @@ export async function generateViewport(): Promise<Viewport> {
   return {
     width: 'device-width',
     initialScale: 1,
-    themeColor: theme.tokens.bg || '#222427',
+    // Secours aligné sur DEFAULT_TOKENS.bg de lib/theme.ts : cette valeur
+    // était restée sur l'ancien fond et aurait teinté la barre du navigateur
+    // d'une couleur qui n'existe plus dans la palette.
+    themeColor: theme.tokens.bg || DEFAULT_TOKENS.bg,
   }
 }
 

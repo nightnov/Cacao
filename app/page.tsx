@@ -73,7 +73,7 @@ function GridSkeleton({ count = 4 }: { count?: number }) {
 function ProductSection({ title, products, href }: { title: string; products: Product[]; href?: string }) {
   if (products.length === 0) return null
   return (
-    <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pb-11">
+    <section className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-11">
       {/* Titre à gauche, bouton à droite, tous deux centrés sur la même ligne.
           Le cadre reste sobre — contour fin, fond transparent. Seule la flèche
           porte la couleur commerciale : elle suffit à signaler qu'on peut aller
@@ -238,7 +238,7 @@ export default function Home() {
       {(showHeroText || showCarousel) && (
       <section className="border-b border-border bg-gradient-to-b from-bg-panel to-bg">
         <div
-          className={`max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14 grid grid-cols-1 gap-8 items-stretch ${
+          className={`max-w-[1280px] mx-auto px-4 sm:px-6 py-10 lg:py-14 grid grid-cols-1 gap-8 items-stretch ${
             showHeroText && showCarousel ? 'lg:grid-cols-[355px,1fr]' : 'lg:grid-cols-1'
           }`}
         >
@@ -297,7 +297,7 @@ export default function Home() {
       )}
 
       {/* Gammes : prix « à partir de » calculé sur les vrais produits en ligne */}
-      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-11">
+      <section className="max-w-[1280px] mx-auto px-4 sm:px-6 py-11">
         <div className="text-center mb-9">
           <h2 className={`${TITLE_SECTION} mb-3`}>
             CHOISISSEZ VOTRE GAMME
@@ -427,7 +427,7 @@ export default function Home() {
 
       {/* Meilleures ventes */}
       {loading ? (
-        <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pb-11">
+        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-11">
           <h2 className={`${TITLE_SECTION} mb-8 sm:mb-12`}>NOS MEILLEURES VENTES</h2>
           <GridSkeleton />
         </section>
@@ -450,7 +450,7 @@ export default function Home() {
       )}
 
       {/* Accessoires */}
-      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pb-11">
+      <section className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-11">
         <div className="bg-gradient-to-r from-bg-panel to-bg-raised border border-border rounded-xl p-6 sm:p-8 flex flex-col lg:flex-row items-start lg:items-center gap-6">
           <div className="flex-1">
             <h3 className="font-display text-[19px] sm:text-[21px] text-ink mb-2">COMPLÉTEZ VOTRE ÉQUIPEMENT</h3>
@@ -472,7 +472,7 @@ export default function Home() {
       </section>
 
       {/* Pourquoi CACAO */}
-      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pb-11">
+      <section className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-11">
         <div className="text-center mb-7">
           <h2 className={TITLE_SECTION}>POURQUOI CACAO ?</h2>
         </div>
@@ -495,7 +495,7 @@ export default function Home() {
       </section>
 
       {/* Newsletter */}
-      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pb-14">
+      <section className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-14">
         <div className="bg-bg-panel border border-border rounded-xl p-7 sm:p-9 text-center">
           <h2 className={`${TITLE_SECTION} mb-3`}>NE MANQUEZ AUCUNE OFFRE</h2>
           <p className="text-[14px] text-ink-dim mb-6 max-w-md mx-auto">

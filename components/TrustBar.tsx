@@ -18,7 +18,7 @@ const items = [
 export function TrustBar() {
   return (
     <div className="bg-bg-panel border-b border-border">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 lg:grid-cols-4">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 grid grid-cols-2 lg:grid-cols-4">
         {items.map(({ icon: Icon, title, detail }, i) => (
           <div
             key={title}

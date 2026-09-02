@@ -17,15 +17,18 @@ export const RADIUS = 'rounded-lg'
 /**
  * Largeur de contenu commune à toutes les sections publiques.
  *
- * La marge latérale passe de 40 px à 32 px sur grand écran et la largeur utile
- * de 1280 à 1440 px : à 1920 px, l'ancien cadrage laissait plus de 300 px de
- * vide de chaque côté, ce qui tassait les cartes et rendait la page timide.
+ * 1280 px de large et 24 px de marge : ce sont les valeurs relevées sur le site
+ * de référence, qui emploie le conteneur Tailwind avec `px-6`.
+ *
+ * Un cadrage plus large avait été essayé à 1440 px. Il donnait des cartes plus
+ * grandes, mais pas le rendu recherché : l'impact ne vient pas de la largeur du
+ * conteneur, il vient de la place que l'image prend DANS la carte.
  *
  * Les valeurs vivent ici plutôt que recopiées dans chaque section : elles
  * l'étaient à onze endroits, et une seule oubliée décalait toute une bande de
  * la page par rapport aux autres.
  */
-export const CONTAINER = 'max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8'
+export const CONTAINER = 'max-w-[1280px] mx-auto px-4 sm:px-6'
 
 /* ── Échelle typographique ───────────────────────────────────────────────
  * Une hiérarchie explicite, plutôt qu'une taille choisie au cas par cas.

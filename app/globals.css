@@ -17,18 +17,24 @@
      auparavant. Un panneau plus sombre que sa page se lit comme un trou ;
      plus clair, il avance vers le lecteur. C'est ce léger palier — et non
      l'ombre — qui donne le relief. */
-  --c-bg: 23 25 28;              /* #17191C */
-  --c-bg-panel: 33 36 41;        /* #212429 */
-  --c-bg-sunken: 18 20 23;       /* #121417 */
-  --c-bg-raised: 42 46 53;       /* #2A2E35 */
-  --c-ink: 237 239 242;          /* #EDEFF2 */
-  --c-ink-dim: 182 189 201;      /* #B6BDC9 */
-  --c-ink-dimmer: 148 156 170;   /* #949CAA */
-  --c-ink-faint: 115 123 136;    /* #737B88 */
+  /* Fonds nettement plus clairs qu'auparavant. Le site paraissait éteint à
+     côté de sa référence : le fond était descendu à #17191C là où celle-ci
+     tient #222427, et les cartes suivaient. Un anthracite trop noir avale les
+     photos de machines au lieu de les porter. */
+  --c-bg: 34 36 39;              /* #222427 */
+  --c-bg-panel: 49 52 55;        /* #313437 */
+  --c-bg-sunken: 29 32 34;       /* #1D2022 */
+  --c-bg-raised: 53 56 59;       /* #35383B */
+  --c-ink: 238 242 247;          /* #EEF2F7 */
+  --c-ink-dim: 179 184 190;      /* #B3B8BE */
+  --c-ink-dimmer: 154 161 168;   /* #9AA1A8 */
+  --c-ink-faint: 124 131 138;    /* #7C838A */
   --c-ink-invert: 14 16 19;      /* #0E1013 */
-  --c-border: 43 48 55;          /* #2B3037 */
-  --c-border-mid: 54 60 69;      /* #363C45 */
-  --c-border-strong: 69 76 88;   /* #454C58 */
+  /* Traits eux aussi relevés : sur un fond plus clair, une bordure sombre
+     dessine un trait noir au lieu de séparer deux surfaces. */
+  --c-border: 69 72 76;          /* #45484C */
+  --c-border-mid: 82 86 90;      /* #52565A */
+  --c-border-strong: 97 101 105; /* #616569 */
 
   /* Couleur commerciale. Le bleu porte les prix réels, les liens importants
      et l'action principale : ce sont les points où le regard doit se poser. */
@@ -40,7 +46,7 @@
      survol, petit trait — jamais à un cadre ou à un texte entier. */
   --c-cat-portable: 56 214 240;  /* #38D6F0 */
   --c-cat-bureau: 232 153 74;    /* #E8994A */
-  --c-cat-gaming: 164 114 255;   /* #A472FF */
+  --c-cat-gaming: 177 137 255;   /* #B189FF */
   --c-cat-accessoire: 63 217 164;/* #3FD9A4 */
 
   /* Promotions exceptionnelles uniquement. Employé partout, il ne signale

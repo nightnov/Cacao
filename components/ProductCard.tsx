@@ -25,10 +25,13 @@ const NEW_THRESHOLD_DAYS = 14
 /**
  * Carte produit des grilles : accueil, catalogue, « vous aimerez aussi ».
  *
- * Un seul cadre, une seule teinte de fond. La zone image n'a volontairement
- * aucun fond propre : les photos étant des PNG détourés, le fond de la carte
- * doit passer derrière le produit. Lui donner sa propre teinte créait une
- * bande visible qui coupait la carte en deux.
+ * Un seul cadre, et un dégradé diagonal très doux du fond des cartes vers le
+ * fond de la page. Un aplat parfaitement uniforme paraît plat sur une grande
+ * surface ; ce léger glissement suffit à donner du corps sans qu'on le voie.
+ *
+ * La zone image n'a en revanche aucun fond propre : les photos étant des PNG
+ * détourés, le fond de la carte doit passer derrière le produit. Lui donner sa
+ * propre teinte créait une bande visible qui coupait la carte en deux.
  *
  * Aucune caractéristique technique ici. Processeur, mémoire et stockage
  * appartiennent à la fiche produit : les répéter dans la grille éloignait le
@@ -69,7 +72,7 @@ export function ProductCard({
       /* Au survol : très léger soulèvement, ombre douce et bordure teintée par
          le rayon. La couleur ne fait qu'affleurer — un contour franchement
          lumineux attirerait l'œil sur le cadre plutôt que sur la machine. */
-      className={`group flex flex-col bg-bg-panel border border-border rounded-xl overflow-hidden shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover ${accent.border} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg`}
+      className={`group flex flex-col bg-gradient-to-br from-bg-panel to-bg border border-border rounded-xl overflow-hidden shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-card-hover ${accent.border} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg`}
     >
       {/* Hauteur fixe plutôt que proportionnelle : toutes les images occupent
           la même place quelle que soit la largeur de la colonne, et la carte

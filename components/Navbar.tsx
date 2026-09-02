@@ -128,7 +128,7 @@ export function Navbar() {
        `supports-[backdrop-filter]` : sans flou disponible, on retombe sur un
        fond plein plutôt que sur une barre à moitié transparente. */
     <nav className="sticky top-0 z-40 border-b border-border bg-bg-panel shadow-header supports-[backdrop-filter]:bg-bg-panel/85 supports-[backdrop-filter]:backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-3 flex items-center gap-4 lg:gap-6">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center gap-4 lg:gap-6">
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className="lg:hidden text-ink flex-shrink-0"

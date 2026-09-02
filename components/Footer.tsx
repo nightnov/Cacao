@@ -72,7 +72,7 @@ export function Footer() {
 
   return (
     <footer className="bg-bg-panel border-t border-border mt-14">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-11 grid grid-cols-2 lg:grid-cols-[1.4fr,1fr,1fr,1fr] gap-8 lg:gap-10">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-11 grid grid-cols-2 lg:grid-cols-[1.4fr,1fr,1fr,1fr] gap-8 lg:gap-10">
         {/* Marque */}
         <div className="col-span-2 lg:col-span-1">
           <Link href="/" className="font-display font-bold text-xl tracking-[2px] text-ink hover:text-ink-dim transition-colors">
@@ -162,7 +162,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-5 flex flex-col sm:flex-row justify-between items-center gap-3 text-[11.5px] text-ink-faint">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row justify-between items-center gap-3 text-[11.5px] text-ink-faint">
           <p>© 2026 CACAO. Tous droits réservés.</p>
           <p>Transactions traitées par MoneyFusion</p>
         </div>

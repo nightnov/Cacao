@@ -200,7 +200,7 @@ function ProductsContent() {
 
       {/* En-tête de rayon : titre compact et compteur, façon page de série */}
       <header className="border-b border-border bg-gradient-to-b from-bg-panel to-bg">
-        <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-10 py-6">
+        <div className="max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
           <Breadcrumb
             className="mb-3"
             items={
@@ -230,7 +230,7 @@ function ProductsContent() {
         </div>
       </header>
 
-      <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-10 py-7">
+      <div className="flex-1 max-w-[1440px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-7">
         {/* Rayons en défilement horizontal : visibles sous lg, où le panneau
             latéral est masqué. */}
         {!search && (

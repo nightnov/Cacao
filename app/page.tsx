@@ -7,7 +7,7 @@ import { Footer } from '@/components/Footer'
 import { ProductCard } from '@/components/ProductCard'
 import { PromoCarousel } from '@/components/PromoCarousel'
 import { getSupabaseClient } from '@/lib/supabase'
-import { btn, categoryAccent } from '@/lib/ui'
+import { btn, categoryAccent, TITLE_SECTION, TITLE_CARD } from '@/lib/ui'
 import {
   DEFAULT_HERO_SETTINGS,
   HERO_SETTING_KEYS,
@@ -73,21 +73,24 @@ function GridSkeleton({ count = 4 }: { count?: number }) {
 function ProductSection({ title, products, href }: { title: string; products: Product[]; href?: string }) {
   if (products.length === 0) return null
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-11">
+    <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pb-11">
       {/* Titre à gauche, bouton à droite, tous deux centrés sur la même ligne.
           Le cadre reste sobre — contour fin, fond transparent. Seule la flèche
           porte la couleur commerciale : elle suffit à signaler qu'on peut aller
           plus loin, sans transformer le lien en bouton coloré. */}
-      <div className="flex items-center justify-between gap-4 mb-5">
-        <h2 className="font-display text-[19px] sm:text-[22px] text-ink">{title}</h2>
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <h2 className={TITLE_SECTION}>{title}</h2>
         {href && (
           <Link
             href={href}
-            className="group/lien inline-flex items-center gap-2 border border-border-strong hover:border-accent/60 text-ink-dim hover:text-ink text-[12.5px] font-semibold rounded-lg px-4 py-2 transition-colors whitespace-nowrap"
+            /* Grossi en même temps que le titre : à côté d'un titre de 34 px,
+               un libellé de 12,5 px passait pour une note de bas de page
+               plutôt que pour une action. */
+            className="group/lien inline-flex items-center gap-2 border border-border-strong hover:border-accent/60 text-ink-dim hover:text-ink text-[14px] font-semibold rounded-lg px-5 py-2.5 transition-colors whitespace-nowrap flex-shrink-0"
           >
             Voir tout
             <ArrowRight
-              size={14}
+              size={15}
               strokeWidth={2}
               className="text-accent transition-transform group-hover/lien:translate-x-0.5"
             />
@@ -96,7 +99,7 @@ function ProductSection({ title, products, href }: { title: string; products: Pr
       </div>
       {/* Trois colonnes et non quatre : les cartes gagnent en largeur, la photo
           du produit devient lisible et le nom cesse d'être tronqué. */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map(p => <ProductCard key={p.id} {...p} />)}
       </div>
     </section>
@@ -225,7 +228,7 @@ export default function Home() {
       {(showHeroText || showCarousel) && (
       <section className="border-b border-border bg-gradient-to-b from-bg-panel to-bg">
         <div
-          className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-10 lg:py-14 grid grid-cols-1 gap-8 items-stretch ${
+          className={`max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-14 grid grid-cols-1 gap-8 items-stretch ${
             showHeroText && showCarousel ? 'lg:grid-cols-[355px,1fr]' : 'lg:grid-cols-1'
           }`}
         >
@@ -237,7 +240,7 @@ export default function Home() {
             <h1 className="font-display text-[28px] sm:text-[34px] lg:text-[38px] leading-[1.06] text-ink mb-3">
               LA PERFORMANCE,<br />SANS COMPROMIS.
             </h1>
-            <p className="text-[13.5px] text-ink-dim leading-[1.65] mb-6">
+            <p className="text-[15.5px] text-ink-dim leading-[1.65] mb-6">
               Ordinateurs portables, bureau et gaming. Commandez en ligne, payez en mobile money, recevez chez vous.
             </p>
             {/* Action principale en clair sur sombre plutôt qu'en doré : elle
@@ -284,9 +287,9 @@ export default function Home() {
       )}
 
       {/* Gammes : prix « à partir de » calculé sur les vrais produits en ligne */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-11">
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-11">
         <div className="text-center mb-9">
-          <h2 className="font-display text-[25px] sm:text-[30px] text-ink mb-2.5">
+          <h2 className={`${TITLE_SECTION} mb-3`}>
             CHOISISSEZ VOTRE GAMME
           </h2>
           <p className="text-[15px] text-ink-dim">
@@ -343,12 +346,12 @@ export default function Home() {
                     la rangée perdait son alignement. */}
                 <div className="px-5 pt-4 pb-5 flex flex-col flex-1">
                   <h3
-                    className={`font-display text-[20px] leading-tight mb-1.5 ${empty ? 'text-ink-dimmer' : 'text-ink'}`}
+                    className={`font-display font-medium text-[20px] leading-[1.25] mb-2 ${empty ? 'text-ink-dimmer' : 'text-ink'}`}
                   >
                     {cat.short.toUpperCase()}
                   </h3>
 
-                  <p className="text-[13.5px] text-ink-dimmer leading-[1.45] min-h-[40px]">
+                  <p className="text-[15px] text-ink-dim leading-[1.5] min-h-[45px]">
                     {cat.tagline || GAMME_PITCH[cat.value] || ''}
                   </p>
 
@@ -414,8 +417,8 @@ export default function Home() {
 
       {/* Meilleures ventes */}
       {loading ? (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-11">
-          <h2 className="font-display text-[19px] sm:text-[22px] text-ink mb-5">NOS MEILLEURES VENTES</h2>
+        <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pb-11">
+          <h2 className={`${TITLE_SECTION} mb-6`}>NOS MEILLEURES VENTES</h2>
           <GridSkeleton />
         </section>
       ) : (
@@ -437,7 +440,7 @@ export default function Home() {
       )}
 
       {/* Accessoires */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-11">
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pb-11">
         <div className="bg-gradient-to-r from-bg-panel to-bg-raised border border-border rounded-xl p-6 sm:p-8 flex flex-col lg:flex-row items-start lg:items-center gap-6">
           <div className="flex-1">
             <h3 className="font-display text-[19px] sm:text-[21px] text-ink mb-2">COMPLÉTEZ VOTRE ÉQUIPEMENT</h3>
@@ -459,9 +462,9 @@ export default function Home() {
       </section>
 
       {/* Pourquoi CACAO */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-11">
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pb-11">
         <div className="text-center mb-7">
-          <h2 className="font-display text-[21px] sm:text-[25px] text-ink">POURQUOI CACAO ?</h2>
+          <h2 className={TITLE_SECTION}>POURQUOI CACAO ?</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
           {[
@@ -482,9 +485,9 @@ export default function Home() {
       </section>
 
       {/* Newsletter */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pb-14">
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pb-14">
         <div className="bg-bg-panel border border-border rounded-xl p-7 sm:p-9 text-center">
-          <h2 className="font-display text-[19px] sm:text-[22px] text-ink mb-2">NE MANQUEZ AUCUNE OFFRE</h2>
+          <h2 className={`${TITLE_SECTION} mb-3`}>NE MANQUEZ AUCUNE OFFRE</h2>
           <p className="text-[14px] text-ink-dim mb-6 max-w-md mx-auto">
             Recevez les nouveautés et les bonnes affaires CACAO.
           </p>

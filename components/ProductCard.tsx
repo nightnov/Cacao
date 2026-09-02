@@ -74,7 +74,7 @@ export function ProductCard({
       {/* Hauteur fixe plutôt que proportionnelle : toutes les images occupent
           la même place quelle que soit la largeur de la colonne, et la carte
           ne devient pas démesurée sur grand écran. */}
-      <div className="relative h-[250px] sm:h-[300px] flex items-center justify-center flex-shrink-0">
+      <div className="relative h-[300px] sm:h-[360px] flex items-center justify-center flex-shrink-0">
         {/* Halo sombre très diffus derrière l'image. Un PNG détouré posé à plat
             sur un aplat uniforme paraît collé ; ce dégradé lui donne un sol.
             `pointer-events-none` : il ne doit jamais intercepter le clic. */}
@@ -136,8 +136,8 @@ export function ProductCard({
       {/* Nom et prix forment un seul groupe, sans rien entre eux. La hauteur
           du nom est réservée sur deux lignes : les références PC sont longues,
           et sans cette réserve les prix se décalaient d'une carte à l'autre. */}
-      <div className="px-5 pt-1 pb-5">
-        <h3 className="font-display text-[16px] text-ink line-clamp-2 min-h-[2.5rem] leading-[1.25] group-hover:text-ink-dim transition-colors">
+      <div className="px-5 pt-4 pb-6">
+        <h3 className="font-display font-medium text-[20px] text-ink line-clamp-2 min-h-[3.125rem] leading-[1.25] group-hover:text-ink-dim transition-colors">
           {name}
         </h3>
 
@@ -145,12 +145,12 @@ export function ProductCard({
             et plus petit. Les mettre tous deux en couleur donnerait le même
             poids à un montant qu'on ne paie pas. Écart resserré à `gap-2` pour
             qu'ils se lisent comme un seul bloc. */}
-        <div className="mt-1.5 flex items-baseline gap-2 flex-wrap">
-          <span className={`${PRICE} text-[21px]`}>
+        <div className="mt-2.5 flex items-baseline gap-2.5 flex-wrap">
+          <span className={`${PRICE} text-[28px] sm:text-[30px]`}>
             {formatAmount(price_fcfa)} FCFA
           </span>
           {hasPromo && (
-            <span className={`${PRICE_OLD} text-[12.5px]`}>
+            <span className={`${PRICE_OLD} text-[15px]`}>
               {formatAmount(compare_at_price_fcfa!)}
             </span>
           )}

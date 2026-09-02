@@ -235,14 +235,36 @@ export default function Home() {
         couper l'un donne toute la largeur à l'autre, couper les deux fait
         disparaître la zone plutôt que de laisser un cadre vide.
       */}
-      {(showHeroText || showCarousel) && (
+      {/*
+        Mode grande bannière : quand le texte d'accroche est coupé, le bandeau
+        sort du conteneur et occupe toute la largeur de l'écran.
+
+        C'est la disposition du site de référence, dont la bannière d'ouverture
+        est en pleine largeur avec un rapport de 2000 sur 700. Enfermée dans un
+        conteneur de 1280 px, la même image perdait précisément ce qui en fait
+        une bannière : le fait qu'elle touche les deux bords.
+      */}
+      {!showHeroText && showCarousel && (
+        <section className="border-b border-border">
+          <PromoCarousel
+            slides={slides}
+            intervalMs={heroSettings.intervalMs}
+            /* Rapport large sur ordinateur, hauteur d'écran sur téléphone : une
+               bannière de 2000 sur 700 réduite à la largeur d'un téléphone
+               deviendrait une bande de 130 px, illisible. */
+            bleed
+            className="w-full h-[45vh] md:h-auto md:aspect-[2000/700]"
+          />
+        </section>
+      )}
+
+      {showHeroText && (
       <section className="border-b border-border bg-gradient-to-b from-bg-panel to-bg">
         <div
           className={`max-w-[1280px] mx-auto px-4 sm:px-6 py-10 lg:py-14 grid grid-cols-1 gap-8 items-stretch ${
-            showHeroText && showCarousel ? 'lg:grid-cols-[355px,1fr]' : 'lg:grid-cols-1'
+            showCarousel ? 'lg:grid-cols-[355px,1fr]' : 'lg:grid-cols-1'
           }`}
         >
-          {showHeroText && (
           <div className="flex flex-col justify-center">
             <span className="inline-flex self-start items-center gap-2 border border-border-strong text-ink-dim text-[10px] font-bold tracking-[0.6px] px-3 py-1.5 rounded-full mb-4">
               <MapPin size={12} strokeWidth={2} /> LIVRAISON PARTOUT EN CÔTE D&apos;IVOIRE
@@ -271,7 +293,6 @@ export default function Home() {
                 barre située juste au-dessus, et la section « Pourquoi CACAO »
                 les reprenait une troisième fois. Elle est retirée. */}
           </div>
-          )}
 
           {/*
             Bandeau promotionnel. Rien n'y est ajouté par le code : ni badge,
@@ -309,7 +330,7 @@ export default function Home() {
         {/* Cartes hautes avec visuel : une photo de machine dit en un coup
             d'œil ce que contient le rayon, là où quatre icônes de trait se
             ressemblaient toutes. */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {gammes.map(({ cat, min, count }) => {
             const Icon = cat.icon
             // Teinte du rayon : elle habille le bouton et le montant, rien

@@ -19,10 +19,13 @@ export function PromoCarousel({
   slides,
   intervalMs,
   className = '',
+  bleed = false,
 }: {
   slides: PromoSlide[]
   intervalMs: number
   className?: string
+  /** Pleine largeur : ni cadre ni coins arrondis, la bannière touche les bords. */
+  bleed?: boolean
 }) {
   const [index, setIndex] = useState(0)
   // Le défilement s'interrompt au survol et au focus clavier : une image qui
@@ -70,7 +73,12 @@ export function PromoCarousel({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border border-border bg-bg-panel ${className}`}
+      /* Le cadre et les coins arrondis sont retirés en pleine largeur : une
+         bannière bordée qui touche les deux bords de l'écran montre ses
+         angles coupés dans le vide. */
+      className={`relative overflow-hidden bg-bg-panel ${
+        bleed ? '' : 'rounded-xl border border-border'
+      } ${className}`}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}

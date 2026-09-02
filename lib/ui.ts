@@ -33,10 +33,15 @@ export const CONTAINER = 'max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8'
  * lisible : c'est l'ÉCART entre les niveaux qui se lit.
  */
 
-/** Grand titre de section. Graisse légère : à cette taille, le poids vient de
- *  la dimension, et une graisse forte alourdirait la page. */
+/**
+ * Grand titre de section : 24 px sur téléphone, 36 px au-delà, graisse légère.
+ *
+ * Valeurs relevées sur le site de référence, qui emploie la même display.
+ * À cette taille, le poids vient de la dimension : une graisse forte
+ * alourdirait la page au lieu de l'affirmer.
+ */
 export const TITLE_SECTION =
-  'font-display font-light text-[26px] sm:text-[32px] lg:text-[34px] leading-[1.15] text-ink'
+  'font-display font-light text-[24px] sm:text-[36px] leading-[1.15] text-ink'
 
 /** Titre de carte, produit comme gamme. */
 export const TITLE_CARD = 'font-display font-medium text-[20px] leading-[1.25] text-ink'
@@ -127,7 +132,7 @@ export const CARD_HOVER =
  * couleur commerciale. Le prix barré reste gris et plus petit — le mettre en
  * couleur mettrait sur un pied d'égalité un montant qu'on ne paie pas.
  */
-export const PRICE = 'font-display text-accent tabular-nums leading-tight'
+export const PRICE = 'font-display font-medium text-accent tabular-nums leading-tight'
 export const PRICE_OLD = 'text-ink-faint line-through tabular-nums'
 
 /**

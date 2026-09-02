@@ -17,7 +17,7 @@ import {
 } from '@/lib/hero'
 import {
   MapPin, ShieldCheck, Truck, RotateCcw, Headphones,
-  Keyboard, Mouse, HardDrive, CreditCard, ArrowRight
+  Keyboard, Mouse, HardDrive, CreditCard, ArrowRight, TrendingUp
 } from 'lucide-react'
 import { useCategories } from '@/hooks/useCategories'
 import { formatAmount } from '@/lib/format'
@@ -78,12 +78,22 @@ function ProductSection({ title, products, href }: { title: string; products: Pr
           Le cadre reste sobre — contour fin, fond transparent. Seule la flèche
           porte la couleur commerciale : elle suffit à signaler qu'on peut aller
           plus loin, sans transformer le lien en bouton coloré. */}
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <h2 className={TITLE_SECTION}>{title}</h2>
+      <div className="flex items-center justify-between gap-4 sm:gap-6 mb-8 sm:mb-12">
+        <div className="flex items-center min-w-0">
+          {/* Petite icône d'accent avant le titre : elle donne un point
+              d'entrée à la ligne sans ajouter un seul mot. */}
+          <TrendingUp
+            size={22}
+            strokeWidth={2}
+            className="text-accent mr-2 sm:mr-3 flex-shrink-0"
+            aria-hidden="true"
+          />
+          <h2 className={`${TITLE_SECTION} truncate`}>{title}</h2>
+        </div>
         {href && (
           <Link
             href={href}
-            /* Grossi en même temps que le titre : à côté d'un titre de 34 px,
+            /* Grossi en même temps que le titre : à côté d'un titre de 36 px,
                un libellé de 12,5 px passait pour une note de bas de page
                plutôt que pour une action. */
             className="group/lien inline-flex items-center gap-2 border border-border-strong hover:border-accent/60 text-ink-dim hover:text-ink text-[14px] font-semibold rounded-lg px-5 py-2.5 transition-colors whitespace-nowrap flex-shrink-0"
@@ -99,7 +109,7 @@ function ProductSection({ title, products, href }: { title: string; products: Pr
       </div>
       {/* Trois colonnes et non quatre : les cartes gagnent en largeur, la photo
           du produit devient lisible et le nom cesse d'être tronqué. */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
         {products.map(p => <ProductCard key={p.id} {...p} />)}
       </div>
     </section>
@@ -418,7 +428,7 @@ export default function Home() {
       {/* Meilleures ventes */}
       {loading ? (
         <section className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pb-11">
-          <h2 className={`${TITLE_SECTION} mb-6`}>NOS MEILLEURES VENTES</h2>
+          <h2 className={`${TITLE_SECTION} mb-8 sm:mb-12`}>NOS MEILLEURES VENTES</h2>
           <GridSkeleton />
         </section>
       ) : (

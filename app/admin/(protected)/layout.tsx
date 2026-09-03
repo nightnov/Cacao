@@ -56,6 +56,7 @@ const adminGroups: {
       { label: 'Produits', href: '/admin/products', icon: Package },
       { label: 'Stock', href: '/admin/stock', icon: Layers },
       { label: 'Rayons', href: '/admin/categories', icon: LayoutGrid },
+      { label: 'Glossaire', href: '/admin/glossary', icon: BookOpen },
     ],
   },
   {

@@ -16,7 +16,7 @@ import { getSupabaseClient } from '@/lib/supabase'
 import { addToCart } from '@/lib/cart'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { Star, ShieldCheck, RotateCcw, Truck, CreditCard } from 'lucide-react'
+import { Star, ShieldCheck, RotateCcw, Truck, CreditCard, ChevronRight } from 'lucide-react'
 import { VariantOption, ProductVariant } from '@/types/admin'
 import { findMatchingVariant, variantLabel } from '@/lib/variants'
 import { categoryLabel } from '@/lib/categories'
@@ -77,12 +77,9 @@ interface Review {
   profiles?: { first_name: string | null } | null
 }
 
-const specLabels: Record<string, string> = {
-  cpu: 'Processeur',
-  ram: 'Mémoire (RAM)',
-  storage: 'Stockage',
-  screen: 'Écran'
-}
+/* Les libellés des caractéristiques vivaient ici pour un tableau qui n'existe
+   plus. Ils sont désormais portés par le glossaire (lib/glossary.ts), au même
+   endroit que l'explication de chaque pièce. */
 
 export default function ProductDetail() {
   const params = useParams()
@@ -535,7 +532,6 @@ export default function ProductDetail() {
     displayPrice === product.price_fcfa &&
     !!product.compare_at_price_fcfa &&
     product.compare_at_price_fcfa > product.price_fcfa
-  const specEntries = Object.entries(product.specs || {}).filter(([, v]) => v)
   const components = sanitizeComponents(product.components)
 
   // Seules les machines appellent un pack, et seulement si le catalogue a de
@@ -813,25 +809,11 @@ export default function ProductDetail() {
               dans l'administration, elle a simplement quitté la vitrine. */}
           <ProductDescription blocks={descriptionBlocks} />
 
-          {/* Caractéristiques techniques héritées de `specs`. Conservées sous la
-              description pour les produits saisis avant la configuration, et
-              masquées quand elles n'apportent rien. */}
-          {specEntries.length > 0 && (
-            <section className="rounded-xl border border-border bg-bg-panel overflow-hidden">
-              <h2 className="font-display text-[16px] text-ink px-5 sm:px-6 py-4">CARACTÉRISTIQUES</h2>
-              <div className="border-t border-border">
-                {specEntries.map(([key, value], i) => (
-                  <div
-                    key={key}
-                    className={`grid grid-cols-1 sm:grid-cols-[220px,1fr] text-[12.5px] ${i % 2 === 1 ? 'bg-bg-raised' : ''}`}
-                  >
-                    <div className="px-5 sm:px-6 py-3 text-ink-dimmer sm:border-r border-border">{specLabels[key] || key}</div>
-                    <div className="px-5 sm:px-6 pb-3 sm:py-3 text-ink font-medium">{String(value)}</div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
+          {/* Le tableau « Caractéristiques » a été retiré : la section
+              Description porte désormais chaque pièce avec sa valeur réelle,
+              et le répéter en tableau juste en dessous disait deux fois la
+              même chose. Les valeurs restent lisibles dans le sommaire de la
+              description, et intactes en administration. */}
 
           {/* Composants détaillés, déplacés depuis la colonne d'achat où ils
               allongeaient la distance entre le prix et le bouton. */}
@@ -858,47 +840,6 @@ export default function ProductDetail() {
             </section>
           )}
 
-          <section>
-            <h2 className="font-display text-[16px] text-ink mb-4">LIVRAISON &amp; GARANTIE</h2>
-            <div className="max-w-3xl">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                {[
-                  {
-                    icon: Truck,
-                    t: 'Délai de livraison',
-                    p: 'Comptez moins de 5 jours pour Abidjan et l’intérieur du pays. Le suivi apparaît dans votre espace client dès l’expédition.'
-                  },
-                  {
-                    icon: ShieldCheck,
-                    t: 'Code de livraison',
-                    p: 'Un code à quatre chiffres apparaît dans votre compte dès que la commande part. Ne le donnez au livreur qu’à la remise du colis.'
-                  },
-                  {
-                    icon: RotateCcw,
-                    t: 'Retour sous 14 jours',
-                    p: 'Si l’appareil ne correspond pas à votre usage, vous disposez de 14 jours après réception pour nous le retourner.'
-                  },
-                  {
-                    icon: CreditCard,
-                    t: 'Moyens de paiement',
-                    p: 'Wave, Orange Money, MTN Money, Moov Money et carte bancaire. La transaction est traitée par MoneyFusion.'
-                  }
-                ].map(({ icon: Icon, t, p }) => (
-                  <div key={t} className="bg-bg-panel border border-border rounded-xl p-5">
-                    {/* Icônes en bleu : ce sont des garanties, donc des points
-                        d'appui commerciaux. En gris, elles se confondaient avec
-                        le texte qu'elles introduisent. */}
-                    <Icon size={20} strokeWidth={1.8} className="text-accent mb-2.5" />
-                    <h4 className="text-[13.5px] font-bold text-ink mb-1.5">{t}</h4>
-                    <p className="text-[12.5px] text-ink-dim leading-[1.65]">{p}</p>
-                  </div>
-                ))}
-              </div>
-              <Link href="/legal/terms" className="inline-block mt-5 text-[13px] text-accent font-bold hover:underline">
-                Voir les conditions complètes →
-              </Link>
-            </div>
-          </section>
 
           {/* Avis : sous la description, jamais au-dessus du nom du produit. */}
           <section>
@@ -1004,6 +945,60 @@ export default function ProductDetail() {
                   </Button>
                 </form>
               )}
+            </div>
+          </section>
+
+          <section>
+            <h2 className="font-display text-[16px] text-ink mb-4">LIVRAISON &amp; GARANTIE</h2>
+            {/* Les quatre garanties tiennent sur une seule ligne à partir du
+                grand écran, comme sur la référence : empilées deux par deux
+                elles formaient un pavé qui repoussait les avis hors de vue.
+                Le tout dans un seul cadre, le lien vers les conditions
+                compris — laissé nu sous les cartes, il flottait sans rien qui
+                le rattache à ce qu'il complète. */}
+            <div className="rounded-xl border border-border bg-bg-panel p-5 sm:p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                {[
+                  {
+                    icon: Truck,
+                    t: 'Délai de livraison',
+                    p: 'Comptez moins de 5 jours pour Abidjan et l’intérieur du pays. Le suivi apparaît dans votre espace client dès l’expédition.'
+                  },
+                  {
+                    icon: ShieldCheck,
+                    t: 'Code de livraison',
+                    p: 'Un code à quatre chiffres apparaît dans votre compte dès que la commande part. Ne le donnez au livreur qu’à la remise du colis.'
+                  },
+                  {
+                    icon: RotateCcw,
+                    t: 'Retour sous 14 jours',
+                    p: 'Si l’appareil ne correspond pas à votre usage, vous disposez de 14 jours après réception pour nous le retourner.'
+                  },
+                  {
+                    icon: CreditCard,
+                    t: 'Moyens de paiement',
+                    p: 'Wave, Orange Money, MTN Money, Moov Money et carte bancaire. La transaction est traitée par MoneyFusion.'
+                  }
+                ].map(({ icon: Icon, t, p }) => (
+                  <div key={t} className="bg-bg-raised border border-border rounded-lg p-4">
+                    {/* Icônes en bleu : ce sont des garanties, donc des points
+                        d'appui commerciaux. En gris, elles se confondaient avec
+                        le texte qu'elles introduisent. */}
+                    <Icon size={20} strokeWidth={1.8} className="text-accent mb-2.5" />
+                    <h4 className="text-[13.5px] font-bold text-ink mb-1.5">{t}</h4>
+                    <p className="text-[12.5px] text-ink-dim leading-[1.65]">{p}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 pt-4 border-t border-border">
+                <Link
+                  href="/legal/terms"
+                  className="inline-flex items-center gap-1.5 text-[13px] text-accent font-bold hover:underline"
+                >
+                  Voir les conditions complètes
+                  <ChevronRight size={15} aria-hidden="true" />
+                </Link>
+              </div>
             </div>
           </section>
         </div>

@@ -16,7 +16,15 @@ import { getSupabaseClient } from '@/lib/supabase'
 import { addToCart } from '@/lib/cart'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { Star, ShieldCheck, RotateCcw, Truck, CreditCard, ChevronRight } from 'lucide-react'
+import {
+  Star,
+  ShieldCheck,
+  RotateCcw,
+  Truck,
+  CreditCard,
+  ChevronRight,
+  MessageCircle,
+} from 'lucide-react'
 import { VariantOption, ProductVariant } from '@/types/admin'
 import { findMatchingVariant, variantLabel } from '@/lib/variants'
 import { categoryLabel } from '@/lib/categories'
@@ -637,37 +645,10 @@ export default function ProductDetail() {
               </p>
             )}
 
-            {/* Disponibilité, juste sous le prix. Elle manquait : l'acheteur
-                lisait le montant sans savoir si la machine part demain ou si
-                elle se commande. Une pastille de couleur plutôt qu'un fond
-                teinté — c'est une information d'état, pas une promotion.
-
-                Les trois cas viennent du champ `availability` du produit, sans
-                interprétation : nous ne promettons pas un délai que le stock
-                ne garantit pas. */}
-            <p className="flex items-center gap-2 mb-3 text-[13px]">
-              <span
-                aria-hidden="true"
-                className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                  product.availability === 'in_stock'
-                    ? 'bg-green-bright'
-                    : product.availability === 'on_order'
-                    ? 'bg-gold'
-                    : 'bg-ink-faint'
-                }`}
-              />
-              <span className={product.availability === 'discontinued' ? 'text-ink-dimmer' : 'text-ink-dim'}>
-                {/* Aucun délai chiffré ici : le stock ne le garantit pas, et
-                    annoncer « sous 48 heures » sur chaque fiche reviendrait à
-                    promettre ce que rien ne tient. Le délai réel est dans la
-                    section Livraison, où il est formulé comme une estimation. */}
-                {product.availability === 'in_stock'
-                  ? 'En stock'
-                  : product.availability === 'on_order'
-                  ? 'Sur commande, délai confirmé avant expédition'
-                  : "Ce produit n'est plus proposé"}
-              </span>
-            </p>
+            {/* Pas de ligne d'état sous le prix : sur un catalogue où presque
+                tout est disponible, elle répétait la même phrase sur chaque
+                fiche sans rien apprendre. Une indisponibilité réelle se dit
+                là où elle compte, sur le bouton d'achat lui même. */}
 
             {hasVariants && matchedVariant && matchedVariant.stock === 0 && (
               <span className="inline-block mb-3 text-xs font-semibold px-3 py-1.5 rounded-full bg-border-strong text-ink">
@@ -794,35 +775,22 @@ export default function ProductDetail() {
               </Button>
             </div>
 
-            {/* Réassurance en une seule ligne, libellé seul.
-                Les trois blocs précédents portaient chacun une sous-phrase en
-                dix pixels : trop petite pour être lue, assez grande pour
-                fabriquer un pavé sous le bouton d'achat. Ce qu'elles disaient
-                est développé dans la section Livraison et garantie, plus bas,
-                où il y a la place de le dire correctement. */}
-            {/* `flex-wrap` plutôt qu'une troncature : sur un écran de 375 px les
-                trois libellés ne tiennent pas, et les rogner donnait
-                « Paiement sécu… ». Ils passent à la ligne, et retrouvent leur
-                rangée unique dès que la largeur le permet. */}
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-5 pt-4 border-t border-border">
-              {[
-                { icon: ShieldCheck, label: 'Paiement sécurisé' },
-                { icon: Truck, label: 'Livraison suivie' },
-                { icon: RotateCcw, label: 'Retour 14 jours' },
-              ].map(item => (
-                <span key={item.label} className="flex items-center gap-1.5">
-                  <item.icon size={15} strokeWidth={1.9} className="text-accent flex-shrink-0" />
-                  <span className="text-[11.5px] font-medium text-ink-dim">{item.label}</span>
-                </span>
-              ))}
-            </div>
 
-            <div className="flex items-center justify-center gap-4 mt-3">
+            {/* La section « Livraison et garantie » qui détaillait ces quatre
+                points en pavés a été retirée : la rangée ci dessus dit la même
+                chose en une ligne. Le lien vers les conditions reste, lui : ce
+                sont les engagements réels, et les rendre inaccessibles depuis
+                la fiche serait un recul déguisé en épuration. */}
+            <div className="flex items-center flex-wrap justify-center gap-x-4 gap-y-2 mt-3">
               <Link
                 href={`/account/messages?productId=${product.id}&productName=${encodeURIComponent(product.name)}`}
                 className="text-sm text-ink hover:underline"
               >
                 Une question sur ce produit ?
+              </Link>
+              <span className="text-border-strong">·</span>
+              <Link href="/legal/terms" className="text-sm text-accent hover:underline">
+                Livraison et garantie
               </Link>
               <span className="text-border-strong">·</span>
               <button
@@ -845,6 +813,24 @@ export default function ProductDetail() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Réassurance sous les deux colonnes, sur toute la largeur.
+            Logée dans la colonne d achat elle ne disposait que de 500 px, et
+            les quatre libellés y passaient à la ligne. Ici ils tiennent sur
+            une rangée, et le filet sépare la zone d achat de la lecture. */}
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 mb-10 pb-8 border-b border-border">
+          {[
+            { icon: ShieldCheck, label: 'Paiement sécurisé' },
+            { icon: Truck, label: 'Livraison suivie' },
+            { icon: RotateCcw, label: 'Retour 14 jours' },
+            { icon: MessageCircle, label: 'Conseil avant achat' },
+          ].map(item => (
+            <span key={item.label} className="flex items-center gap-2">
+              <item.icon size={17} strokeWidth={1.9} className="text-accent flex-shrink-0" />
+              <span className="text-[13px] font-medium text-ink-dim">{item.label}</span>
+            </span>
+          ))}
         </div>
 
         {/*
@@ -897,7 +883,10 @@ export default function ProductDetail() {
             <h2 className="font-display text-[16px] text-ink mb-4">
               AVIS CLIENTS{reviewCount > 0 ? ` (${reviewCount})` : ''}
             </h2>
-            <div className="max-w-2xl space-y-8">
+            {/* Pleine largeur : bridés à 640 px, les avis formaient une colonne
+                étroite qui n'occupait qu'un tiers de l'écran sous une section
+                Description qui, elle, allait d'un bord à l'autre. */}
+            <div className="space-y-8">
               {reviews.length === 0 ? (
                 <p className="text-sm text-ink-dimmer">Aucun avis pour le moment. Les avis sont publiés par les clients ayant reçu ce produit.</p>
               ) : (
@@ -931,26 +920,47 @@ export default function ProductDetail() {
                     </div>
                   </div>
 
-                  <div className="space-y-5">
+                  {/* Une fiche par avis, réparties en colonnes. Empilés en
+                      liste, dix avis repoussaient tout le reste de la page ;
+                      côte à côte, on en embrasse plusieurs d'un regard.
+                      Les étoiles passent en tête de fiche : c'est le jugement
+                      qu'on lit en premier, le texte vient l'expliquer. */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 items-start">
                     {reviews.map(review => (
-                      <div key={review.id} className="pb-5 border-b border-border last:border-b-0">
-                        <div className="flex items-center gap-2.5 mb-2 flex-wrap">
-                          <span className="w-7 h-7 rounded-full bg-bg-raised border border-border-mid flex items-center justify-center text-[11px] font-bold text-ink-dim flex-shrink-0">
+                      <article
+                        key={review.id}
+                        className="rounded-xl border border-border bg-bg-panel p-4"
+                      >
+                        <StarRating rating={review.rating} showCount={false} size={13} />
+
+                        {review.comment && (
+                          <p className="text-[12.5px] text-ink-dim leading-[1.7] mt-2.5">
+                            {review.comment}
+                          </p>
+                        )}
+
+                        <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border flex-wrap">
+                          <span className="w-6 h-6 rounded-full bg-bg-raised border border-border-mid flex items-center justify-center text-[10px] font-bold text-ink-dim flex-shrink-0">
                             {(review.profiles?.first_name || 'C').charAt(0).toUpperCase()}
                           </span>
-                          <span className="text-[12.5px] font-bold text-ink">
+                          <span className="text-[12px] font-semibold text-ink">
                             {review.profiles?.first_name || 'Client'}
                           </span>
+                          {/* Cette mention n'est pas décorative : seuls les
+                              clients dont une commande livrée contient ce
+                              produit peuvent déposer un avis. */}
                           <span className="text-[9.5px] bg-green/15 text-green-bright px-1.5 py-0.5 rounded font-bold">
                             Achat vérifié
                           </span>
                           <span className="text-[10.5px] text-ink-faint ml-auto">
-                            {new Date(review.created_at).toLocaleDateString('fr-CI', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            {new Date(review.created_at).toLocaleDateString('fr-CI', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                            })}
                           </span>
                         </div>
-                        <StarRating rating={review.rating} showCount={false} size={12} />
-                        {review.comment && <p className="text-[12.5px] text-ink-dim leading-[1.7] mt-2">{review.comment}</p>}
-                      </div>
+                      </article>
                     ))}
                   </div>
                 </div>
@@ -999,59 +1009,6 @@ export default function ProductDetail() {
             </div>
           </section>
 
-          <section>
-            <h2 className="font-display text-[16px] text-ink mb-4">LIVRAISON &amp; GARANTIE</h2>
-            {/* Les quatre garanties tiennent sur une seule ligne à partir du
-                grand écran, comme sur la référence : empilées deux par deux
-                elles formaient un pavé qui repoussait les avis hors de vue.
-                Le tout dans un seul cadre, le lien vers les conditions
-                compris — laissé nu sous les cartes, il flottait sans rien qui
-                le rattache à ce qu'il complète. */}
-            <div className="rounded-xl border border-border bg-bg-panel p-5 sm:p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-                {[
-                  {
-                    icon: Truck,
-                    t: 'Délai de livraison',
-                    p: 'Comptez moins de 5 jours pour Abidjan et l’intérieur du pays. Le suivi apparaît dans votre espace client dès l’expédition.'
-                  },
-                  {
-                    icon: ShieldCheck,
-                    t: 'Code de livraison',
-                    p: 'Un code à quatre chiffres apparaît dans votre compte dès que la commande part. Ne le donnez au livreur qu’à la remise du colis.'
-                  },
-                  {
-                    icon: RotateCcw,
-                    t: 'Retour sous 14 jours',
-                    p: 'Si l’appareil ne correspond pas à votre usage, vous disposez de 14 jours après réception pour nous le retourner.'
-                  },
-                  {
-                    icon: CreditCard,
-                    t: 'Moyens de paiement',
-                    p: 'Wave, Orange Money, MTN Money, Moov Money et carte bancaire. La transaction est traitée par MoneyFusion.'
-                  }
-                ].map(({ icon: Icon, t, p }) => (
-                  <div key={t} className="bg-bg-raised border border-border rounded-lg p-4">
-                    {/* Icônes en bleu : ce sont des garanties, donc des points
-                        d'appui commerciaux. En gris, elles se confondaient avec
-                        le texte qu'elles introduisent. */}
-                    <Icon size={20} strokeWidth={1.8} className="text-accent mb-2.5" />
-                    <h4 className="text-[13.5px] font-bold text-ink mb-1.5">{t}</h4>
-                    <p className="text-[12.5px] text-ink-dim leading-[1.65]">{p}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-5 pt-4 border-t border-border">
-                <Link
-                  href="/legal/terms"
-                  className="inline-flex items-center gap-1.5 text-[13px] text-accent font-bold hover:underline"
-                >
-                  Voir les conditions complètes
-                  <ChevronRight size={15} aria-hidden="true" />
-                </Link>
-              </div>
-            </div>
-          </section>
         </div>
 
         {/* Composer un pack : un acheteur d'unité centrale a souvent besoin

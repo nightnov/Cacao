@@ -225,6 +225,29 @@ export function GlossaryPanel() {
                 </label>
               </div>
 
+              {/* Adresse d'image, en complément du téléversement. Coller un
+                  lien est plus rapide quand la photo est déjà en ligne, et
+                  c'est le seul moyen d'utiliser une banque d'images à laquelle
+                  vous avez droit. Attention : une image hébergée ailleurs
+                  disparaît le jour où son propriétaire la déplace, et n'utilisez
+                  que des visuels dont l'usage vous est autorisé. */}
+              <label className="block">
+                <span className="block text-[12px] font-semibold text-ink-dim mb-1">
+                  Adresse de l&apos;image (si elle est déjà en ligne)
+                </span>
+                <input
+                  value={entry.image_url || ''}
+                  onChange={e => patch(entry.key, { image_url: e.target.value })}
+                  placeholder="https://…"
+                  className="w-full rounded-lg border border-border px-3 py-2 text-sm text-ink font-mono text-[12px]"
+                />
+                <span className="block text-[11px] text-ink-dimmer mt-1">
+                  Téléverser votre propre photo reste plus sûr : un lien externe casse
+                  si la page d&apos;origine change. N&apos;employez que des images dont
+                  vous avez le droit d&apos;usage.
+                </span>
+              </label>
+
               <label className="block">
                 <span className="block text-[12px] font-semibold text-ink-dim mb-1">
                   Explication pour un client qui découvre

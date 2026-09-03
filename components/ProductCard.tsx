@@ -136,11 +136,15 @@ export function ProductCard({
         />
       </div>
 
-      {/* Nom et prix forment un seul groupe, sans rien entre eux. La hauteur
-          du nom est réservée sur deux lignes : les références PC sont longues,
-          et sans cette réserve les prix se décalaient d'une carte à l'autre. */}
+      {/* Nom et prix forment un seul groupe, sans rien entre eux.
+          Aucune hauteur réservée sur le nom : elle valait deux lignes, si bien
+          qu'un nom court laissait 25 px de vide sous lui et détachait le prix
+          de la machine qu'il chiffre. Le prix suit maintenant le nom, comme
+          sur le site de référence, quitte à ce que deux cartes voisines ne
+          l'affichent pas exactement à la même hauteur lorsque l'une des deux
+          a un nom qui passe à la ligne. */}
       <div className="p-4">
-        <h3 className="font-display font-medium text-[20px] text-ink line-clamp-2 min-h-[3.125rem] leading-[1.25] group-hover:text-ink-dim transition-colors">
+        <h3 className="font-display font-medium text-[20px] text-ink line-clamp-2 leading-[1.25] group-hover:text-ink-dim transition-colors">
           {name}
         </h3>
 
@@ -148,7 +152,7 @@ export function ProductCard({
             et plus petit. Les mettre tous deux en couleur donnerait le même
             poids à un montant qu'on ne paie pas. Écart resserré à `gap-2` pour
             qu'ils se lisent comme un seul bloc. */}
-        <div className="mt-3 flex items-baseline gap-2.5 flex-wrap">
+        <div className="mt-1.5 flex items-baseline gap-2.5 flex-wrap">
           <span className={`${PRICE} text-[20px] sm:text-[24px]`}>
             {formatAmount(price_fcfa)} FCFA
           </span>

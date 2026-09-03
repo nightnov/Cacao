@@ -28,6 +28,11 @@ import { ProductConfigurator } from '@/components/ProductConfigurator'
 import { ProductDescription } from '@/components/ProductDescription'
 import { ConfigSummary } from '@/components/ConfigSummary'
 import {
+  buildDescriptionBlocks,
+  FALLBACK_GLOSSARY,
+  type GlossaryEntry,
+} from '@/lib/glossary'
+import {
   groupOptions,
   defaultSelection,
   selectedValues,
@@ -98,6 +103,12 @@ export default function ProductDetail() {
   /** Configuration : options du produit et valeur retenue pour chacune. */
   const [options, setOptions] = useState<ProductOption[]>([])
   const [selection, setSelection] = useState<Selection>({})
+
+  /**
+   * Glossaire des composants. Chargé à part du produit pour la même raison que
+   * les options : une table absente ne doit pas empêcher la fiche de s'ouvrir.
+   */
+  const [glossary, setGlossary] = useState<GlossaryEntry[]>(FALLBACK_GLOSSARY)
 
   /** Vrai si le client a reçu ce produit : condition pour laisser un avis. */
   const [canReview, setCanReview] = useState(false)
@@ -277,6 +288,18 @@ export default function ProductDetail() {
         } catch {
           setOptions([])
           setSelection({})
+        }
+
+        /* Glossaire. Un échec laisse le repli intégré au code plutôt qu'une
+           fiche sans aucune explication. */
+        try {
+          const { data: rawGlossary } = await supabase
+            .from('component_glossary')
+            .select('key, label, title, body, image_url, icon, sort_order')
+            .order('sort_order')
+          if (rawGlossary?.length) setGlossary(rawGlossary as GlossaryEntry[])
+        } catch {
+          /* le repli reste en place */
         }
 
         if (typedProduct.seller_id) {
@@ -483,8 +506,27 @@ export default function ProductDetail() {
   /** Visuel imposé par la configuration : la couleur choisie, en pratique. */
   const configImage = options.length > 0 ? selectionImage(options, selection) : null
 
-  /** Blocs explicatifs des valeurs retenues, affichés sous la description. */
-  const configBlocks = options.length > 0 ? selectedValues(options, selection) : []
+  /**
+   * Blocs de la section Description.
+   *
+   * Ils viennent d'abord de la configuration retenue, puis du glossaire pour
+   * toute pièce que la configuration ne couvre pas. Un produit sans aucune
+   * option obtient donc quand même ses explications, à partir de ses
+   * caractéristiques : c'est justement sur ces fiches là que le client qui
+   * découvre l'informatique en a le plus besoin.
+   */
+  const descriptionBlocks = (() => {
+    const optionName = new Map(options.map(o => [o.id, o.name]))
+    const configured = (options.length > 0 ? selectedValues(options, selection) : []).map(v => ({
+      id: v.id,
+      group: optionName.get(v.option_id) || '',
+      label: v.label,
+      title: v.block_title,
+      body: v.block_body,
+      imageUrl: v.block_image_url,
+    }))
+    return buildDescriptionBlocks(glossary, configured, product.specs || {})
+  })()
 
   // Le prix barré n'a de sens que sur la configuration de base : comparé à un
   // prix augmenté d'options, il annoncerait une remise qui n'existe pas.
@@ -765,11 +807,11 @@ export default function ProductDetail() {
           l'ordre de lecture.
         */}
         <div className="mb-16 space-y-8">
-          <ProductDescription
-            description={stripDashes(product.description)}
-            options={options}
-            blocks={configBlocks}
-          />
+          {/* La description saisie en administration n'est plus affichée ici :
+              elle reprenait en un long pavé ce que le tableau des
+              caractéristiques dit déjà en quatre lignes. Elle reste en base et
+              dans l'administration, elle a simplement quitté la vitrine. */}
+          <ProductDescription blocks={descriptionBlocks} />
 
           {/* Caractéristiques techniques héritées de `specs`. Conservées sous la
               description pour les produits saisis avant la configuration, et

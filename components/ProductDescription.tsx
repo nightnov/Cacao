@@ -1,71 +1,58 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
-import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
-import type { OptionValue, ProductOption } from '@/lib/options'
+import React, { useEffect, useState } from 'react'
+import {
+  BatteryMedium,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Cpu,
+  HardDrive,
+  MemoryStick,
+  Monitor,
+  MonitorPlay,
+  type LucideIcon,
+} from 'lucide-react'
+import type { DescriptionBlock } from '@/lib/glossary'
 import { stripDashes } from '@/lib/text'
 
 /**
  * Section « Description », repliable, placée sous la partie achat.
  *
- * Elle remplace le bloc « Caractéristiques » qui occupait le haut de la fiche :
- * les sélecteurs montrent déjà le processeur, la mémoire et le stockage
- * retenus, et les répéter juste à côté disait deux fois la même chose.
+ * Ce n'est pas la fiche commerciale du produit : c'est l'explication de ses
+ * pièces pour quelqu'un qui ne sait pas ce qu'est une mémoire vive. Le texte
+ * saisi en administration n'apparaît plus ici — il redisait en un pavé ce que
+ * les caractéristiques donnent déjà en tableau.
  *
- * Les explications suivent la configuration CHOISIE. Sélectionner 16 Go affiche
- * ce que permettent 16 Go, pas un texte général sur la mémoire. Chaque élément
- * retenu a son onglet, et des flèches permettent de passer de l'un à l'autre
- * sans viser un petit libellé au doigt.
+ * Chaque pièce a son onglet, à gauche sur grand écran pour qu'on voie d'un coup
+ * d'œil tout ce qu'on peut consulter, et des flèches permettent de passer de
+ * l'une à l'autre sans viser un petit libellé au doigt.
  */
-export function ProductDescription({
-  description,
-  options,
-  blocks,
-}: {
-  description?: string | null
-  /** Options du produit, pour nommer chaque explication par son groupe. */
-  options: ProductOption[]
-  /** Valeurs retenues, dans l'ordre d'affichage. */
-  blocks: OptionValue[]
-}) {
+
+const ICONS: Record<string, LucideIcon> = {
+  cpu: Cpu,
+  ram: MemoryStick,
+  storage: HardDrive,
+  screen: Monitor,
+  gpu: MonitorPlay,
+  battery: BatteryMedium,
+}
+
+export function ProductDescription({ blocks }: { blocks: DescriptionBlock[] }) {
   const [open, setOpen] = useState(true)
   const [active, setActive] = useState(0)
-
-  const optionName = useMemo(() => {
-    const map = new Map(options.map(o => [o.id, o.name]))
-    return (value: OptionValue) => map.get(value.option_id) || ''
-  }, [options])
-
-  // Seules les valeurs qui ont réellement quelque chose à dire deviennent des
-  // onglets : un onglet menant à un cadre vide est pire que pas d'onglet.
-  const usable = useMemo(
-    () => blocks.filter(b => b.block_title || b.block_body || b.block_image_url),
-    [blocks]
-  )
-
-  const ordered = useMemo(
-    () =>
-      [...usable].sort(
-        (a, b) => (a.block_sort_order ?? a.sort_order) - (b.block_sort_order ?? b.sort_order)
-      ),
-    [usable]
-  )
 
   // Changer de configuration peut réduire le nombre d'explications : sans ce
   // recalage, l'onglet actif pointerait dans le vide.
   useEffect(() => {
-    if (active >= ordered.length) setActive(0)
-  }, [active, ordered.length])
+    if (active >= blocks.length) setActive(0)
+  }, [active, blocks.length])
 
-  const hasText = !!description?.trim()
+  if (blocks.length === 0) return null
 
-  // Ni texte général ni explication : la section n'a rien à montrer et
-  // disparaît plutôt que d'afficher un titre repliable vide.
-  if (!hasText && ordered.length === 0) return null
-
-  const current = ordered[Math.min(active, ordered.length - 1)]
-  const go = (delta: number) =>
-    setActive(i => (i + delta + ordered.length) % ordered.length)
+  const current = blocks[Math.min(active, blocks.length - 1)]
+  const go = (delta: number) => setActive(i => (i + delta + blocks.length) % blocks.length)
+  const Icon = ICONS[current.icon] || Cpu
 
   return (
     <section className="rounded-xl border border-border bg-bg-panel overflow-hidden">
@@ -86,94 +73,114 @@ export function ProductDescription({
       </h2>
 
       {open && (
-        <div className="px-5 sm:px-6 pb-6 border-t border-border pt-5">
-          {hasText && (
-            /* `whitespace-pre-wrap` : les descriptions sont saisies avec des
-               retours à la ligne en administration, et les perdre transformait
-               un texte aéré en un seul pavé. */
-            <p className="text-[14px] text-ink-dim leading-[1.7] whitespace-pre-wrap">
-              {stripDashes(description)}
-            </p>
-          )}
-
-          {ordered.length > 0 && (
-            <div className={hasText ? 'mt-6' : ''}>
-              <div className="flex items-center gap-2 mb-4">
-                {/* Onglets défilables : quatre composants tiennent rarement sur
-                    une ligne de téléphone. */}
-                <div className="flex-1 min-w-0 flex gap-2 overflow-x-auto no-scrollbar">
-                  {ordered.map((block, i) => (
-                    <button
-                      key={block.id}
-                      type="button"
-                      onClick={() => setActive(i)}
-                      aria-current={i === active}
-                      className={`flex-shrink-0 px-3.5 py-2 rounded-lg border text-[12.5px] font-semibold transition-colors ${
-                        i === active
-                          ? 'border-accent bg-accent/10 text-ink'
-                          : 'border-border-mid bg-bg-raised text-ink-dim hover:border-border-strong hover:text-ink'
+        <div className="border-t border-border p-5 sm:p-6 grid grid-cols-1 md:grid-cols-[220px,1fr] gap-5">
+          {/* Colonne de navigation. Verticale sur grand écran : les quatre
+              pièces se lisent alors comme un sommaire. Sur téléphone elle
+              redevient une rangée qui défile, faute de largeur. */}
+          <nav
+            aria-label="Composants expliqués"
+            className="flex md:flex-col gap-2 overflow-x-auto md:overflow-visible no-scrollbar"
+          >
+            {blocks.map((block, i) => {
+              const BlockIcon = ICONS[block.icon] || Cpu
+              const isActive = i === active
+              return (
+                <button
+                  key={block.id}
+                  type="button"
+                  onClick={() => setActive(i)}
+                  aria-current={isActive}
+                  className={`flex-shrink-0 md:w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border text-left transition-colors ${
+                    isActive
+                      ? 'border-accent bg-accent/10'
+                      : 'border-border-mid bg-bg-raised hover:border-border-strong'
+                  }`}
+                >
+                  <BlockIcon
+                    size={17}
+                    strokeWidth={1.7}
+                    className={isActive ? 'text-accent' : 'text-ink-dimmer'}
+                  />
+                  <span className="min-w-0">
+                    <span
+                      className={`block text-[12.5px] font-semibold leading-tight ${
+                        isActive ? 'text-ink' : 'text-ink-dim'
                       }`}
                     >
-                      {block.label}
-                    </button>
-                  ))}
-                </div>
+                      {block.group}
+                    </span>
+                    {/* La valeur réelle sous le nom de la pièce : c'est elle qui
+                        rattache l'explication à la machine qu'on regarde. */}
+                    {block.value && (
+                      <span className="block text-[11px] text-ink-dimmer leading-tight truncate">
+                        {block.value}
+                      </span>
+                    )}
+                  </span>
+                </button>
+              )
+            })}
+          </nav>
 
-                {/* Flèches : utiles au doigt, et elles n'apparaissent que s'il y
-                    a réellement plusieurs explications à parcourir. */}
-                {ordered.length > 1 && (
-                  <div className="flex gap-1.5 flex-shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => go(-1)}
-                      aria-label="Explication précédente"
-                      className="w-8 h-8 rounded-lg border border-border-mid text-ink-dim hover:text-ink hover:border-border-strong flex items-center justify-center transition-colors"
-                    >
-                      <ChevronLeft size={15} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => go(1)}
-                      aria-label="Explication suivante"
-                      className="w-8 h-8 rounded-lg border border-border-mid text-ink-dim hover:text-ink hover:border-border-strong flex items-center justify-center transition-colors"
-                    >
-                      <ChevronRight size={15} />
-                    </button>
-                  </div>
+          <article className="rounded-lg border border-border bg-bg-raised overflow-hidden">
+            <div className="flex items-start gap-4 p-5 border-b border-border">
+              {current.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={current.imageUrl}
+                  alt=""
+                  className="w-20 h-20 object-contain bg-bg-sunken rounded-lg p-2 flex-shrink-0"
+                />
+              ) : (
+                /* Pas de photo : un pictogramme du site plutôt qu'un cadre
+                   vide, et surtout plutôt qu'une image empruntée ailleurs. */
+                <span
+                  aria-hidden="true"
+                  className="w-20 h-20 rounded-lg bg-bg-sunken border border-border flex items-center justify-center flex-shrink-0"
+                >
+                  <Icon size={30} strokeWidth={1.4} className="text-accent" />
+                </span>
+              )}
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold tracking-[0.4px] text-ink-dimmer uppercase mb-1">
+                  {current.group}
+                </p>
+                <h3 className="font-display text-[17px] text-ink leading-tight">
+                  {stripDashes(current.title)}
+                </h3>
+                {current.value && (
+                  <p className="text-[13px] text-accent font-medium mt-1">{current.value}</p>
                 )}
               </div>
+            </div>
 
-              {current && (
-                <article className="rounded-lg border border-border bg-bg-raised overflow-hidden grid grid-cols-1 sm:grid-cols-[240px,1fr]">
-                  {current.block_image_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={current.block_image_url}
-                      alt=""
-                      className="w-full h-44 sm:h-full object-contain bg-bg-sunken p-4"
-                    />
-                  ) : null}
-                  <div className="p-5">
-                    <p className="text-[11px] font-semibold tracking-[0.4px] text-ink-dimmer uppercase mb-1">
-                      {optionName(current)}
-                    </p>
-                    <h3 className="font-display text-[16px] text-ink mb-2">
-                      {stripDashes(current.block_title) || current.label}
-                    </h3>
-                    {current.block_body ? (
-                      <p className="text-[13.5px] text-ink-dim leading-[1.7] whitespace-pre-wrap">
-                        {stripDashes(current.block_body)}
-                      </p>
-                    ) : (
-                      <p className="text-[13px] text-ink-dimmer">
-                        Aucune explication renseignée pour cette option.
-                      </p>
-                    )}
-                  </div>
-                </article>
+            <div className="p-5">
+              <p className="text-[13.5px] text-ink-dim leading-[1.75] whitespace-pre-wrap">
+                {stripDashes(current.body)}
+              </p>
+
+              {blocks.length > 1 && (
+                <div className="flex items-center justify-between gap-3 mt-5 pt-4 border-t border-border">
+                  <button
+                    type="button"
+                    onClick={() => go(-1)}
+                    className="flex items-center gap-1.5 text-[12.5px] text-ink-dim hover:text-ink transition-colors"
+                  >
+                    <ChevronLeft size={15} />
+                    {blocks[(active - 1 + blocks.length) % blocks.length].group}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => go(1)}
+                    className="flex items-center gap-1.5 text-[12.5px] text-ink-dim hover:text-ink transition-colors"
+                  >
+                    {blocks[(active + 1) % blocks.length].group}
+                    <ChevronRight size={15} />
+                  </button>
+                </div>
               )}
             </div>
-          )}
+          </article>
         </div>
       )}
     </section>

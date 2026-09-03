@@ -65,7 +65,7 @@ export default function Contact() {
     'w-full px-4 py-2.5 bg-bg-raised border border-border rounded-lg text-ink focus:outline-none focus:ring-2 focus:ring-accent'
 
   return (
-    <main className="min-h-screen bg-bg-panel flex flex-col">
+    <main className="min-h-screen bg-bg flex flex-col">
       <Navbar />
 
       <div className="flex-1 max-w-4xl mx-auto px-5 sm:px-10 py-16 w-full">

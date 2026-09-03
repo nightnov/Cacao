@@ -226,7 +226,7 @@ export default function Account() {
 
   if (authLoading || !isLoggedIn) {
     return (
-      <main className="min-h-screen bg-bg-panel flex items-center justify-center">
+      <main className="min-h-screen bg-bg flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-ink-dim border-t-transparent rounded-full animate-spin"></div>
       </main>
     )
@@ -241,7 +241,7 @@ export default function Account() {
   const deliveredCount = orders.filter(o => o.status === 'delivered').length
 
   return (
-    <main className="min-h-screen bg-bg-sunken flex flex-col">
+    <main className="min-h-screen bg-bg flex flex-col">
       <Navbar />
 
       <div className="flex-1 max-w-6xl mx-auto px-5 sm:px-10 py-6 sm:py-9 w-full">

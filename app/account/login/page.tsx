@@ -38,7 +38,7 @@ export default function AccountLogin() {
   }
 
   return (
-    <main className="min-h-screen bg-bg-panel flex flex-col">
+    <main className="min-h-screen bg-bg flex flex-col">
       <Navbar />
 
       <div className="flex-1 flex items-center justify-center px-5 sm:px-10 py-16">

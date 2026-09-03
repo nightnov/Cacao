@@ -68,7 +68,7 @@ export default function Cart() {
 
   if (items.length === 0) {
     return (
-      <main className="min-h-screen bg-bg-panel flex flex-col">
+      <main className="min-h-screen bg-bg flex flex-col">
         <Navbar />
 
         <div className="flex-1 max-w-4xl mx-auto px-5 sm:px-10 py-16 w-full">
@@ -104,7 +104,7 @@ export default function Cart() {
   }
 
   return (
-    <main className="min-h-screen bg-bg-panel flex flex-col">
+    <main className="min-h-screen bg-bg flex flex-col">
       <Navbar />
 
       <div className="flex-1 max-w-5xl mx-auto px-5 sm:px-10 py-16 w-full">

@@ -362,7 +362,7 @@ function ProductsContent() {
 
 export default function Products() {
   return (
-    <Suspense fallback={<main className="min-h-screen bg-bg-panel" />}>
+    <Suspense fallback={<main className="min-h-screen bg-bg" />}>
       <ProductsContent />
     </Suspense>
   )

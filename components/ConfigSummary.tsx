@@ -19,8 +19,10 @@ import {
  * du catalogue ne sait pas d'où vient l'écart. Montrer les deux rend le
  * supplément compréhensible plutôt que suspect.
  *
- * Tant que rien n'a été modifié, le second bloc n'apparaît pas : afficher deux
- * fois la même chose n'apprendrait rien.
+ * Les deux blocs restent affichés en permanence, y compris à l'ouverture de la
+ * fiche où ils disent la même chose. Masquer le second tant que rien n'avait
+ * bougé faisait apparaître un encadré au premier clic, et surtout ne montrait
+ * jamais au client qu'il existe une configuration modifiable.
  */
 export function ConfigSummary({
   options,
@@ -54,26 +56,26 @@ export function ConfigSummary({
         </p>
       </div>
 
-      {changed && (
-        <div className="px-4 py-3">
-          <p className="text-[11px] font-semibold tracking-[0.4px] text-accent uppercase mb-1">
-            Configuration sélectionnée
-          </p>
-          <p className="text-[13px] text-ink leading-[1.5]">{line(chosen)}</p>
-          <p className="text-[12.5px] mt-1 tabular-nums text-ink-dim">
-            {gap === 0 ? (
-              'Sans changement de prix'
-            ) : (
-              <>
-                {gap > 0 ? 'Supplément' : 'Réduction'} de{' '}
-                <span className="text-accent font-semibold">
-                  {formatAmount(Math.abs(gap))} FCFA
-                </span>
-              </>
-            )}
-          </p>
-        </div>
-      )}
+      <div className="px-4 py-3">
+        <p className="text-[11px] font-semibold tracking-[0.4px] text-accent uppercase mb-1">
+          Configuration sélectionnée
+        </p>
+        <p className="text-[13px] text-ink leading-[1.5]">{line(chosen)}</p>
+        <p className="text-[12.5px] mt-1 tabular-nums text-ink-dim">
+          {!changed ? (
+            'Identique à la configuration de base'
+          ) : gap === 0 ? (
+            'Sans changement de prix'
+          ) : (
+            <>
+              {gap > 0 ? 'Supplément' : 'Réduction'} de{' '}
+              <span className="text-accent font-semibold">
+                {formatAmount(Math.abs(gap))} FCFA
+              </span>
+            </>
+          )}
+        </p>
+      </div>
     </div>
   )
 }

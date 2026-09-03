@@ -637,6 +637,38 @@ export default function ProductDetail() {
               </p>
             )}
 
+            {/* Disponibilité, juste sous le prix. Elle manquait : l'acheteur
+                lisait le montant sans savoir si la machine part demain ou si
+                elle se commande. Une pastille de couleur plutôt qu'un fond
+                teinté — c'est une information d'état, pas une promotion.
+
+                Les trois cas viennent du champ `availability` du produit, sans
+                interprétation : nous ne promettons pas un délai que le stock
+                ne garantit pas. */}
+            <p className="flex items-center gap-2 mb-3 text-[13px]">
+              <span
+                aria-hidden="true"
+                className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                  product.availability === 'in_stock'
+                    ? 'bg-green-bright'
+                    : product.availability === 'on_order'
+                    ? 'bg-gold'
+                    : 'bg-ink-faint'
+                }`}
+              />
+              <span className={product.availability === 'discontinued' ? 'text-ink-dimmer' : 'text-ink-dim'}>
+                {/* Aucun délai chiffré ici : le stock ne le garantit pas, et
+                    annoncer « sous 48 heures » sur chaque fiche reviendrait à
+                    promettre ce que rien ne tient. Le délai réel est dans la
+                    section Livraison, où il est formulé comme une estimation. */}
+                {product.availability === 'in_stock'
+                  ? 'En stock'
+                  : product.availability === 'on_order'
+                  ? 'Sur commande, délai confirmé avant expédition'
+                  : "Ce produit n'est plus proposé"}
+              </span>
+            </p>
+
             {hasVariants && matchedVariant && matchedVariant.stock === 0 && (
               <span className="inline-block mb-3 text-xs font-semibold px-3 py-1.5 rounded-full bg-border-strong text-ink">
                 Rupture pour cette variante
@@ -705,46 +737,56 @@ export default function ProductDetail() {
               </div>
             )}
 
-            {product.availability !== 'discontinued' && (
-              <div className="flex items-center gap-4 mb-4">
-                <div className="flex items-center border-2 border-border-strong rounded-full">
-                  <button
-                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                    className="w-10 h-10 flex items-center justify-center text-ink hover:text-ink"
-                  >
-                    −
-                  </button>
-                  <span className="w-8 text-center font-semibold">{quantity}</span>
-                  <button
-                    onClick={() => setQuantity(q => q + 1)}
-                    className="w-10 h-10 flex items-center justify-center text-ink hover:text-ink"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            )}
+            {/* Quantité et « Ajouter au panier » sur la même ligne : la
+                quantité se choisit pour une action précise, et la reléguer sur
+                sa propre rangée l'éloignait du geste qu'elle qualifie.
+                « Commander maintenant » passe dessous, pleine largeur : c'est
+                un raccourci vers le paiement, pas une variante du bouton
+                voisin, et l'aligner à côté donnait deux actions de poids égal
+                entre lesquelles il fallait trancher. */}
+            <div className="space-y-3">
+              <div className="flex items-stretch gap-3">
+                {product.availability !== 'discontinued' && (
+                  <div className="flex items-center border border-border-strong rounded-xl flex-shrink-0">
+                    <button
+                      onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                      aria-label="Diminuer la quantité"
+                      className="w-10 self-stretch flex items-center justify-center text-ink"
+                    >
+                      −
+                    </button>
+                    <span className="w-8 text-center font-semibold tabular-nums">{quantity}</span>
+                    <button
+                      onClick={() => setQuantity(q => q + 1)}
+                      aria-label="Augmenter la quantité"
+                      className="w-10 self-stretch flex items-center justify-center text-ink"
+                    >
+                      +
+                    </button>
+                  </div>
+                )}
 
-            <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  variant="solid"
+                  size="lg"
+                  className="flex-1"
+                  disabled={!canAddToCart}
+                  onClick={handleAddToCart}
+                >
+                  {blockedByLegacyVariant
+                    ? 'Choisissez une combinaison'
+                    : !canAddToCart
+                    ? 'Rupture de stock'
+                    : added
+                    ? 'Ajouté ✓'
+                    : 'Ajouter au panier'}
+                </Button>
+              </div>
+
               <Button
                 variant="sober"
                 size="lg"
-                className="flex-1"
-                disabled={!canAddToCart}
-                onClick={handleAddToCart}
-              >
-                {blockedByLegacyVariant
-                  ? 'Choisissez une combinaison'
-                  : !canAddToCart
-                  ? 'Rupture de stock'
-                  : added
-                  ? 'Ajouté ✓'
-                  : 'Ajouter au panier'}
-              </Button>
-              <Button
-                variant="solid"
-                size="lg"
-                className="flex-1"
+                className="w-full"
                 disabled={!canAddToCart}
                 onClick={handleBuyNow}
               >
@@ -752,17 +794,26 @@ export default function ProductDetail() {
               </Button>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 mt-4 text-center">
+            {/* Réassurance en une seule ligne, libellé seul.
+                Les trois blocs précédents portaient chacun une sous-phrase en
+                dix pixels : trop petite pour être lue, assez grande pour
+                fabriquer un pavé sous le bouton d'achat. Ce qu'elles disaient
+                est développé dans la section Livraison et garantie, plus bas,
+                où il y a la place de le dire correctement. */}
+            {/* `flex-wrap` plutôt qu'une troncature : sur un écran de 375 px les
+                trois libellés ne tiennent pas, et les rogner donnait
+                « Paiement sécu… ». Ils passent à la ligne, et retrouvent leur
+                rangée unique dès que la largeur le permet. */}
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-5 pt-4 border-t border-border">
               {[
-                { icon: ShieldCheck, label: 'Paiement sécurisé', sub: 'Wave, Orange, MTN, Moov, carte' },
-                { icon: RotateCcw, label: 'Retour sous 14 jours', sub: 'Si le produit ne convient pas' },
-                { icon: Truck, label: 'Livraison suivie', sub: 'Code remis à la réception' }
+                { icon: ShieldCheck, label: 'Paiement sécurisé' },
+                { icon: Truck, label: 'Livraison suivie' },
+                { icon: RotateCcw, label: 'Retour 14 jours' },
               ].map(item => (
-                <div key={item.label} className="flex flex-col items-center gap-1 px-1">
-                  <item.icon size={16} className="text-green-bright" />
-                  <span className="text-[11px] font-semibold text-ink leading-tight">{item.label}</span>
-                  <span className="text-[10px] text-ink-dimmer leading-tight">{item.sub}</span>
-                </div>
+                <span key={item.label} className="flex items-center gap-1.5">
+                  <item.icon size={15} strokeWidth={1.9} className="text-accent flex-shrink-0" />
+                  <span className="text-[11.5px] font-medium text-ink-dim">{item.label}</span>
+                </span>
               ))}
             </div>
 

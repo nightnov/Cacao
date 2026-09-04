@@ -826,9 +826,13 @@ export default function ProductDetail() {
             { icon: RotateCcw, label: 'Retour 14 jours' },
             { icon: MessageCircle, label: 'Conseil avant achat' },
           ].map(item => (
-            <span key={item.label} className="flex items-center gap-2">
-              <item.icon size={17} strokeWidth={1.9} className="text-accent flex-shrink-0" />
-              <span className="text-[13px] font-medium text-ink-dim">{item.label}</span>
+            /* Pictogrammes nettement plus grands que le texte qu'ils
+               accompagnent : à 17 px ils avaient la taille d'une lettre et se
+               lisaient comme de la ponctuation. Ce sont eux qu'on repère en
+               parcourant la page, le libellé ne fait que les confirmer. */
+            <span key={item.label} className="flex items-center gap-2.5">
+              <item.icon size={26} strokeWidth={1.7} className="text-accent flex-shrink-0" />
+              <span className="text-[13.5px] font-medium text-ink-dim">{item.label}</span>
             </span>
           ))}
         </div>

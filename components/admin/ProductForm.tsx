@@ -79,6 +79,10 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     specs_ram: '',
     specs_storage: '',
     specs_screen: '',
+    specs_gpu: '',
+    specs_battery: '',
+    specs_os: '',
+    specs_ports: '',
     tags: '',
     image_urls: [] as string[],
     video_url: '',
@@ -131,6 +135,10 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         specs_ram: (product.specs?.ram as string) || '',
         specs_storage: (product.specs?.storage as string) || '',
         specs_screen: (product.specs?.screen as string) || '',
+        specs_gpu: (product.specs?.gpu as string) || '',
+        specs_battery: (product.specs?.battery as string) || '',
+        specs_os: (product.specs?.os as string) || '',
+        specs_ports: (product.specs?.ports as string) || '',
         tags: Array.isArray(product.tags) ? product.tags.join(', ') : '',
         image_urls: product.image_urls || [],
         video_url: product.video_url || '',
@@ -355,7 +363,11 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         cpu: formData.specs_cpu,
         ram: formData.specs_ram,
         storage: formData.specs_storage,
-        screen: formData.specs_screen
+        screen: formData.specs_screen,
+        gpu: formData.specs_gpu,
+        battery: formData.specs_battery,
+        os: formData.specs_os,
+        ports: formData.specs_ports
       }
       const tags = formData.tags.split(',').map(t => t.trim()).filter(Boolean)
 
@@ -1043,7 +1055,60 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                   placeholder='Ex: 14"'
                 />
               </div>
+              {/* Ces quatre là manquaient. Le glossaire savait déjà expliquer
+                  la carte graphique et la batterie, mais aucun champ ne
+                  permettait de renseigner la valeur du produit : les blocs ne
+                  pouvaient donc jamais apparaître sur une fiche. */}
+              <div>
+                <label className="block text-sm font-semibold text-ink mb-2">Carte graphique</label>
+                <input
+                  type="text"
+                  name="specs_gpu"
+                  value={formData.specs_gpu}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                  placeholder="Ex : RTX 4060, ou intégrée"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-ink mb-2">Batterie</label>
+                <input
+                  type="text"
+                  name="specs_battery"
+                  value={formData.specs_battery}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                  placeholder="Ex : 3 cellules, 41 Wh"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-ink mb-2">Système</label>
+                <input
+                  type="text"
+                  name="specs_os"
+                  value={formData.specs_os}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                  placeholder="Ex : Windows 11"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-ink mb-2">Connectique</label>
+                <input
+                  type="text"
+                  name="specs_ports"
+                  value={formData.specs_ports}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+                  placeholder="Ex : 2 USB, HDMI, Wi Fi, Bluetooth"
+                />
+              </div>
             </div>
+            <p className="text-xs text-ink-dimmer mt-3">
+              Chaque champ rempli fait apparaître son explication dans la section
+              Description de la fiche, avec le texte du glossaire. Laissé vide, il
+              n&apos;affiche rien.
+            </p>
           </div>
 
           {/* Tags */}

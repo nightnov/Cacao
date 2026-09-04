@@ -9,9 +9,15 @@ interface StatCardProps {
   iconColor: string
   trend?: { value: number; direction: 'up' | 'down' }
   href?: string
+  /**
+   * Précision facultative sous le libellé. Elle sert à porter un second
+   * chiffre qui ne méritait pas une carte à lui seul — le panier moyen sous
+   * les revenus, par exemple, qui n'a de sens qu'à côté d'eux.
+   */
+  note?: string
 }
 
-export function StatCard({ label, value, icon: Icon, iconBg, iconColor, trend, href }: StatCardProps) {
+export function StatCard({ label, value, icon: Icon, iconBg, iconColor, trend, href, note }: StatCardProps) {
   const content = (
     <div className="bg-bg-panel rounded-2xl border border-border p-6 hover:shadow-md transition-shadow h-full">
       <div className="flex items-start justify-between mb-4">
@@ -30,6 +36,7 @@ export function StatCard({ label, value, icon: Icon, iconBg, iconColor, trend, h
       </div>
       <p className="font-serif font-bold text-3xl text-ink mb-1">{value}</p>
       <p className="text-sm text-ink-dimmer">{label}</p>
+      {note && <p className="text-[12.5px] text-ink-faint mt-1.5 tabular-nums">{note}</p>}
     </div>
   )
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Eye } from 'lucide-react'
 import { getSupabaseClient } from '@/lib/supabase'
 import OrderDetailModal from '@/components/admin/OrderDetailModal'
@@ -29,7 +30,15 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [orderItems, setOrderItems] = useState<OrderItem[]>([])
-  const [statusFilter, setStatusFilter] = useState<string>('')
+  // Le filtre se lit dans l'adresse. C'est ce qui permet aux compteurs du
+  // tableau de bord d'ouvrir directement la bonne liste : sans cela, le lien
+  // arrivait ici et affichait toutes les commandes, ce qui donne l'impression
+  // que le compteur s'est trompé.
+  const searchParams = useSearchParams()
+  const requested = searchParams.get('status') || ''
+  const [statusFilter, setStatusFilter] = useState<string>(
+    requested in statusLabels ? requested : ''
+  )
   const [page, setPage] = useState(1)
 
   useEffect(() => {

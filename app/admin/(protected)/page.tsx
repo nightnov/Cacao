@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
-import { Users, ShoppingCart, Wallet, Package, Plus, Settings, ClipboardList, SearchX, TrendingUp } from 'lucide-react'
+import { Users, ShoppingCart, Wallet, Package, Plus, Settings, ClipboardList, SearchX, TrendingUp, PackageX, AlertTriangle } from 'lucide-react'
 import { StatCard } from '@/components/admin/StatCard'
 import { RevenueChart } from '@/components/admin/RevenueChart'
 import { TableShell, Column } from '@/components/admin/TableShell'
@@ -29,11 +29,33 @@ interface Trend {
   direction: 'up' | 'down'
 }
 
+/**
+ * Ce qui réclame une action, par opposition aux totaux.
+ *
+ * Un tableau de bord qui n'affiche que des cumuls oblige à ouvrir chaque écran
+ * pour savoir s'il reste quelque chose à faire. Ces compteurs répondent à la
+ * seule question du matin : qu'est ce qui m'attend ?
+ *
+ * Un compteur à zéro n'est pas affiché. Une ligne « 0 commande en attente »
+ * occupe autant de place qu'une vraie alerte et apprend la même chose que le
+ * silence.
+ */
+interface Todo {
+  pending: number
+  confirmed: number
+  preparing: number
+  shipped: number
+  outOfStock: number
+  lowStock: number
+}
+
 interface Stats {
   products: number
   orders: number
   customers: number
   revenue: number
+  /** Revenus du mois divisés par le nombre de commandes du mois. */
+  averageOrder: number
   productsTrend?: Trend
   ordersTrend?: Trend
   customersTrend?: Trend
@@ -50,7 +72,10 @@ function computeTrend(current: number, before: number): Trend | undefined {
 }
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState<Stats>({ products: 0, orders: 0, customers: 0, revenue: 0 })
+  const [stats, setStats] = useState<Stats>({
+    products: 0, orders: 0, customers: 0, revenue: 0, averageOrder: 0,
+  })
+  const [todo, setTodo] = useState<Todo | null>(null)
   const [loading, setLoading] = useState(true)
   const [chartYear, setChartYear] = useState(new Date().getFullYear())
   const [chartData, setChartData] = useState<{ month: string; revenus: number }[]>(
@@ -220,7 +245,8 @@ export default function AdminDashboard() {
           supabase.from('orders').select('total_fcfa').gte('created_at', startOfLastMonth).lt('created_at', startOfThisMonth).not('status', 'in', '(cancelled,refunded)')
         ])
 
-        const revenueThisMonth = (revenueThisMonthRes.data || []).reduce((sum, o: any) => sum + (o.total_fcfa || 0), 0)
+        const monthOrders = revenueThisMonthRes.data || []
+        const revenueThisMonth = monthOrders.reduce((sum, o: any) => sum + (o.total_fcfa || 0), 0)
         const revenueLastMonth = (revenueLastMonthRes.data || []).reduce((sum, o: any) => sum + (o.total_fcfa || 0), 0)
 
         setStats({
@@ -228,6 +254,10 @@ export default function AdminDashboard() {
           orders: ordersNow.count || 0,
           customers: customersNow.count || 0,
           revenue: revenueThisMonth,
+          // Divisé par les commandes du mois, pas par le total de tous les
+          // temps : sinon le panier moyen s'effondre à mesure que l'historique
+          // grandit, sans que rien n'ait changé dans la boutique.
+          averageOrder: monthOrders.length > 0 ? Math.round(revenueThisMonth / monthOrders.length) : 0,
           productsTrend: computeTrend(productsNow.count || 0, productsBefore.count || 0),
           ordersTrend: computeTrend(ordersNow.count || 0, ordersBefore.count || 0),
           customersTrend: computeTrend(customersNow.count || 0, customersBefore.count || 0),
@@ -241,6 +271,56 @@ export default function AdminDashboard() {
     }
 
     fetchStats()
+  }, [])
+
+  useEffect(() => {
+    const fetchTodo = async () => {
+      try {
+        const supabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+        )
+
+        const countOf = (status: string) =>
+          supabase.from('orders').select('id', { count: 'exact', head: true }).eq('status', status)
+
+        const [pending, confirmed, preparing, shipped, variantsRes, thresholdRes] =
+          await Promise.all([
+            countOf('pending'),
+            countOf('confirmed'),
+            countOf('preparing'),
+            countOf('shipped'),
+            supabase.from('product_variants').select('stock'),
+            supabase
+              .from('site_settings')
+              .select('value')
+              .eq('key', 'low_stock_threshold')
+              .maybeSingle(),
+          ])
+
+        // Le seuil est celui réglé sur l'écran Stock, pas une valeur inventée
+        // ici : deux définitions du « stock faible » donneraient deux chiffres
+        // différents pour la même situation.
+        const threshold = Number(thresholdRes.data?.value)
+        const limit = Number.isFinite(threshold) && threshold > 0 ? threshold : 3
+        const variants = (variantsRes.data || []) as { stock: number }[]
+
+        setTodo({
+          pending: pending.count || 0,
+          confirmed: confirmed.count || 0,
+          preparing: preparing.count || 0,
+          shipped: shipped.count || 0,
+          outOfStock: variants.filter(v => v.stock === 0).length,
+          lowStock: variants.filter(v => v.stock > 0 && v.stock <= limit).length,
+        })
+      } catch (error) {
+        // Silencieux à l'écran : la bande disparaît plutôt que d'afficher des
+        // zéros qui se liraient comme « rien à faire ».
+        console.error('Erreur lors du chargement des points à traiter:', error)
+      }
+    }
+
+    fetchTodo()
   }, [])
 
   const statCards = [
@@ -269,7 +349,12 @@ export default function AdminDashboard() {
       iconBg: 'bg-green/10',
       iconColor: 'text-green-bright',
       trend: stats.revenueTrend,
-      href: '/admin/orders'
+      href: '/admin/orders',
+      // Le panier moyen n'a de sens qu'à côté des revenus qui le produisent.
+      // Aucune commande ce mois : la ligne se tait plutôt que d'afficher 0.
+      note: stats.averageOrder > 0
+        ? `Panier moyen : ${formatAmount(stats.averageOrder)} FCFA`
+        : undefined
     },
     {
       label: 'Produits',
@@ -284,14 +369,61 @@ export default function AdminDashboard() {
     }
   ]
 
+  /* Chaque entrée mène à la liste déjà filtrée sur ce qu'annonce le compteur. */
+  const todoItems = todo
+    ? [
+        { label: 'commande en attente', plural: 'commandes en attente', count: todo.pending, href: '/admin/orders?status=pending', icon: ClipboardList, urgent: true },
+        { label: 'commande confirmée', plural: 'commandes confirmées', count: todo.confirmed, href: '/admin/orders?status=confirmed', icon: ShoppingCart, urgent: false },
+        { label: 'commande en préparation', plural: 'commandes en préparation', count: todo.preparing, href: '/admin/orders?status=preparing', icon: Package, urgent: false },
+        { label: 'commande expédiée', plural: 'commandes expédiées', count: todo.shipped, href: '/admin/orders?status=shipped', icon: TrendingUp, urgent: false },
+        { label: 'référence en rupture', plural: 'références en rupture', count: todo.outOfStock, href: '/admin/stock', icon: PackageX, urgent: true },
+        { label: 'référence en stock faible', plural: 'références en stock faible', count: todo.lowStock, href: '/admin/stock', icon: AlertTriangle, urgent: false },
+      ].filter(item => item.count > 0)
+    : []
+
   return (
     <div>
       <h1 className="font-serif font-semibold text-4xl text-ink mb-2">Tableau de bord</h1>
-      <p className="text-ink-dim mb-12">Bienvenue dans l&apos;administration Cacao</p>
+      <p className="text-ink-dim mb-8">Bienvenue dans l&apos;administration Cacao</p>
+
+      {/* ── À traiter ──────────────────────────────────────────────────────
+          Placé avant les totaux : un cumul se consulte, une action s'exécute.
+          La bande entière disparaît quand il n'y a rien, plutôt que d'afficher
+          six zéros qu'il faudrait lire pour comprendre qu'ils ne disent rien. */}
+      {todoItems.length > 0 && (
+        <div className="mb-10">
+          <h2 className="text-[11px] font-bold tracking-[0.7px] text-ink-dimmer uppercase mb-3">
+            À traiter
+          </h2>
+          <div className="flex flex-wrap gap-2.5">
+            {todoItems.map(item => (
+              <Link
+                key={item.href + item.label}
+                href={item.href}
+                className={`flex items-center gap-2.5 rounded-xl border px-4 py-2.5 transition-colors ${
+                  item.urgent
+                    ? 'border-gold/40 bg-gold/10 hover:bg-gold/15'
+                    : 'border-border bg-bg-panel hover:border-border-strong'
+                }`}
+              >
+                <item.icon
+                  size={16}
+                  strokeWidth={1.9}
+                  className={item.urgent ? 'text-gold' : 'text-ink-dimmer'}
+                />
+                <span className="text-sm text-ink">
+                  <strong className="font-semibold tabular-nums">{item.count}</strong>{' '}
+                  {item.count > 1 ? item.plural : item.label}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-12">
           {[1, 2, 3, 4].map(i => (
             <div key={i} className="bg-bg-panel rounded-2xl border border-border p-6 animate-pulse">
               <div className="h-11 w-11 bg-border rounded-full mb-4"></div>
@@ -301,7 +433,7 @@ export default function AdminDashboard() {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-12">
           {statCards.map((card, idx) => (
             <StatCard key={idx} {...card} />
           ))}

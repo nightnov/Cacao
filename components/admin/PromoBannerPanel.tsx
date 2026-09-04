@@ -206,10 +206,39 @@ export function PromoBannerPanel() {
       <h2 className="font-serif font-semibold text-xl text-ink mb-1">
         Bandeau promotionnel de l&apos;accueil
       </h2>
-      <p className="text-sm text-ink-dimmer mb-5">
+      <p className="text-sm text-ink-dimmer mb-4">
         Les images défilent en haut de la page d&apos;accueil, dans l&apos;ordre ci-dessous.
-        Format recommandé : image large (ratio proche de 3:1, ex. 1600×530 px), JPG ou PNG, 5 Mo max.
+        À partir de deux images, des flèches, des pastilles et une jauge de temps
+        restant apparaissent automatiquement sur le site.
       </p>
+
+      {/* Dimension exacte attendue. Elle dépend de la disposition choisie plus
+          bas : la bannière pleine largeur et la bannière encadrée n'ont pas le
+          même rapport, et une image au mauvais rapport laisse des bandes vides
+          de chaque côté puisque l'affichage ne recadre jamais. */}
+      <div className="border border-border rounded-lg p-4 mb-6 bg-bg-raised">
+        <p className="font-semibold text-sm text-ink mb-2">Dimension de l&apos;image</p>
+        {settings.textEnabled ? (
+          <p className="text-[13px] text-ink-dim leading-relaxed">
+            Disposition actuelle : bandeau <strong>à côté du texte d&apos;accroche</strong>.
+            Préparez vos images en <strong className="font-mono">1700 × 720 px</strong>{' '}
+            (rapport 2,36 : 1).
+          </p>
+        ) : (
+          <p className="text-[13px] text-ink-dim leading-relaxed">
+            Disposition actuelle : bandeau <strong>pleine largeur</strong>.
+            Préparez vos images en <strong className="font-mono">2000 × 700 px</strong>{' '}
+            (rapport 2,86 : 1).
+          </p>
+        )}
+        <p className="text-[12px] text-ink-dimmer mt-2 leading-relaxed">
+          L&apos;image est affichée entière, jamais recadrée : c&apos;est ce qui garantit
+          que le texte écrit dedans ne sera pas coupé. En contrepartie, un autre rapport
+          laisse des bandes vides sur les côtés ou au-dessus. Placez vos mots et votre
+          logo au centre : sur téléphone, la zone visible se resserre.
+          JPG ou PNG, 5 Mo maximum.
+        </p>
+      </div>
 
       {error && (
         <div className="bg-danger/10 border border-danger/30 text-danger px-4 py-3 rounded mb-4 text-sm">

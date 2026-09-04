@@ -177,6 +177,17 @@ select:-webkit-autofill {
   display: none;
 }
 
+/* Jauge du bandeau promotionnel : rend visible le temps restant avant l'image
+   suivante. La durée vient d'un style en ligne, réglée en administration. */
+@keyframes promo-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

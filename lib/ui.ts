@@ -201,9 +201,24 @@ export function categoryAccent(value: string | null | undefined) {
  * `-mx-4 px-4` fait toucher les cartes au bord de l'écran tout en gardant la
  * première alignée sur le texte. `snap-x` arrête le glissement sur une carte
  * plutôt qu'entre deux.
+ *
+ * `scroll-pl-4` est indispensable et pas décoratif : sans lui, le calage pose
+ * le bord de la carte contre le bord de l'écran, la marge gauche de 16 px
+ * devient inatteignable, et la première carte ne s'aligne plus sur le titre
+ * juste au dessus. Mesuré : titre à 16 px, carte à 0.
+ *
+ * `overscroll-x-contain` empêche le glissement de déborder sur le geste de
+ * retour arrière du navigateur quand on arrive au bout de la rangée.
+ *
+ * Le comportement demandé — un glissement lent avance d'une carte, un
+ * glissement vif en traverse plusieurs — vient de la paire `mandatory` et
+ * `scroll-snap-stop: normal`, qui est la valeur par défaut. On se garde donc
+ * d'imposer `always`, qui bloquerait à chaque carte y compris sur un geste
+ * rapide.
  */
 export const SCROLL_ROW =
-  'flex overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-4 px-4 pb-2 ' +
+  'flex overflow-x-auto snap-x snap-mandatory scroll-pl-4 overscroll-x-contain ' +
+  'no-scrollbar -mx-4 px-4 pb-2 ' +
   'sm:grid sm:overflow-visible sm:mx-0 sm:px-0 sm:pb-0'
 
 /** Largeur d'une carte dans cette rangée. Neutre dès que la grille reprend. */

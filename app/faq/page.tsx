@@ -3,7 +3,10 @@
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 import { getSupabaseClient } from '@/lib/supabase'
+import { LINK_FRAMED, LINK_FRAMED_ARROW } from '@/lib/ui'
 
 interface FAQItem {
   question: string
@@ -20,7 +23,7 @@ interface FAQItem {
 const FALLBACK_FAQS: FAQItem[] = [
   {
     question: 'Comment passer une commande ?',
-    answer: 'Consultez notre catalogue, sélectionnez un produit, ajoutez-le au panier et procédez au paiement. Vous recevrez une confirmation par email.'
+    answer: "Consultez notre catalogue, sélectionnez un produit, ajoutez-le au panier et procédez au paiement. Votre commande apparaît aussitôt dans votre espace client, où vous pouvez la retrouver à tout moment."
   },
   {
     question: 'Quels sont les modes de paiement acceptés ?',
@@ -32,7 +35,7 @@ const FALLBACK_FAQS: FAQItem[] = [
   },
   {
     question: 'Combien de temps pour la livraison ?',
-    answer: 'Les délais varient de 2 à 5 jours ouvrables selon votre ville. Vous recevrez un suivi en temps réel via Yango.'
+    answer: "Le délai dépend de votre ville et de la disponibilité du produit. Nous vous l'indiquons à la confirmation de votre commande, et vous suivez l'avancement depuis votre compte."
   },
   {
     question: 'Y a-t-il une garantie sur les produits ?',
@@ -44,11 +47,14 @@ const FALLBACK_FAQS: FAQItem[] = [
   },
   {
     question: 'Comment puis-je suivre ma commande ?',
-    answer: 'Une fois votre commande expédiée, vous recevrez un numéro de suivi Yango par email et SMS pour suivre votre colis en temps réel.'
+    answer: "Connectez-vous et ouvrez Mon compte : l'état de votre commande y est affiché, de la confirmation à la livraison. Vous y trouvez aussi votre code de livraison, à donner au livreur au moment de la remise du colis."
   },
   {
+    // Ni adresse écrite en dur, ni délai de réponse promis : l'adresse réelle
+    // est celle saisie dans les réglages, et rien dans le site ne garantit un
+    // temps de réponse.
     question: 'Avez-vous un support client ?',
-    answer: 'Oui ! Vous pouvez nous contacter par email à contact@cacao.ci ou via le formulaire de contact. Réponse sous 24h.'
+    answer: "Oui. Écrivez-nous par le formulaire de contact, ou aux coordonnées indiquées sur la page Contact. Nous répondons dès que possible."
   }
 ]
 
@@ -112,10 +118,11 @@ export default function FAQ() {
 
         <div className="mt-16 p-8 bg-bg-panel rounded-lg border border-border">
           <h2 className="font-serif font-semibold text-xl mb-2">Vous ne trouvez pas votre réponse ?</h2>
-          <p className="text-ink-dim mb-4">Contactez-nous directement via le formulaire de contact ou par email.</p>
-          <a href="/contact" className="text-ink font-semibold hover:underline">
-            Aller au formulaire de contact →
-          </a>
+          <p className="text-ink-dim mb-5">Contactez-nous directement, nous vous répondrons.</p>
+          <Link href="/contact" className={LINK_FRAMED}>
+            Aller au formulaire de contact
+            <ArrowRight size={15} strokeWidth={2} className={LINK_FRAMED_ARROW} />
+          </Link>
         </div>
       </div>
 

@@ -56,7 +56,10 @@ export default function Terms() {
           <div>
             <h2 className="font-serif font-semibold text-2xl text-ink mb-3">6. Livraison</h2>
             <p>
-              Nous livrons aux adresses précédemment mentionnées. Les délais de livraison sont estimatifs et non garantis. Cacao ne sera pas responsable des retards causés par des tiers (Yango, conditions météorologiques, etc.).
+              Nous livrons aux adresses indiquées lors de la commande. Les délais annoncés
+              sont estimatifs et non garantis. CACAO ne peut être tenu responsable des
+              retards imputables à un tiers, notamment au partenaire chargé de la livraison,
+              ou à des circonstances extérieures telles que les conditions météorologiques.
             </p>
           </div>
 

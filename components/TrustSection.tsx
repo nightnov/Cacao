@@ -11,7 +11,10 @@ export function TrustSection() {
             <circle cx="5.5" cy="18.5" r="2.5" />
             <circle cx="18.5" cy="18.5" r="2.5" />
           </svg>
-          <div className="font-semibold text-sm">Livraison via Yango</div>
+          {/* Aucun transporteur n'est nommé : le livreur est choisi commande
+              par commande, et citer une société avec qui aucun accord n'existe
+              l'engagerait sans son consentement. */}
+          <div className="font-semibold text-sm">Livraison suivie</div>
           <small className="text-xs text-ink-dimmer underline decoration-dotted">Partout à Abidjan</small>
         </div>
 

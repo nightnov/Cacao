@@ -25,7 +25,7 @@ export default function About() {
           <ul className="text-ink-dim leading-relaxed mb-6 list-disc list-inside space-y-2">
             <li><strong>Qualité :</strong> Pas de compromis sur la fiabilité des produits</li>
             <li><strong>Transparence :</strong> Prix affichés clairement, pas de frais cachés</li>
-            <li><strong>Rapidité :</strong> Livraison rapide via nos partenaires Yango</li>
+            <li><strong>Rapidité :</strong> Livraison confiée à un partenaire dès la commande préparée</li>
             <li><strong>Service :</strong> Support client réactif et disponible</li>
           </ul>
 
@@ -34,9 +34,15 @@ export default function About() {
             Nous acceptons Wave, Orange Money, MTN Money, Moov Money et les paiements par carte via MoneyFusion. Vos transactions sont chiffrées et protégées.
           </p>
 
+          {/* Ni transporteur nommé, ni « suivi en temps réel » : l'état de la
+              commande est mis à jour à la main depuis l'administration, et le
+              seul engagement réel est le code remis au livreur. */}
           <h2 className="font-serif font-semibold text-2xl text-ink mt-8 mb-4">Livraison</h2>
           <p className="text-ink-dim leading-relaxed">
-            Nous livrons à Abidjan, Bouaké, Yamoussoukro, San-Pédro et Daloa via Yango. Suivi en temps réel et garantie de livraison sécurisée.
+            Nous livrons à Abidjan et dans les villes desservies par nos partenaires de
+            livraison. Les frais et les villes couvertes s&apos;affichent au moment de la
+            commande. Vous suivez l&apos;avancement depuis votre compte, et un code vous est
+            demandé à la remise du colis.
           </p>
         </div>
       </div>

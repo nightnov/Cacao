@@ -23,13 +23,14 @@ import {
   Truck,
   CreditCard,
   ChevronRight,
+  ArrowRight,
   MessageCircle,
 } from 'lucide-react'
 import { VariantOption, ProductVariant } from '@/types/admin'
 import { findMatchingVariant, variantLabel } from '@/lib/variants'
 import { categoryLabel } from '@/lib/categories'
 import { formatAmount } from '@/lib/format'
-import { PRICE, PRICE_OLD } from '@/lib/ui'
+import { PRICE, PRICE_OLD, LINK_FRAMED, LINK_FRAMED_ARROW } from '@/lib/ui'
 import { stripDashes } from '@/lib/text'
 import { ProductGallery } from '@/components/ProductGallery'
 import { ProductConfigurator } from '@/components/ProductConfigurator'
@@ -781,22 +782,26 @@ export default function ProductDetail() {
                 chose en une ligne. Le lien vers les conditions reste, lui : ce
                 sont les engagements réels, et les rendre inaccessibles depuis
                 la fiche serait un recul déguisé en épuration. */}
-            <div className="flex items-center flex-wrap justify-center gap-x-4 gap-y-2 mt-3">
+            {/* Trois actions encadrées plutôt que trois textes séparés par des
+                points. Les séparateurs disparaissent : chaque cadre délimite
+                déjà son action, et sur téléphone les points tombaient seuls en
+                bout de ligne. */}
+            <div className="flex items-center flex-wrap justify-center gap-2.5 mt-4">
               <Link
                 href={`/account/messages?productId=${product.id}&productName=${encodeURIComponent(product.name)}`}
-                className="text-sm text-ink hover:underline"
+                className={LINK_FRAMED}
               >
                 Une question sur ce produit ?
+                <ArrowRight size={15} strokeWidth={2} className={LINK_FRAMED_ARROW} />
               </Link>
-              <span className="text-border-strong">·</span>
-              <Link href="/legal/terms" className="text-sm text-accent hover:underline">
+              <Link href="/legal/terms" className={LINK_FRAMED}>
                 Livraison et garantie
+                <ArrowRight size={15} strokeWidth={2} className={LINK_FRAMED_ARROW} />
               </Link>
-              <span className="text-border-strong">·</span>
               <button
                 type="button"
                 onClick={handleShare}
-                className="text-sm text-ink-dim hover:text-ink transition-colors"
+                className={LINK_FRAMED}
               >
                 {shared ? 'Lien copié ✓' : 'Partager'}
               </button>

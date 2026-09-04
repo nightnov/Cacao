@@ -4,7 +4,10 @@ import { Footer } from '@/components/Footer'
 import { ProductCard } from '@/components/ProductCard'
 import { PromoCarousel } from '@/components/PromoCarousel'
 import { NewsletterForm } from '@/components/NewsletterForm'
-import { btn, categoryAccent, TITLE_SECTION, TITLE_CARD, SCROLL_ROW, SCROLL_CARD } from '@/lib/ui'
+import {
+  btn, categoryAccent, TITLE_SECTION, TITLE_CARD, SCROLL_ROW, SCROLL_CARD,
+  LINK_FRAMED, LINK_FRAMED_ARROW,
+} from '@/lib/ui'
 import { HERO_SETTING_KEYS, parseHeroSettings, type PromoSlide } from '@/lib/hero'
 import {
   MapPin, ShieldCheck, Truck, RotateCcw, Headphones,
@@ -76,14 +79,10 @@ function ProductSection({ title, products, href }: { title: string; products: Pr
             /* Grossi en même temps que le titre : à côté d'un titre de 36 px,
                un libellé de 12,5 px passait pour une note de bas de page
                plutôt que pour une action. */
-            className="group/lien inline-flex items-center gap-2 border border-border-strong hover:border-accent/60 text-ink-dim hover:text-ink text-[14px] font-semibold rounded-lg px-5 py-2.5 transition-colors whitespace-nowrap flex-shrink-0"
+            className={`${LINK_FRAMED} flex-shrink-0`}
           >
             Voir tout
-            <ArrowRight
-              size={15}
-              strokeWidth={2}
-              className="text-accent transition-transform group-hover/lien:translate-x-0.5"
-            />
+            <ArrowRight size={15} strokeWidth={2} className={LINK_FRAMED_ARROW} />
           </Link>
         )}
       </div>

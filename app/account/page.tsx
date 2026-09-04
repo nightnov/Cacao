@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { User, ShoppingBag, MapPin, Heart, Settings, HelpCircle, Star, Clock, CheckCircle2, LayoutGrid, MessageCircle, LogOut } from 'lucide-react'
+import { User, ShoppingBag, MapPin, Heart, Settings, HelpCircle, Star, Clock, CheckCircle2, LayoutGrid, MessageCircle, LogOut, ArrowRight } from 'lucide-react'
+import { LINK_FRAMED, LINK_FRAMED_ARROW } from '@/lib/ui'
 import { useAuth } from '@/hooks/useAuth'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/Button'
@@ -716,10 +717,20 @@ export default function Account() {
               <div className="bg-bg-panel rounded-2xl border border-border p-8">
                 <h2 className="font-serif font-semibold text-xl text-ink mb-1">Aide</h2>
                 <p className="text-sm text-ink-dimmer mb-6">Besoin d&apos;assistance ?</p>
-                <div className="flex flex-col gap-3 max-w-xs">
-                  <Link href="/faq" className="text-ink font-semibold hover:underline">Questions fréquentes →</Link>
-                  <Link href="/contact" className="text-ink font-semibold hover:underline">Nous contacter →</Link>
-                  <Link href="/account/messages" className="text-ink font-semibold hover:underline">Mes messages →</Link>
+                {/* Liens encadrés : posés seuls dans un bloc aéré, un texte
+                    souligné au survol ne se donne pas pour cliquable, et au
+                    doigt il n'y a pas de survol du tout. */}
+                <div className="flex flex-wrap gap-3">
+                  {[
+                    { href: '/faq', label: 'Questions fréquentes' },
+                    { href: '/contact', label: 'Nous contacter' },
+                    { href: '/account/messages', label: 'Mes messages' },
+                  ].map(item => (
+                    <Link key={item.href} href={item.href} className={LINK_FRAMED}>
+                      {item.label}
+                      <ArrowRight size={15} strokeWidth={2} className={LINK_FRAMED_ARROW} />
+                    </Link>
+                  ))}
                 </div>
               </div>
             )}

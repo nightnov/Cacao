@@ -223,3 +223,23 @@ export const SCROLL_ROW =
 
 /** Largeur d'une carte dans cette rangée. Neutre dès que la grille reprend. */
 export const SCROLL_CARD = 'w-[80vw] max-w-[310px] flex-shrink-0 snap-start sm:w-auto sm:max-w-none'
+
+/**
+ * Lien encadré, isolé dans une zone aérée.
+ *
+ * Un lien seul au milieu du blanc, sans autre marque qu'un soulignement au
+ * survol, ne se donne pas pour cliquable : rien ne le distingue du texte qui
+ * l'entoure tant qu'on ne passe pas dessus, ce qui n'arrive jamais au doigt.
+ * Le contour lui donne une cible visible et une surface à toucher.
+ *
+ * C'est le style de « Voir tout » sur l'accueil, sorti ici pour que tous les
+ * liens de fin de section soient identiques.
+ */
+export const LINK_FRAMED =
+  'group/lien inline-flex items-center gap-2 border border-border-strong ' +
+  'hover:border-accent/60 text-ink-dim hover:text-ink text-[14px] font-semibold ' +
+  'rounded-lg px-5 py-2.5 transition-colors whitespace-nowrap'
+
+/** Flèche du lien encadré : elle avance légèrement au survol. */
+export const LINK_FRAMED_ARROW =
+  'text-accent transition-transform group-hover/lien:translate-x-0.5'

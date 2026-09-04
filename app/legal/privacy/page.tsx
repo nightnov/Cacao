@@ -49,7 +49,10 @@ export default function Privacy() {
           <div>
             <h2 className="font-serif font-semibold text-2xl text-ink mb-3">4. Partage de données</h2>
             <p>
-              Nous ne partageons vos données que si nécessaire avec nos partenaires de service (Yango pour livraison, MoneyFusion pour paiement). Nous ne vendons jamais vos données personnelles.
+              Nous ne partageons vos données que si nécessaire avec nos prestataires : le
+              partenaire chargé d&apos;acheminer votre commande, qui reçoit votre adresse et
+              votre numéro de téléphone, et MoneyFusion pour le paiement. Nous ne vendons
+              jamais vos données personnelles.
             </p>
           </div>
 

@@ -92,6 +92,8 @@ const ALIASES: [string, RegExp][] = [
   ['screen', /[ée]cran|dalle|affichage/i],
   ['gpu', /graphique|gpu|carte vid/i],
   ['battery', /batterie|autonomie/i],
+  ['os', /syst[èe]me|windows|logiciel install/i],
+  ['ports', /connectique|connecteur|prises?\b|ports?\b|usb|hdmi/i],
 ]
 
 export function glossaryKeyFor(name: string): string | null {

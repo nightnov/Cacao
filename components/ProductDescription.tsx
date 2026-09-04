@@ -11,6 +11,8 @@ import {
   MemoryStick,
   Monitor,
   MonitorPlay,
+  LayoutGrid,
+  Usb,
   type LucideIcon,
 } from 'lucide-react'
 import type { DescriptionBlock } from '@/lib/glossary'
@@ -36,6 +38,8 @@ const ICONS: Record<string, LucideIcon> = {
   screen: Monitor,
   gpu: MonitorPlay,
   battery: BatteryMedium,
+  os: LayoutGrid,
+  ports: Usb,
 }
 
 export function ProductDescription({ blocks }: { blocks: DescriptionBlock[] }) {

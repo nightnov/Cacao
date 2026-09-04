@@ -1,43 +1,36 @@
-'use client'
-
-import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { ProductCard } from '@/components/ProductCard'
 import { PromoCarousel } from '@/components/PromoCarousel'
-import { getSupabaseClient } from '@/lib/supabase'
+import { NewsletterForm } from '@/components/NewsletterForm'
 import { btn, categoryAccent, TITLE_SECTION, TITLE_CARD, SCROLL_ROW, SCROLL_CARD } from '@/lib/ui'
-import {
-  DEFAULT_HERO_SETTINGS,
-  HERO_SETTING_KEYS,
-  parseHeroSettings,
-  type HeroSettings,
-  type PromoSlide,
-} from '@/lib/hero'
+import { HERO_SETTING_KEYS, parseHeroSettings, type PromoSlide } from '@/lib/hero'
 import {
   MapPin, ShieldCheck, Truck, RotateCcw, Headphones,
   Keyboard, Mouse, HardDrive, CreditCard, ArrowRight, TrendingUp
 } from 'lucide-react'
-import { useCategories } from '@/hooks/useCategories'
+import { FALLBACK_CATEGORIES, categoryIcon, type CategoryDef } from '@/lib/categories'
+import { fetchCatalog, fetchCategoryRows, fetchHero, type CatalogProduct } from '@/lib/catalog.server'
 import { formatAmount } from '@/lib/format'
 
-interface Product {
-  id: string
-  name: string
-  slug: string
-  price_fcfa: number
-  compare_at_price_fcfa?: number | null
-  category: string
-  availability: 'in_stock' | 'on_order' | 'discontinued'
-  image_urls: string[]
-  created_at?: string
-  avg_rating?: number | null
-  review_count?: number
-  view_count?: number
-  specs?: Record<string, unknown>
-  colors?: { value: string; image_url: string | null }[]
-}
+/**
+ * La page est rendue sur le serveur, produits compris.
+ *
+ * Elle était entièrement construite dans le navigateur : le visiteur voyait
+ * d'abord des cadres gris, puis la page se réorganisait sous ses yeux à mesure
+ * que les produits, les rayons et le bandeau arrivaient. Trois allers retours
+ * réseau avant le premier contenu utile, et autant de sauts de mise en page.
+ *
+ * Ici tout est lu en une fois, avant l'envoi. Le visiteur reçoit une page déjà
+ * complète. Seuls deux blocs restent interactifs — le carrousel et le
+ * formulaire d'inscription — et ils sont isolés dans leurs propres composants.
+ */
+
+type Product = CatalogProduct
+
+/** Rafraîchi au plus toutes les cinq minutes : un catalogue ne bouge pas à la seconde. */
+export const revalidate = 300
 
 /** Gammes mises en avant. Le prix « à partir de » est calculé sur les vrais produits. */
 /**
@@ -53,22 +46,9 @@ const GAMME_PITCH: Record<string, string> = {
   accessoire: 'Claviers, souris, casques, sacoches et câbles.'
 }
 
-function GridSkeleton({ count = 4 }: { count?: number }) {
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-      {[...Array(count)].map((_, i) => (
-        <div key={i} className="animate-pulse bg-bg-panel border border-border rounded-xl overflow-hidden">
-          <div className="h-[132px] sm:h-[158px] bg-bg-sunken" />
-          <div className="p-3.5 space-y-2">
-            <div className="h-3.5 bg-bg-raised rounded w-4/5" />
-            <div className="h-3 bg-bg-raised rounded w-3/5" />
-            <div className="h-4 bg-bg-raised rounded w-2/5 mt-3" />
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
+/* Le squelette de chargement qui figurait ici n'a plus d'objet : la page
+   arrive avec ses produits. C'est lui que le visiteur voyait clignoter avant
+   que la mise en page ne se réorganise. */
 
 function ProductSection({ title, products, href }: { title: string; products: Product[]; href?: string }) {
   if (products.length === 0) return null
@@ -120,69 +100,49 @@ function ProductSection({ title, products, href }: { title: string; products: Pr
   )
 }
 
-export default function Home() {
-  const categories = useCategories()
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const [slides, setSlides] = useState<PromoSlide[]>([])
-  const [heroSettings, setHeroSettings] = useState<HeroSettings>(DEFAULT_HERO_SETTINGS)
-  const [newsletterEmail, setNewsletterEmail] = useState('')
-  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+/**
+ * Toutes les lectures en une seule fois, en parallèle.
+ *
+ * Chaque source tombe sur un repli plutôt que de faire échouer la page : une
+ * table absente parce qu'une migration n'a pas été exécutée doit priver la page
+ * de ce bloc là, pas de tout le reste.
+ */
+async function loadHome() {
+  const [productsResult, categoryRows, hero] = await Promise.all([
+    fetchCatalog().catch(err => {
+      console.error('Accueil : lecture du catalogue impossible.', err)
+      return [] as Product[]
+    }),
+    fetchCategoryRows().catch(() => null),
+    fetchHero(HERO_SETTING_KEYS).catch(err => {
+      console.error('Accueil : lecture du bandeau impossible.', err)
+      return { settings: null, slides: [] as PromoSlide[] }
+    }),
+  ])
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await fetch('/api/products')
-        setProducts((await res.json()) || [])
-      } catch (error) {
-        console.error('Erreur lors du chargement des produits:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-    /**
-     * Bandeau promotionnel et réglages de la zone d'accueil.
-     *
-     * En cas d'échec — migration 031 pas encore exécutée, réseau coupé — on
-     * garde les valeurs par défaut : le texte s'affiche, le carrousel reste
-     * vide. Mieux vaut une accroche seule qu'une page d'accueil amputée.
-     */
-    const fetchHero = async () => {
-      try {
-        const supabase = getSupabaseClient()
-        const [settingsRes, slidesRes] = await Promise.all([
-          supabase.from('site_settings').select('key, value').in('key', HERO_SETTING_KEYS as unknown as string[]),
-          supabase
-            .from('promo_slides')
-            .select('id, image_url, link_url, alt_text, sort_order, is_active')
-            .eq('is_active', true)
-            .order('sort_order', { ascending: true }),
-        ])
-        setHeroSettings(parseHeroSettings(settingsRes.data))
-        setSlides((slidesRes.data as PromoSlide[]) || [])
-      } catch (error) {
-        console.error('Erreur lors du chargement du bandeau promotionnel:', error)
-      }
-    }
-    fetchProducts()
-    fetchHero()
-  }, [])
+  const categories: CategoryDef[] = (categoryRows || []).length
+    ? categoryRows!.map(row => ({
+        value: row.value,
+        label: row.label,
+        short: row.short_label || row.label,
+        icon: categoryIcon(row.icon),
+        description: row.description,
+        tagline: row.tagline,
+        imageUrl: row.image_url,
+        isVisible: row.is_visible,
+      }))
+    : FALLBACK_CATEGORIES
 
-  const handleNewsletterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newsletterEmail.trim()) return
-    setNewsletterStatus('loading')
-    try {
-      const supabase = getSupabaseClient()
-      const { error } = await supabase.from('newsletter_subscribers').insert([{ email: newsletterEmail.trim() }])
-      if (error && error.code !== '23505') throw error
-      setNewsletterStatus('success')
-      setNewsletterEmail('')
-    } catch (err) {
-      console.error('Erreur newsletter:', err)
-      setNewsletterStatus('error')
-    }
+  return {
+    products: productsResult,
+    categories: categories.filter(c => c.isVisible !== false),
+    heroSettings: parseHeroSettings(hero.settings),
+    slides: hero.slides as PromoSlide[],
   }
+}
+
+export default async function Home() {
+  const { products, categories, heroSettings, slides } = await loadHome()
 
   const popular = [...products].sort((a, b) => (b.view_count || 0) - (a.view_count || 0)).slice(0, 4)
   const deals = products.filter(p => !!p.compare_at_price_fcfa && p.compare_at_price_fcfa > p.price_fcfa).slice(0, 4)
@@ -453,25 +413,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Meilleures ventes */}
-      {loading ? (
-        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 pb-8 sm:pb-10">
-          <h2 className={`${TITLE_SECTION} mb-8 sm:mb-12`}>NOS MEILLEURES VENTES</h2>
-          <GridSkeleton />
-        </section>
-      ) : (
-        /* Une section de meilleures ventes par famille, trois modèles chacune.
-           Un rayon sans produit n'apparaît pas : une rangée vide ferait croire
-           à une panne d'affichage. */
-        bestSellersByFamily.map(({ cat, items }) => (
-          <ProductSection
-            key={cat.value}
-            title={`NOS MEILLEURES VENTES ${cat.short.toUpperCase()}`}
-            products={items}
-            href={`/products?category=${cat.value}&sort=popular`}
-          />
-        ))
-      )}
+      {/* Meilleures ventes, une section par famille, trois modèles chacune.
+          Plus de squelette de chargement : les produits sont déjà là quand la
+          page arrive. Un rayon sans produit n'apparaît pas, une rangée vide
+          ferait croire à une panne d'affichage. */}
+      {bestSellersByFamily.map(({ cat, items }) => (
+        <ProductSection
+          key={cat.value}
+          title={`NOS MEILLEURES VENTES ${cat.short.toUpperCase()}`}
+          products={items}
+          href={`/products?category=${cat.value}&sort=popular`}
+        />
+      ))}
 
       {deals.length > 0 && (
         <ProductSection title="LES MEILLEURES OFFRES" products={deals} href="/products" />
@@ -529,30 +482,7 @@ export default function Home() {
           <p className="text-[14px] text-ink-dim mb-6 max-w-md mx-auto">
             Recevez les nouveautés et les bonnes affaires CACAO.
           </p>
-          {newsletterStatus === 'success' ? (
-            <p className="text-green-bright font-bold text-sm">✓ Merci, vous êtes inscrit(e) !</p>
-          ) : (
-            <form onSubmit={handleNewsletterSubmit} className="flex items-center justify-center gap-2.5 max-w-md mx-auto flex-wrap">
-              <input
-                type="email"
-                required
-                value={newsletterEmail}
-                onChange={e => setNewsletterEmail(e.target.value)}
-                placeholder="Votre adresse e-mail"
-                className="flex-1 min-w-[200px] px-4 py-3 bg-bg-raised border border-border-mid focus:border-border-strong rounded-lg text-[13px] text-ink outline-none transition-colors"
-              />
-              <button
-                type="submit"
-                disabled={newsletterStatus === 'loading'}
-                className="px-6 py-3 bg-ink hover:bg-ink-dim text-ink-invert rounded-lg font-bold text-[13px] transition-colors disabled:opacity-45 disabled:cursor-not-allowed"
-              >
-                {newsletterStatus === 'loading' ? 'Envoi…' : 'S’abonner'}
-              </button>
-            </form>
-          )}
-          {newsletterStatus === 'error' && (
-            <p className="text-danger text-[12.5px] mt-3">Une erreur est survenue, réessayez.</p>
-          )}
+          <NewsletterForm />
         </div>
       </section>
 

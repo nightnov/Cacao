@@ -188,3 +188,23 @@ const ACCENT_FALLBACK = {
 export function categoryAccent(value: string | null | undefined) {
   return (value && CATEGORY_ACCENT[value]) || ACCENT_FALLBACK
 }
+
+/**
+ * Rangée qui défile latéralement sur téléphone, grille normale au delà.
+ *
+ * Empilées, quatre gammes ou trois modèles occupent plusieurs écrans de haut :
+ * il faut faire défiler longtemps pour atteindre la section suivante, et rien
+ * n'indique que d'autres familles existent. En rangée, on voit la première
+ * carte entière et le bord de la seconde — ce débord est ce qui donne envie de
+ * pousser du doigt.
+ *
+ * `-mx-4 px-4` fait toucher les cartes au bord de l'écran tout en gardant la
+ * première alignée sur le texte. `snap-x` arrête le glissement sur une carte
+ * plutôt qu'entre deux.
+ */
+export const SCROLL_ROW =
+  'flex overflow-x-auto snap-x snap-mandatory no-scrollbar -mx-4 px-4 pb-2 ' +
+  'sm:grid sm:overflow-visible sm:mx-0 sm:px-0 sm:pb-0'
+
+/** Largeur d'une carte dans cette rangée. Neutre dès que la grille reprend. */
+export const SCROLL_CARD = 'w-[80vw] max-w-[310px] flex-shrink-0 snap-start sm:w-auto sm:max-w-none'

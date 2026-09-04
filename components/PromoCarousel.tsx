@@ -86,7 +86,16 @@ export function PromoCarousel({
     <img
       src={current.image_url}
       alt={current.alt_text || ''}
-      className="w-full h-full object-contain"
+      /* Recadrée sur téléphone, entière au delà.
+         Une bannière au format 2000 sur 700 ramenée à 375 px de large ne fait
+         plus que 131 px de haut : lisible pour personne. La montrer entière
+         imposait donc une zone très haute, et la page commençait par un grand
+         vide au dessus et au dessous de l'image.
+         `cover` prend la partie centrale et remplit la hauteur. C'est un
+         compromis assumé : ce qui touche les bords gauche et droit sort du
+         cadre, d'où la consigne de centrer texte et logo, rappelée dans
+         l'écran d'administration. */
+      className="w-full h-full object-cover md:object-contain"
     />
   )
 

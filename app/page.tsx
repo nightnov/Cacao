@@ -7,7 +7,7 @@ import { Footer } from '@/components/Footer'
 import { ProductCard } from '@/components/ProductCard'
 import { PromoCarousel } from '@/components/PromoCarousel'
 import { getSupabaseClient } from '@/lib/supabase'
-import { btn, categoryAccent, TITLE_SECTION, TITLE_CARD } from '@/lib/ui'
+import { btn, categoryAccent, TITLE_SECTION, TITLE_CARD, SCROLL_ROW, SCROLL_CARD } from '@/lib/ui'
 import {
   DEFAULT_HERO_SETTINGS,
   HERO_SETTING_KEYS,
@@ -109,8 +109,12 @@ function ProductSection({ title, products, href }: { title: string; products: Pr
       </div>
       {/* Trois colonnes et non quatre : les cartes gagnent en largeur, la photo
           du produit devient lisible et le nom cesse d'être tronqué. */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-        {products.map(p => <ProductCard key={p.id} {...p} />)}
+      <div className={`${SCROLL_ROW} gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-8`}>
+        {products.map(p => (
+          <div key={p.id} className={SCROLL_CARD}>
+            <ProductCard {...p} />
+          </div>
+        ))}
       </div>
     </section>
   )
@@ -249,11 +253,14 @@ export default function Home() {
           <PromoCarousel
             slides={slides}
             intervalMs={heroSettings.intervalMs}
-            /* Rapport large sur ordinateur, hauteur d'écran sur téléphone : une
-               bannière de 2000 sur 700 réduite à la largeur d'un téléphone
-               deviendrait une bande de 130 px, illisible. */
+            /* 45 % de la hauteur d'écran, c'était près de la moitié du premier
+               regard occupée par la seule bannière : il fallait faire défiler
+               avant d'apercevoir le moindre produit. Ramenée à 260 px, elle
+               reste largement visible et laisse la page commencer.
+               L'image est recadrée à cette taille plutôt que réduite, sinon
+               elle redeviendrait une bande illisible. */
             bleed
-            className="w-full h-[45vh] md:h-auto md:aspect-[2000/700]"
+            className="w-full h-[260px] md:h-auto md:aspect-[2000/700]"
           />
         </section>
       )}
@@ -330,7 +337,7 @@ export default function Home() {
         {/* Cartes hautes avec visuel : une photo de machine dit en un coup
             d'œil ce que contient le rayon, là où quatre icônes de trait se
             ressemblaient toutes. */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className={`${SCROLL_ROW} gap-4 sm:grid-cols-2 lg:grid-cols-4 sm:gap-6`}>
           {gammes.map(({ cat, min, count }) => {
             const Icon = cat.icon
             // Teinte du rayon : elle habille le bouton et le montant, rien
@@ -427,7 +434,7 @@ export default function Home() {
               </>
             )
 
-            const base = 'rounded-xl overflow-hidden border flex flex-col transition-colors'
+            const base = `${SCROLL_CARD} rounded-xl overflow-hidden border flex flex-col transition-colors`
 
             return empty ? (
               <div key={cat.value} className={`${base} bg-bg-panel/60 border-border cursor-default`}>

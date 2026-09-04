@@ -90,9 +90,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     supplier_url: '',
     supplier_product_id: '',
     supplier_cost_fcfa: '' as string | number,
-    status: 'active' as 'draft' | 'active',
-    meta_title: '',
-    meta_description: ''
+    status: 'active' as 'draft' | 'active'
   })
 
   /**
@@ -146,9 +144,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         supplier_url: product.supplier_url || '',
         supplier_product_id: product.supplier_product_id || '',
         supplier_cost_fcfa: product.supplier_cost_fcfa ?? '',
-        status: product.status || 'active',
-        meta_title: product.meta_title || '',
-        meta_description: product.meta_description || ''
+        status: product.status || 'active'
       })
 
       setComponentRows(sanitizeComponents(product.components))
@@ -403,8 +399,9 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         supplier_product_id: formData.supplier_product_id || null,
         supplier_cost_fcfa: formData.supplier_cost_fcfa === '' ? null : Number(formData.supplier_cost_fcfa),
         status: formData.status,
-        meta_title: formData.meta_title || null,
-        meta_description: formData.meta_description || null,
+        // meta_title et meta_description ne sont plus envoyés : le formulaire
+        // ne les saisit plus. Les écrire à null aurait effacé sans prévenir ce
+        // qui pouvait déjà s'y trouver.
         variant_options: finalVariantOptions
       }
 
@@ -1151,35 +1148,13 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
             </div>
           </div>
 
-          {/* SEO */}
-          <div className="border-t border-border pt-4">
-            <h3 className="font-semibold text-ink mb-1">Référencement (SEO)</h3>
-            <p className="text-xs text-ink-dimmer mb-3">Optionnel — sans ça, le nom et la description du produit sont utilisés.</p>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-ink mb-1">Titre SEO</label>
-                <input
-                  type="text"
-                  name="meta_title"
-                  value={formData.meta_title}
-                  onChange={handleChange}
-                  placeholder={formData.name || 'Titre affiché dans les résultats Google'}
-                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-ink mb-1">Meta description</label>
-                <textarea
-                  name="meta_description"
-                  value={formData.meta_description}
-                  onChange={handleChange}
-                  rows={2}
-                  placeholder="Résumé affiché sous le titre dans les résultats Google"
-                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
-                />
-              </div>
-            </div>
-          </div>
+          {/* La section Référencement (SEO) a été retirée.
+              Ses deux champs étaient écrits en base mais relus nulle part : la
+              fiche produit est un composant client, qui ne peut pas exporter de
+              métadonnées. Ils ne changeaient donc rien à ce que Google affiche,
+              tout en réclamant une saisie sur chaque produit.
+              Les colonnes meta_title et meta_description restent en base, vides,
+              pour le jour où les fiches seront rendues sur le serveur. */}
 
           {/*
             Configuration du produit.

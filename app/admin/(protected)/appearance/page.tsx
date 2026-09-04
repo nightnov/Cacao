@@ -8,6 +8,7 @@ import {
   TOKEN_LABELS,
   DEFAULT_TOKENS,
   DEFAULT_THEME_SLUG,
+  DEFAULT_THEME_NAME,
   contrastRatio,
   isValidHex,
   type TokenKey,
@@ -256,7 +257,7 @@ export default function AdminAppearance() {
                 supabase/migrations/019_site_themes.sql
               </code>
               , puis rechargez cette page. En attendant, la boutique s’affiche avec le thème
-              « Nuit ».
+              «&nbsp;{DEFAULT_THEME_NAME}&nbsp;».
             </p>
           </div>
         </div>
@@ -282,7 +283,7 @@ export default function AdminAppearance() {
             <p className="text-xs text-ink-dimmer mt-0.5">
               Actuellement affiché sur le site :{' '}
               <strong className="text-ink">
-                {themes.find(t => t.slug === appliedToday)?.name || 'Nuit'}
+                {themes.find(t => t.slug === appliedToday)?.name || DEFAULT_THEME_NAME}
               </strong>
               {appliedToday !== activeSlug && ' (période programmée en cours)'}
             </p>

@@ -3,14 +3,18 @@
 @tailwind utilities;
 
 /*
-  Thème « Nuit » par défaut. Chaque couleur est exprimée en canaux R G B, pas en
-  hexadécimal : c'est la forme qu'attend `rgb(var(--x) / <alpha-value>)` dans
+  Thème « CACAO Premium » par défaut. Chaque couleur est exprimée en canaux
+  R G B, pas en hexadécimal : c'est la forme qu'attend `rgb(var(--x) / <alpha-value>)` dans
   tailwind.config.ts, et c'est ce qui garde `bg-gold/10` fonctionnel.
 
   L'administration (Apparence) peut réécrire ces mêmes variables sur <html> pour
   habiller le site aux couleurs d'une saison. Ce bloc reste le filet de sécurité :
   si aucun thème n'est enregistré, ou si la lecture en base échoue, le site
-  s'affiche en Nuit plutôt qu'en noir sur noir.
+  s'affiche dans la palette par défaut plutôt qu'en noir sur noir.
+
+  Ce bloc doit rester identique, couleur par couleur, à DEFAULT_TOKENS dans
+  lib/theme.ts. Un écart entre les deux est indétectable à l'œil mais empêche
+  la couleur concernée d'être appliquée depuis l'écran Apparence.
 */
 :root {
   /* Les cartes sont plus CLAIRES que le fond, et non l'inverse comme

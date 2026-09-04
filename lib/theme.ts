@@ -146,7 +146,12 @@ export const DEFAULT_TOKENS: Record<TokenKey, string> = {
   green: '#00A63E',
   'green-bright': '#3FCE7A',
   info: '#3CA4FF',
-  danger: '#FA8C8C',
+  // #F87171 et non #FA8C8C : cette liste doit refléter au caractère près le
+  // bloc `:root` de globals.css. Un écart y est invisible mais nuisible —
+  // `buildThemeStyle` omet toute couleur qu'il croit égale au défaut, si bien
+  // qu'un thème réglé sur l'ancienne valeur n'était jamais appliqué, et que
+  // l'écran Apparence affichait une couleur que le site n'employait pas.
+  danger: '#F87171',
 }
 
 const HEX = /^#[0-9A-Fa-f]{6}$/
@@ -284,7 +289,7 @@ export async function resolveTheme(): Promise<ResolvedTheme> {
     if (!data) return fallback
     return { slug: data.slug, name: data.name, tokens: sanitizeTokens(data.tokens), scheduled: false }
   } catch (err) {
-    console.error('Thème : lecture impossible, retour au thème Nuit.', err)
+    console.error(`Thème : lecture impossible, retour à « ${DEFAULT_THEME_NAME} ».`, err)
     return fallback
   }
 }

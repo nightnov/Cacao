@@ -54,6 +54,10 @@ export interface Order {
   payment_method: string
   created_at: string
   delivery_code?: string | null
+  /** Identifiant du lien remis au livreur. À ne jamais montrer au client. */
+  delivery_token?: string | null
+  /** Horodatage écrit uniquement quand le bon code a été saisi : c'est la preuve de remise. */
+  delivered_at?: string | null
   notes?: string | null
   /** Position partagée par le client au moment de commander. Absente s'il a refusé. */
   delivery_lat?: number | null

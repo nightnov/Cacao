@@ -1,4 +1,32 @@
 import * as cheerio from 'cheerio'
+import { createClient } from '@supabase/supabase-js'
+
+const ADMIN_UUID = 'f4e9e8fd-8e85-4045-a6e5-c2c62204c5ff'
+
+/**
+ * Cette route fait lire au serveur une adresse fournie par l'appelant, et lui
+ * renvoie ce qu'elle contient. Sans contrôle d'accès, n'importe qui sur
+ * internet peut donc s'en servir comme relais : lancer des requêtes depuis
+ * notre serveur, sous notre adresse, vers la cible de son choix. Le garde-fou
+ * sur les adresses privées limite les dégâts, il ne remplace pas une porte
+ * fermée.
+ *
+ * Le contrôle est le même que pour l'enregistrement des thèmes : le jeton du
+ * navigateur est revalidé côté serveur, jamais cru sur parole.
+ */
+async function isAdmin(request: Request): Promise<boolean> {
+  const token = request.headers.get('authorization')?.replace(/^Bearer /i, '')
+  if (!token) return false
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+    { global: { headers: { Authorization: `Bearer ${token}` } }, auth: { persistSession: false } }
+  )
+
+  const { data } = await supabase.auth.getUser()
+  return data.user?.id === ADMIN_UUID
+}
 
 interface ScrapedProduct {
   name?: string
@@ -88,6 +116,10 @@ function parseOpenGraph($: cheerio.CheerioAPI): Partial<ScrapedProduct> {
 
 export async function POST(request: Request) {
   try {
+    if (!(await isAdmin(request))) {
+      return Response.json({ error: 'Accès refusé.' }, { status: 403 })
+    }
+
     const { url } = await request.json()
 
     if (!url || typeof url !== 'string') {

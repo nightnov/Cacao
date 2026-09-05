@@ -222,9 +222,17 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     setImportError('')
     setImportSuccess(false)
     try {
+      // La route d'import est réservée à l'administrateur : sans ce jeton, le
+      // serveur répond « Accès refusé » et rien n'est lu.
+      const { data: { session } } = await getSupabaseClient().auth.getSession()
+      if (!session) throw new Error('Session expirée. Reconnectez-vous et réessayez.')
+
       const res = await fetch('/api/admin/scrape-product', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({ url: formData.supplier_url.trim() })
       })
       const data = await res.json()

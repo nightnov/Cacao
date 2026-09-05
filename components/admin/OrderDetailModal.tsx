@@ -31,6 +31,14 @@ interface OrderDetailModalProps {
 
 export default function OrderDetailModal({ order, items, onClose, onStatusChange }: OrderDetailModalProps) {
   const [updating, setUpdating] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
+
+  // Construit dans le navigateur plutôt qu'écrit en dur : le lien doit rester
+  // juste en développement local comme sur le domaine de production.
+  const deliveryLink =
+    typeof window !== 'undefined' && order.delivery_token
+      ? `${window.location.origin}/livraison/${order.delivery_token}`
+      : ''
 
   const handleStatusChange = async () => {
     const next = nextStatus[order.status]
@@ -148,6 +156,44 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
                 <p className="text-xs text-ink-dim mt-1">
                   Le client doit donner ce code au livreur uniquement à la remise du colis, pour confirmer la bonne réception.
                 </p>
+              </div>
+            </div>
+          )}
+
+          {/* Lien du livreur : c'est lui qui rend le code utilisable. Sans ce
+              lien, le livreur n'a aucun moyen de vérifier quoi que ce soit. */}
+          {order.delivery_token && (
+            <div>
+              <h3 className="font-semibold text-ink mb-3">Lien à envoyer au livreur</h3>
+              <div className="bg-bg-raised rounded-lg p-4 border border-border">
+                {order.delivered_at ? (
+                  <p className="text-sm text-ink">
+                    Livraison confirmée le{' '}
+                    {new Date(order.delivered_at).toLocaleString('fr-FR', {
+                      dateStyle: 'long',
+                      timeStyle: 'short'
+                    })}
+                    .
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-xs text-ink-dim mb-3">
+                      Envoyez ce lien au livreur avec le colis. Il y saisira le code que le client
+                      lui donnera à la remise. Ne le transmettez jamais au client.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(deliveryLink)
+                        setLinkCopied(true)
+                        setTimeout(() => setLinkCopied(false), 2500)
+                      }}
+                      className="px-4 py-2 bg-ink text-ink-invert rounded-lg text-sm font-semibold hover:bg-ink-dim transition-colors"
+                    >
+                      {linkCopied ? 'Lien copié' : 'Copier le lien du livreur'}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           )}

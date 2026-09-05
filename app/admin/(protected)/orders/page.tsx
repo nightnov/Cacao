@@ -45,6 +45,11 @@ export default function AdminOrders() {
     requested in statusLabels ? requested : ''
   )
   const [page, setPage] = useState(1)
+  // Une lecture qui échoue laissait la liste vide et affichait « Aucune
+  // commande trouvée » : exactement le même écran que lorsqu'il n'y a
+  // réellement rien à montrer. Une base qui refuse de répondre et une base
+  // vide ne doivent pas se ressembler.
+  const [erreur, setErreur] = useState<string | null>(null)
 
   useEffect(() => {
     fetchOrders()
@@ -69,8 +74,10 @@ export default function AdminOrders() {
       if (error) throw error
       // Supabase type la jointure profiles comme un tableau, mais renvoie un objet unique à l'exécution
       setOrders((data as unknown as Order[]) || [])
+      setErreur(null)
     } catch (error) {
       console.error('Erreur:', error)
+      setErreur(error instanceof Error ? error.message : 'Cause inconnue.')
     } finally {
       setLoading(false)
     }
@@ -210,6 +217,21 @@ export default function AdminOrders() {
           ))}
         </div>
       </div>
+
+      {erreur && (
+        <div className="mb-6 rounded-lg border border-danger/40 bg-danger/10 p-4">
+          <p className="font-semibold text-ink mb-1">La base a refusé de répondre.</p>
+          <p className="text-sm text-ink-dim mb-2">
+            La liste ci dessous est vide parce que la lecture a échoué, pas parce qu il n y a pas de
+            commande. Message renvoyé par la base :
+          </p>
+          <code className="text-xs text-ink break-all">{erreur}</code>
+          <p className="text-sm text-ink-dim mt-2">
+            Ouvrez <a href="/admin/diagnostic" className="underline">Diagnostic</a> pour savoir laquelle
+            des deux causes est en jeu.
+          </p>
+        </div>
+      )}
 
       <TableShell
         columns={columns}

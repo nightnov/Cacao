@@ -61,7 +61,12 @@ function ProductSection({ title, products, href }: { title: string; products: Pr
           Le cadre reste sobre — contour fin, fond transparent. Seule la flèche
           porte la couleur commerciale : elle suffit à signaler qu'on peut aller
           plus loin, sans transformer le lien en bouton coloré. */}
-      <div className="flex items-center justify-between gap-4 sm:gap-6 mb-8 sm:mb-12">
+      {/* Sur téléphone, le titre et le bouton s'empilent ; côte à côte, ils se
+          disputaient une largeur qu'ils n'ont pas, et le titre était rogné au
+          point de ne plus rien nommer : « NOS MEILLEUR… ». Un titre tronqué
+          n'informe de rien, alors qu'une ligne de plus ne coûte que sa hauteur.
+          Dès la tablette, la mise côte à côte reprend : la place existe. */}
+      <div className="mb-8 sm:mb-12 sm:flex sm:items-center sm:justify-between sm:gap-6">
         <div className="flex items-center min-w-0">
           {/* Petite icône d'accent avant le titre : elle donne un point
               d'entrée à la ligne sans ajouter un seul mot. */}
@@ -71,15 +76,14 @@ function ProductSection({ title, products, href }: { title: string; products: Pr
             className="text-accent mr-2 sm:mr-3 flex-shrink-0"
             aria-hidden="true"
           />
-          <h2 className={`${TITLE_SECTION} truncate`}>{title}</h2>
+          <h2 className={`${TITLE_SECTION} sm:truncate`}>{title}</h2>
         </div>
         {href && (
           <Link
             href={href}
-            /* Grossi en même temps que le titre : à côté d'un titre de 36 px,
-               un libellé de 12,5 px passait pour une note de bas de page
-               plutôt que pour une action. */
-            className={`${LINK_FRAMED} flex-shrink-0`}
+            /* Pleine largeur sur téléphone : la cible est alors franche et le
+               libellé entier, au lieu d'une pastille serrée contre le bord. */
+            className={`${LINK_FRAMED} mt-3.5 flex w-full justify-center sm:mt-0 sm:inline-flex sm:w-auto sm:flex-shrink-0`}
           >
             Voir tout
             <ArrowRight size={15} strokeWidth={2} className={LINK_FRAMED_ARROW} />

@@ -221,8 +221,16 @@ export const SCROLL_ROW =
   'no-scrollbar -mx-4 px-4 pb-2 ' +
   'sm:grid sm:overflow-visible sm:mx-0 sm:px-0 sm:pb-0'
 
-/** Largeur d'une carte dans cette rangée. Neutre dès que la grille reprend. */
-export const SCROLL_CARD = 'w-[80vw] max-w-[310px] flex-shrink-0 snap-start sm:w-auto sm:max-w-none'
+/**
+ * Largeur d'une carte dans cette rangée. Neutre dès que la grille reprend.
+ *
+ * 62 % de la largeur et non 80 % : à 80 %, une carte occupait tout l'écran du
+ * téléphone et la suivante restait invisible. Rien n'indiquait alors qu'il y
+ * avait autre chose à voir, et la rangée passait pour un produit unique
+ * démesuré. Le bord de la carte suivante qui dépasse est ce qui apprend au
+ * doigt qu'il peut glisser — aucune légende ne remplace ça.
+ */
+export const SCROLL_CARD = 'w-[62vw] max-w-[260px] flex-shrink-0 snap-start sm:w-auto sm:max-w-none'
 
 /**
  * Lien encadré, isolé dans une zone aérée.

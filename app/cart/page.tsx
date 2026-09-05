@@ -113,8 +113,58 @@ export default function Cart() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Items */}
           <div className="md:col-span-2 space-y-4">
-            {items.map(item => (
-              <div key={`${item.id}-${item.variant_id || 'default'}`} className="bg-bg-panel rounded-lg border border-border p-4 flex gap-4 items-center">
+            {items.map(item => {
+              /**
+               * Les trois commandes de la ligne, définies une fois et posées à
+               * deux endroits selon la largeur.
+               *
+               * Sur téléphone, les cinq blocs tenaient sur une seule ligne : le
+               * nom du produit se retrouvait écrasé jusqu'à disparaître, le prix
+               * unitaire passait derrière le sélecteur de quantité, et la croix
+               * de retrait sortait de l'écran. On ne savait plus ce qu'on
+               * achetait ni comment l'enlever.
+               */
+              const quantite = (
+                <div className="flex items-center border-2 border-border-strong rounded-full flex-shrink-0">
+                  <button
+                    onClick={() => updateCartItemQuantity(cartLineKey(item), item.quantity - 1)}
+                    className="w-9 h-9 flex items-center justify-center text-ink"
+                    aria-label="Retirer une unité"
+                  >
+                    −
+                  </button>
+                  <span className="w-6 text-center text-sm font-semibold tabular-nums">{item.quantity}</span>
+                  <button
+                    onClick={() => updateCartItemQuantity(cartLineKey(item), item.quantity + 1)}
+                    className="w-9 h-9 flex items-center justify-center text-ink"
+                    aria-label="Ajouter une unité"
+                  >
+                    +
+                  </button>
+                </div>
+              )
+
+              const totalLigne = (
+                <span className="font-semibold text-ink tabular-nums whitespace-nowrap">
+                  {formatAmount(item.price_fcfa * item.quantity)} FCFA
+                </span>
+              )
+
+              const retirer = (
+                <button
+                  onClick={() => removeFromCart(cartLineKey(item))}
+                  className="text-ink-dimmer hover:text-danger transition-colors flex-shrink-0 w-9 h-9 flex items-center justify-center -mr-1.5 -mt-1.5"
+                  aria-label="Retirer du panier"
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              )
+
+              return (
+              <div key={`${item.id}-${item.variant_id || 'default'}`} className="bg-bg-panel rounded-lg border border-border p-4 flex gap-4 items-start sm:items-center">
                 <Link href={`/products/${item.slug}`} className="w-20 h-20 rounded-lg bg-bg-sunken border border-border overflow-hidden flex items-center justify-center flex-shrink-0">
                   {item.image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -129,47 +179,43 @@ export default function Cart() {
                 </Link>
 
                 <div className="flex-1 min-w-0">
-                  <Link href={`/products/${item.slug}`} className="font-semibold text-ink hover:text-ink transition-colors line-clamp-1">
-                    {item.name}
-                  </Link>
-                  {(item.config_label || item.variant_label) && (
-                    <p className="text-xs text-ink-dimmer mt-0.5">{item.config_label || item.variant_label}</p>
-                  )}
-                  <p className="text-sm text-ink-dimmer mt-1">{formatAmount(item.price_fcfa)} FCFA</p>
+                  {/* Le nom d'abord, et la croix de retrait en vis à vis : sur
+                      téléphone elle se trouve ainsi toujours dans l'écran, au
+                      lieu d'être poussée hors du cadre par ce qui la précède. */}
+                  <div className="flex items-start gap-2">
+                    <div className="flex-1 min-w-0">
+                      <Link href={`/products/${item.slug}`} className="font-semibold text-ink transition-colors line-clamp-2 leading-snug">
+                        {item.name}
+                      </Link>
+                      {(item.config_label || item.variant_label) && (
+                        <p className="text-xs text-ink-dimmer mt-0.5">{item.config_label || item.variant_label}</p>
+                      )}
+                      <p className="text-sm text-ink-dimmer mt-1 tabular-nums">
+                        {formatAmount(item.price_fcfa)} FCFA l&apos;unité
+                      </p>
+                    </div>
+                    <div className="sm:hidden">{retirer}</div>
+                  </div>
+
+                  {/* Quantité et total sur leur propre ligne, aux deux bords.
+                      Empilés sous le nom, ils cessent de se disputer la largeur
+                      avec lui. */}
+                  <div className="flex items-center justify-between gap-3 mt-3 sm:hidden">
+                    {quantite}
+                    {totalLigne}
+                  </div>
                 </div>
 
-                <div className="flex items-center border-2 border-border-strong rounded-full flex-shrink-0">
-                  <button
-                    onClick={() => updateCartItemQuantity(cartLineKey(item), item.quantity - 1)}
-                    className="w-8 h-8 flex items-center justify-center text-ink hover:text-ink"
-                  >
-                    −
-                  </button>
-                  <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
-                  <button
-                    onClick={() => updateCartItemQuantity(cartLineKey(item), item.quantity + 1)}
-                    className="w-8 h-8 flex items-center justify-center text-ink hover:text-ink"
-                  >
-                    +
-                  </button>
+                {/* Dès la tablette, la place existe : tout revient sur une
+                    seule ligne, comme avant. */}
+                <div className="hidden sm:flex sm:items-center sm:gap-4 sm:flex-shrink-0">
+                  {quantite}
+                  <div className="w-28 text-right">{totalLigne}</div>
+                  {retirer}
                 </div>
-
-                <div className="w-24 text-right font-semibold text-ink flex-shrink-0">
-                  {(formatAmount(item.price_fcfa * item.quantity))} FCFA
-                </div>
-
-                <button
-                  onClick={() => removeFromCart(cartLineKey(item))}
-                  className="text-ink-dimmer hover:text-danger transition-colors flex-shrink-0"
-                  aria-label="Retirer du panier"
-                >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
               </div>
-            ))}
+              )
+            })}
           </div>
 
           {/* Summary */}

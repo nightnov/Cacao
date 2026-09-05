@@ -63,7 +63,9 @@ function ProductsContent() {
   const [priceMin, setPriceMin] = useState('')
   const [priceMax, setPriceMax] = useState('')
   const [selectedCpu, setSelectedCpu] = useState('')
-  const [popularFallback, setPopularFallback] = useState<Product[]>([])
+  // Le reste du catalogue, tous rayons confondus. Il ne sert qu'à prolonger la
+  // page sous le rayon consulté, jamais à le remplir.
+  const [reste, setReste] = useState<Product[]>([])
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -100,20 +102,45 @@ function ProductsContent() {
     fetchProducts()
   }, [category, search, sort])
 
-  // Comble l'espace si peu de produits: propose des produits populaires réels (pas de remplissage inventé)
+  /**
+   * Le reste du catalogue, chargé seulement quand on consulte un rayon.
+   *
+   * Sans filtre de rayon, la page montre déjà tout : il n'y a pas de suite à
+   * proposer. Pendant une recherche non plus, où seul compte ce qui répond à
+   * la demande.
+   */
   useEffect(() => {
-    if (loading || products.length >= 6 || search) return
-    const fetchPopular = async () => {
+    if (!category || search) {
+      setReste([])
+      return
+    }
+    const charger = async () => {
       try {
-        const res = await fetch(`/api/products?sort=popular&_=${Date.now()}`, { cache: 'no-store' })
+        const res = await fetch(`/api/products?_=${Date.now()}`, { cache: 'no-store' })
         const data = await res.json()
-        setPopularFallback((data || []).filter((p: Product) => !products.some(existing => existing.id === p.id)).slice(0, 4))
+        setReste(Array.isArray(data) ? data : [])
       } catch {
-        // silencieux: bloc purement complémentaire
+        // Silencieux : ce bloc prolonge la page, il ne la constitue pas.
       }
     }
-    fetchPopular()
-  }, [loading, products, search])
+    charger()
+  }, [category, search])
+
+  /**
+   * Les autres rayons, dans l'ordre du menu, chacun avec ses produits.
+   *
+   * Le rayon consulté en est exclu — il occupe déjà le haut de la page — et
+   * les rayons vides ne produisent pas de titre orphelin.
+   */
+  const suite = useMemo(() => {
+    if (!category || !reste.length) return []
+    return categories
+      .map(cat => ({
+        valeur: cat.value,
+        produits: reste.filter(p => p.category === cat.value).slice(0, 4),
+      }))
+      .filter(g => g.valeur !== category && g.produits.length > 0)
+  }, [category, reste, categories])
 
   const cpuOptions = useMemo(() => {
     const cpus = products.map(p => p.specs?.cpu).filter((c): c is string => typeof c === 'string' && c.trim() !== '')
@@ -330,16 +357,35 @@ function ProductsContent() {
                   ))}
                 </div>
 
-                {popularFallback.length > 0 && (
-                  <div className="mt-16 pt-10 border-t border-border">
-                    <h2 className="font-serif font-semibold text-xl text-ink mb-6">Vous pourriez aussi aimer</h2>
+                {/* Sous le rayon consulté, la suite du catalogue, rayon par
+                    rayon et chacun sous son nom.
+
+                    Ces machines s'affichaient auparavant en vrac sous « Vous
+                    pourriez aussi aimer ». Des tours de bureau apparaissaient
+                    ainsi au bas de la page des portables, sans que rien ne
+                    dise qu'on avait changé de famille : le rayon paraissait
+                    mal rangé alors qu'il ne l'était pas. Un titre suffit à
+                    transformer un mélange en continuation. */}
+                {suite.map(({ valeur, produits }) => (
+                  <div key={valeur} className="mt-16 pt-10 border-t border-border">
+                    <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+                      <h2 className="font-serif font-semibold text-xl text-ink">
+                        {labelFor(valeur, categories)}
+                      </h2>
+                      <Link
+                        href={`/products?category=${valeur}`}
+                        className="text-[13px] font-semibold text-accent underline underline-offset-2"
+                      >
+                        Voir tout le rayon
+                      </Link>
+                    </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
-                      {popularFallback.map(p => (
+                      {produits.map(p => (
                         <ProductCard key={p.id} {...p} />
                       ))}
                     </div>
                   </div>
-                )}
+                ))}
               </>
             ) : search ? (
               <div className="text-center py-20 px-6 bg-bg-panel rounded-2xl border-2 border-dashed border-border">

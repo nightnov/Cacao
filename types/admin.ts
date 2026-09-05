@@ -71,6 +71,12 @@ export interface Order {
   quoted_price_fcfa?: number | null
   /** Exigence particulière décrite par le client. */
   customer_request?: string | null
+  /**
+   * Rangée hors de la liste courante, jamais effacée. Une commande payée est
+   * une pièce comptable : elle doit rester consultable même quand elle
+   * n'encombre plus l'écran.
+   */
+  archived_at?: string | null
   /** Position partagée par le client au moment de commander. Absente s'il a refusé. */
   delivery_lat?: number | null
   delivery_lng?: number | null

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Eye } from 'lucide-react'
+import { Eye, Archive, ArchiveRestore } from 'lucide-react'
 import { getSupabaseClient } from '@/lib/supabase'
 import OrderDetailModal from '@/components/admin/OrderDetailModal'
 import { TableShell, Column } from '@/components/admin/TableShell'
@@ -50,11 +50,16 @@ export default function AdminOrders() {
   // réellement rien à montrer. Une base qui refuse de répondre et une base
   // vide ne doivent pas se ressembler.
   const [erreur, setErreur] = useState<string | null>(null)
+  // Les commandes rangées sont hors de la liste courante, pas hors de la base.
+  // Ce basculement est le seul moyen de les revoir, et il doit exister : une
+  // donnée qu'on ne peut plus atteindre a été détruite, quel que soit le mot
+  // employé pour le dire.
+  const [voirArchivees, setVoirArchivees] = useState(false)
 
   useEffect(() => {
     fetchOrders()
     setPage(1)
-  }, [statusFilter])
+  }, [statusFilter, voirArchivees])
 
   const fetchOrders = async () => {
     try {
@@ -62,8 +67,12 @@ export default function AdminOrders() {
       const supabase = getSupabaseClient()
       let query = supabase
         .from('orders')
-        .select('id, order_number, user_id, status, total_fcfa, total_products_fcfa, shipping_cost_fcfa, payment_method, created_at, delivery_code, delivered_at, notes, is_custom_order, estimated_total_fcfa, quoted_price_fcfa, customer_request, shipping_address, profiles(email, first_name, last_name)')
+        .select('id, order_number, user_id, status, total_fcfa, total_products_fcfa, shipping_cost_fcfa, payment_method, created_at, delivery_code, delivered_at, notes, is_custom_order, estimated_total_fcfa, quoted_price_fcfa, customer_request, archived_at, shipping_address, profiles(email, first_name, last_name)')
         .order('created_at', { ascending: false })
+
+      query = voirArchivees
+        ? query.not('archived_at', 'is', null)
+        : query.is('archived_at', null)
 
       if (statusFilter) {
         query = query.eq('status', statusFilter)
@@ -116,6 +125,38 @@ export default function AdminOrders() {
       alert('Statut mis à jour')
     } catch (error) {
       alert('Erreur lors de la mise à jour')
+    }
+  }
+
+  /**
+   * Ranger une commande, ou la remettre dans la liste.
+   *
+   * Volontairement pas une suppression. Une commande payée est la trace d'un
+   * encaissement réel : l'effacer pour dégager l'écran reviendrait à effacer la
+   * comptabilité. Elle sort de la liste courante, elle reste consultable, et le
+   * geste se défait.
+   */
+  const toggleArchive = async (order: Order) => {
+    const ranger = !order.archived_at
+    try {
+      const supabase = getSupabaseClient()
+      // `select()` est indispensable : une écriture refusée par les droits en
+      // base ne remonte aucune erreur, elle touche zéro ligne en silence.
+      const { data, error } = await supabase
+        .from('orders')
+        .update({ archived_at: ranger ? new Date().toISOString() : null })
+        .eq('id', order.id)
+        .select('id')
+
+      if (error) throw error
+      if (!data?.length) throw new Error('La base a refusé la modification.')
+
+      setOrders(orders.filter(o => o.id !== order.id))
+    } catch (e) {
+      alert(
+        (ranger ? 'Impossible de ranger cette commande : ' : 'Impossible de la remettre : ') +
+          (e instanceof Error ? e.message : 'cause inconnue.')
+      )
     }
   }
 
@@ -178,8 +219,13 @@ export default function AdminOrders() {
       header: 'Actions',
       align: 'right',
       render: o => (
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-1">
           <IconButton icon={Eye} label="Voir détails" onClick={() => handleViewDetails(o)} />
+          <IconButton
+            icon={o.archived_at ? ArchiveRestore : Archive}
+            label={o.archived_at ? 'Remettre dans la liste' : 'Ranger'}
+            onClick={() => toggleArchive(o)}
+          />
         </div>
       )
     }
@@ -188,7 +234,17 @@ export default function AdminOrders() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="font-serif font-semibold text-4xl text-ink mb-6">Commandes</h1>
+        <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+          <h1 className="font-serif font-semibold text-4xl text-ink">
+            {voirArchivees ? 'Commandes rangées' : 'Commandes'}
+          </h1>
+          <button
+            onClick={() => setVoirArchivees(v => !v)}
+            className="px-4 py-2 rounded-full text-sm font-semibold border-2 border-ink text-ink hover:bg-ink hover:text-ink-invert transition-colors"
+          >
+            {voirArchivees ? 'Revenir aux commandes en cours' : 'Voir les commandes rangées'}
+          </button>
+        </div>
 
         {/* Status Filter */}
         <div className="flex gap-2 flex-wrap">

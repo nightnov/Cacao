@@ -85,11 +85,40 @@ export async function GET(req: NextRequest) {
     'payment_method',
   ]
 
-  const colonnesManquantes: string[] = []
-  for (const colonne of colonnes) {
-    const { error } = await asUser.from('orders').select(colonne).limit(1)
-    if (error) colonnesManquantes.push(`${colonne} → ${error.message}`)
+  const sonder = async (table: string, noms: string[]) => {
+    const absentes: string[] = []
+    for (const nom of noms) {
+      const { error } = await asUser.from(table).select(nom).limit(1)
+      if (error) absentes.push(`${nom} → ${error.message}`)
+    }
+    return absentes
   }
+
+  const colonnesManquantes = await sonder('orders', colonnes)
+
+  // Même examen pour les produits. Enregistrer une modification et supprimer un
+  // produit échouent toujours, et une colonne absente dans ce que le formulaire
+  // écrit produit exactement le même silence : la base refuse l'écriture
+  // entière, pas seulement le champ inconnu.
+  const colonnesProduitsManquantes = await sonder('products', [
+    'short_description',
+    'parcel_size',
+    'components',
+    'weight_kg',
+    'item_condition',
+    'included_items',
+    'price_is_estimate',
+    'supplier_name',
+    'supplier_url',
+    'supplier_product_id',
+    'supplier_cost_fcfa',
+    'status',
+    'variant_options',
+    'compare_at_price_fcfa',
+    'video_url',
+    'specs',
+    'tags',
+  ])
 
   // La jointure vers profiles est le second suspect : la liste la demande, et
   // un refus de lecture sur profiles ferait échouer la requête des commandes.
@@ -103,6 +132,9 @@ export async function GET(req: NextRequest) {
     commandesVuesParVotreCompte: vuParVous ?? 0,
     commandesReellementEnBase: reellementEnBase ?? 0,
     colonnesManquantes: colonnesManquantes.length ? colonnesManquantes : 'aucune',
+    colonnesProduitsManquantes: colonnesProduitsManquantes.length
+      ? colonnesProduitsManquantes
+      : 'aucune',
     jointureProfiles: erreurJointure ? erreurJointure.message : 'ok',
     diagnostic:
       reellementEnBase === 0

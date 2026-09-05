@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { getSupabaseClient } from '@/lib/supabase'
 import { formatAmount } from '@/lib/format'
-import { Info, Loader2, MessageCircle, Phone } from 'lucide-react'
+import { Archive, Info, Loader2, MessageCircle, Phone } from 'lucide-react'
 
 interface Order {
   id: string
@@ -73,6 +73,9 @@ export default function AdminAbandoned() {
         .from('orders')
         .select('id, order_number, status, total_fcfa, created_at, shipping_address')
         .eq('status', 'pending')
+        // Les commandes rangées ne remontent pas ici : les faire réapparaître
+        // dans cette liste viderait le geste de rangement de tout son sens.
+        .is('archived_at', null)
         .order('created_at', { ascending: false })
         .limit(100)
 
@@ -139,6 +142,49 @@ export default function AdminAbandoned() {
 
   const potential = useMemo(() => rows.reduce((s, r) => s + r.total_fcfa, 0), [rows])
 
+  /**
+   * Les commandes en attente depuis plus d'une semaine.
+   *
+   * Le seuil n'est pas cosmétique : une commande de la veille peut encore être
+   * réglée, on la relance. Passé une semaine, plus personne ne revient finir un
+   * paiement, et ces lignes ne font que gonfler le « montant en jeu » d'un
+   * argent qui n'existe pas.
+   */
+  const vieilles = useMemo(() => rows.filter(r => r.ageDays >= 7), [rows])
+
+  const rangerLesVieilles = async () => {
+    if (
+      !confirm(
+        `Ranger ${vieilles.length} commande(s) en attente depuis plus de 7 jours ?\n\n` +
+          'Elles quittent cette liste et restent consultables dans Commandes, ' +
+          'via « Voir les commandes rangées ». Rien n est supprimé.'
+      )
+    )
+      return
+
+    try {
+      const supabase = getSupabaseClient()
+      // `select()` est indispensable : une écriture refusée par les droits en
+      // base ne remonte aucune erreur, elle touche zéro ligne en silence.
+      const { data, error } = await supabase
+        .from('orders')
+        .update({ archived_at: new Date().toISOString() })
+        .in('id', vieilles.map(r => r.id))
+        .select('id')
+
+      if (error) throw error
+      if (!data?.length) throw new Error('La base a refusé la modification.')
+
+      const rangees = new Set(data.map(d => d.id))
+      setRows(rows.filter(r => !rangees.has(r.id)))
+    } catch (e) {
+      alert(
+        'Impossible de ranger ces commandes : ' +
+          (e instanceof Error ? e.message : 'cause inconnue.')
+      )
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center gap-2 text-ink-dim text-sm">
@@ -149,11 +195,24 @@ export default function AdminAbandoned() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-serif text-3xl text-ink">Commandes non réglées</h1>
-        <p className="text-sm text-ink-dimmer mt-1">
-          Des clients sont allés jusqu’au paiement sans le terminer.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="font-serif text-3xl text-ink">Commandes non réglées</h1>
+          <p className="text-sm text-ink-dimmer mt-1">
+            Des clients sont allés jusqu’au paiement sans le terminer.
+          </p>
+        </div>
+
+        {/* Le bouton n'apparaît que s'il a quelque chose à ranger : un bouton
+            qui ne fait rien quand on l'actionne apprend à ne plus s'y fier. */}
+        {vieilles.length > 0 && (
+          <button
+            onClick={rangerLesVieilles}
+            className="flex items-center gap-1.5 px-3 py-2 border border-border hover:bg-bg-raised text-ink rounded-lg font-semibold text-xs whitespace-nowrap"
+          >
+            <Archive size={14} /> Ranger les {vieilles.length} de plus de 7 jours
+          </button>
+        )}
       </div>
 
       <div className="bg-info/10 border border-info/30 rounded-xl p-4 flex items-start gap-2.5">

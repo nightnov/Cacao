@@ -152,6 +152,45 @@ export async function GET(req: NextRequest) {
           'd ecriture sur products est absente ou ne reconnait pas votre compte.'
   }
 
+  /**
+   * L'état réel des dernières commandes, et ce que le paiement en a dit.
+   *
+   * Le message WhatsApp se construit à partir du dernier paiement enregistré.
+   * S'il annonce encore un impayé pour une commande réglée, ce n'est pas le
+   * texte qui se trompe : c'est que la base n'a jamais appris que le paiement
+   * avait abouti. MoneyFusion prévient le site par une notification, et si
+   * cette notification n'arrive pas, la commande reste en attente pour
+   * l'éternité alors que l'argent est bien arrivé.
+   *
+   * On lit donc côté service, sans filtre, ce que la base sait vraiment.
+   */
+  const db = getSupabaseAdmin()
+  const { data: dernieres } = await db
+    .from('orders')
+    .select('id, order_number, status, total_fcfa, created_at')
+    .order('created_at', { ascending: false })
+    .limit(8)
+
+  const { data: journaux } = await db
+    .from('payment_logs')
+    .select('order_id, status, created_at')
+    .order('created_at', { ascending: false })
+
+  const dernierPaiement = new Map<string, string>()
+  for (const j of journaux || []) {
+    if (!dernierPaiement.has(j.order_id)) dernierPaiement.set(j.order_id, j.status)
+  }
+
+  const etatDesCommandes = (dernieres || []).map(o => ({
+    commande: o.order_number,
+    statut: o.status,
+    montant: o.total_fcfa,
+    dernierPaiementConnu: dernierPaiement.get(o.id) || 'AUCUNE NOTIFICATION RECUE',
+    le: String(o.created_at).slice(0, 16),
+  }))
+
+  const notificationsRecues = (journaux || []).length
+
   // La jointure vers profiles est le second suspect : la liste la demande, et
   // un refus de lecture sur profiles ferait échouer la requête des commandes.
   const { error: erreurJointure } = await asUser
@@ -163,7 +202,9 @@ export async function GET(req: NextRequest) {
     // Repère de version. Sans lui, une page servie depuis le cache ressemble
     // trait pour trait à une page à jour, et on cherche dans un resultat
     // périmé une ligne qui n'y a jamais été.
-    version: 3,
+    version: 4,
+    notificationsDePaiementRecues: notificationsRecues,
+    etatDesCommandes,
     ...identite,
     commandesVuesParVotreCompte: vuParVous ?? 0,
     commandesReellementEnBase: reellementEnBase ?? 0,

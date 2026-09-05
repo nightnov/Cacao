@@ -67,16 +67,56 @@ export async function GET(req: NextRequest) {
     .from('orders')
     .select('id', { count: 'exact', head: true })
 
+  // La liste des commandes ne lit pas que `id` : elle demande aussi les
+  // colonnes ajoutées par les migrations récentes. Si l'une d'elles manque, la
+  // base rejette la requête entière — pas seulement la colonne absente — et la
+  // liste se retrouve vide alors que les commandes sont parfaitement lisibles.
+  // On interroge donc chaque colonne suspecte séparément.
+  const colonnes = [
+    'delivery_code',
+    'delivered_at',
+    'is_custom_order',
+    'estimated_total_fcfa',
+    'quoted_price_fcfa',
+    'customer_request',
+    'internal_note',
+    'shipping_address',
+    'notes',
+    'payment_method',
+  ]
+
+  const colonnesManquantes: string[] = []
+  for (const colonne of colonnes) {
+    const { error } = await asUser.from('orders').select(colonne).limit(1)
+    if (error) colonnesManquantes.push(`${colonne} → ${error.message}`)
+  }
+
+  // La jointure vers profiles est le second suspect : la liste la demande, et
+  // un refus de lecture sur profiles ferait échouer la requête des commandes.
+  const { error: erreurJointure } = await asUser
+    .from('orders')
+    .select('id, profiles(email, first_name, last_name)')
+    .limit(1)
+
   return NextResponse.json({
     ...identite,
     commandesVuesParVotreCompte: vuParVous ?? 0,
     commandesReellementEnBase: reellementEnBase ?? 0,
+    colonnesManquantes: colonnesManquantes.length ? colonnesManquantes : 'aucune',
+    jointureProfiles: erreurJointure ? erreurJointure.message : 'ok',
     diagnostic:
       reellementEnBase === 0
         ? 'La base ne contient aucune commande : le paiement n a rien enregistre.'
-        : vuParVous === reellementEnBase
-          ? 'Les commandes sont lisibles. Le probleme est ailleurs que dans les droits.'
-          : 'Les commandes existent mais les regles de la base les cachent a votre compte. ' +
-            'La regle orders_admin_all est absente ou incorrecte : appliquez la migration 046.',
+        : vuParVous !== reellementEnBase
+          ? 'Les commandes existent mais les regles de la base les cachent a votre compte.'
+          : colonnesManquantes.length
+            ? 'Les commandes sont lisibles, mais des colonnes demandees par la liste manquent en ' +
+              'base. La base rejette alors la requete entiere et la liste parait vide. ' +
+              'Les migrations correspondantes ne sont pas appliquees.'
+            : erreurJointure
+              ? 'Les commandes sont lisibles, mais la jointure vers profiles echoue et fait ' +
+                'echouer la requete de la liste.'
+              : 'Tout ce qui est teste ici repond correctement. Ouvrez la page Commandes : elle ' +
+                'affiche desormais le message exact renvoye par la base.',
   })
 }

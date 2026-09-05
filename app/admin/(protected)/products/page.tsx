@@ -54,13 +54,31 @@ export default function AdminProducts() {
 
     try {
       const supabase = getSupabaseClient()
-      const { error } = await supabase.from('products').delete().eq('id', id)
+      // `select()` est indispensable : une suppression refusée par les droits
+      // en base ne remonte aucune erreur, elle supprime zéro ligne en silence.
+      // Sans lui, la ligne disparaissait de l'écran et revenait au rechargement.
+      const { data: deleted, error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id)
+        .select('id')
 
       if (error) throw error
+      if (!deleted || deleted.length === 0) {
+        const { data: { user } } = await supabase.auth.getUser()
+        alert(
+          'Suppression refusée par la base : votre compte n\'est pas reconnu comme administrateur.\n\n' +
+            `Identifiant de votre compte : ${user?.id || 'inconnu'}`
+        )
+        return
+      }
       setProducts(products.filter(p => p.id !== id))
       alert('Produit supprimé')
     } catch (error) {
-      alert('Erreur lors de la suppression')
+      alert(
+        'Erreur lors de la suppression : ' +
+          (error instanceof Error ? error.message : 'cause inconnue')
+      )
     }
   }
 

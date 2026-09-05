@@ -138,6 +138,33 @@ export default function AdminOrders() {
         return <StatusBadge label={status.label} tone={status.tone} />
       }
     },
+    {
+      /**
+       * Le code du colis, directement dans la liste.
+       *
+       * Il n'était visible qu'en ouvrant le détail d'une commande, alors que
+       * c'est la donnée qu'on cherche le plus souvent : le livreur appelle et
+       * dicte un code, il faut retrouver de quelle commande il parle. Le
+       * chercher commande par commande n'était pas tenable.
+       *
+       * Une fois la livraison confirmée, le code cède la place à sa date : le
+       * code ne sert plus à rien, la preuve si.
+       */
+      key: 'code',
+      header: 'Code colis',
+      render: o =>
+        o.delivered_at ? (
+          <span className="text-[12.5px] text-ink-dim">
+            Livrée le {new Date(o.delivered_at).toLocaleDateString('fr-CI')}
+          </span>
+        ) : o.delivery_code ? (
+          <span className="font-semibold tabular-nums tracking-wider text-ink">
+            {o.delivery_code}
+          </span>
+        ) : (
+          <span className="text-ink-dimmer">—</span>
+        ),
+    },
     { key: 'date', header: 'Date', render: o => new Date(o.created_at).toLocaleDateString('fr-CI') },
     {
       key: 'actions',

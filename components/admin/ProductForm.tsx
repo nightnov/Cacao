@@ -428,12 +428,30 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
       let productId = product?.id
 
       if (product) {
-        const { error: updateError } = await supabase
+        /**
+         * `select()` n'est pas décoratif : sans lui, une modification refusée
+         * par les droits en base ne remonte AUCUNE erreur. Postgres modifie
+         * zéro ligne, en silence, et le formulaire affichait « enregistré »
+         * alors que rien n'avait changé.
+         *
+         * La règle d'écriture compare le compte connecté à un identifiant
+         * administrateur écrit en dur. Un compte recréé porte un identifiant
+         * différent, et toute modification devient muette.
+         */
+        const { data: updated, error: updateError } = await supabase
           .from('products')
           .update(payload)
           .eq('id', product.id)
+          .select('id')
 
         if (updateError) throw updateError
+        if (!updated || updated.length === 0) {
+          const { data: { user } } = await supabase.auth.getUser()
+          throw new Error(
+            'Modification refusée par la base : votre compte n\'est pas reconnu comme administrateur. ' +
+              `Identifiant de votre compte : ${user?.id || 'inconnu'}`
+          )
+        }
       } else {
         const { data: created, error: createError } = await supabase
           .from('products')

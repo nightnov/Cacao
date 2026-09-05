@@ -61,6 +61,14 @@ export interface Order {
   /** Horodatage écrit uniquement quand le bon code a été saisi : c'est la preuve de remise. */
   delivered_at?: string | null
   notes?: string | null
+  /** Commande sur mesure : le montant se confirme avant tout paiement. */
+  is_custom_order?: boolean | null
+  /** Montant indicatif vu par le client au moment où il a validé. */
+  estimated_total_fcfa?: number | null
+  /** Montant confirmé. C'est lui que le calcul serveur relit au paiement. */
+  quoted_price_fcfa?: number | null
+  /** Exigence particulière décrite par le client. */
+  customer_request?: string | null
   /** Position partagée par le client au moment de commander. Absente s'il a refusé. */
   delivery_lat?: number | null
   delivery_lng?: number | null

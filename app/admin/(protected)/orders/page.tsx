@@ -14,6 +14,11 @@ import { Order, OrderItem } from '@/types/admin'
 import { formatAmount } from '@/lib/format'
 
 const statusLabels: Record<string, { label: string; tone: StatusTone }> = {
+  // Commandes sur mesure. « Prix à confirmer » attend une action de votre part
+  // et porte donc la teinte d'alerte : c'est le seul état où le client ne peut
+  // pas avancer sans vous.
+  awaiting_quote: { label: 'Prix à confirmer', tone: 'pending' },
+  quoted: { label: 'Prix confirmé', tone: 'info' },
   pending: { label: 'En attente', tone: 'neutral' },
   confirmed: { label: 'Confirmée', tone: 'info' },
   preparing: { label: 'Préparation', tone: 'pending' },
@@ -52,7 +57,7 @@ export default function AdminOrders() {
       const supabase = getSupabaseClient()
       let query = supabase
         .from('orders')
-        .select('id, order_number, user_id, status, total_fcfa, total_products_fcfa, shipping_cost_fcfa, payment_method, created_at, delivery_code, delivery_token, delivered_at, notes, shipping_address, profiles(email, first_name, last_name)')
+        .select('id, order_number, user_id, status, total_fcfa, total_products_fcfa, shipping_cost_fcfa, payment_method, created_at, delivery_code, delivered_at, notes, is_custom_order, estimated_total_fcfa, quoted_price_fcfa, customer_request, shipping_address, profiles(email, first_name, last_name)')
         .order('created_at', { ascending: false })
 
       if (statusFilter) {

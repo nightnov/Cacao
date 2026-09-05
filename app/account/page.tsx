@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { User, ShoppingBag, MapPin, Heart, Settings, HelpCircle, Star, Clock, CheckCircle2, LayoutGrid, MessageCircle, LogOut, ArrowRight } from 'lucide-react'
-import { LINK_FRAMED, LINK_FRAMED_ARROW } from '@/lib/ui'
+import { LINK_FRAMED, LINK_FRAMED_ARROW, btn } from '@/lib/ui'
 import { useAuth } from '@/hooks/useAuth'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/Button'
@@ -37,7 +37,10 @@ interface Order {
   shipping_cost_fcfa: number
   created_at: string
   delivery_code: string | null
-  shipping_address: { city: string; address: string } | null
+  // Nom et téléphone sont présents sur les commandes réelles : ils servent au
+  // règlement d'une commande sur mesure, qui se fait depuis cet écran et non
+  // plus depuis le tunnel de commande.
+  shipping_address: { city: string; address: string; full_name?: string; phone?: string } | null
 }
 
 /**
@@ -54,6 +57,10 @@ interface Order {
 const STATUS_PILL = 'bg-bg-raised text-ink-dim'
 
 const statusLabels: Record<string, { label: string; color: string; dot: string }> = {
+  // Commande sur mesure. Le libellé dit où en est le MONTANT, seule chose qui
+  // bloque le client à ce stade, et jamais pourquoi il n'est pas encore connu.
+  awaiting_quote: { label: 'Montant en cours de confirmation', color: STATUS_PILL, dot: 'bg-gold' },
+  quoted: { label: 'Montant confirmé', color: STATUS_PILL, dot: 'bg-info' },
   pending: { label: 'En attente', color: STATUS_PILL, dot: 'bg-ink-faint' },
   confirmed: { label: 'Confirmée', color: STATUS_PILL, dot: 'bg-info' },
   preparing: { label: 'En préparation', color: STATUS_PILL, dot: 'bg-gold' },
@@ -115,6 +122,40 @@ export default function Account() {
   const [itemsByOrder, setItemsByOrder] = useState<Record<string, OrderItem[]>>({})
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null)
   const [loadingOrders, setLoadingOrders] = useState(true)
+  const [payingOrder, setPayingOrder] = useState<string | null>(null)
+
+  /**
+   * Règlement d'une commande sur mesure dont le montant vient d'être confirmé.
+   *
+   * Aucun montant n'est transmis : le serveur relit celui qui a été confirmé en
+   * administration. Ce que le navigateur enverrait ne serait de toute façon pas
+   * retenu.
+   */
+  const payQuotedOrder = async (order: Order) => {
+    setPayingOrder(order.id)
+    try {
+      const items = itemsByOrder[order.id] || []
+      const res = await fetch('/api/payment/initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: order.id,
+          orderNumber: order.order_number,
+          items: items.length
+            ? items.map(i => ({ name: i.product_name, price_fcfa: i.unit_price_fcfa, quantity: i.quantity }))
+            : [{ name: `Commande ${order.order_number}`, price_fcfa: order.total_fcfa, quantity: 1 }],
+          phone: order.shipping_address?.phone || profile?.phone || '',
+          fullName: order.shipping_address?.full_name || 'Client',
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.url) throw new Error(data.error || 'Paiement indisponible.')
+      window.location.href = data.url
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Paiement indisponible.')
+      setPayingOrder(null)
+    }
+  }
 
   const [reviews, setReviews] = useState<Review[]>([])
 
@@ -587,7 +628,38 @@ export default function Account() {
                                 </p>
                               )}
 
-                              {order.delivery_code && !['delivered', 'cancelled', 'refunded'].includes(order.status) && (
+                              {/* Commande sur mesure. Deux états, deux messages,
+                                  et jamais un mot sur la raison pour laquelle le
+                                  montant n'était pas connu tout de suite. */}
+                              {order.status === 'awaiting_quote' && (
+                                <div className="bg-bg-raised border border-border rounded-lg p-3 mb-3">
+                                  <p className="text-[13px] text-ink leading-relaxed">
+                                    Nous finalisons votre configuration et vous confirmons le
+                                    montant par téléphone. Rien n&apos;est à payer pour l&apos;instant.
+                                  </p>
+                                </div>
+                              )}
+
+                              {order.status === 'quoted' && (
+                                <div className="bg-accent/10 border border-accent/30 rounded-lg p-3 mb-3">
+                                  <p className="text-[11px] font-semibold text-accent uppercase mb-1">
+                                    Montant confirmé
+                                  </p>
+                                  <p className="text-xl font-bold text-ink tabular-nums mb-2.5">
+                                    {formatAmount(order.total_fcfa)} FCFA
+                                  </p>
+                                  <button
+                                    type="button"
+                                    disabled={payingOrder === order.id}
+                                    onClick={() => payQuotedOrder(order)}
+                                    className={btn('solid', 'md', 'w-full')}
+                                  >
+                                    {payingOrder === order.id ? 'Redirection…' : 'Régler ma commande'}
+                                  </button>
+                                </div>
+                              )}
+
+                              {order.delivery_code && !['delivered', 'cancelled', 'refunded', 'awaiting_quote', 'quoted'].includes(order.status) && (
                                 <div className="bg-accent/10 border border-accent/30 rounded-lg p-3 mb-3 text-center">
                                   <p className="text-[10px] font-semibold text-accent uppercase mb-0.5">Code de livraison</p>
                                   <p className="text-xl font-bold text-ink tracking-widest">{order.delivery_code}</p>

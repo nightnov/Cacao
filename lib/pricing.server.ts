@@ -144,11 +144,42 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
 
   const { data: order } = await supabase
     .from('orders')
-    .select('id, user_id, total_fcfa, shipping_address, promo_code, delivery_mode')
+    .select('id, user_id, total_fcfa, shipping_address, promo_code, delivery_mode, status')
     .eq('id', orderId)
     .maybeSingle()
 
   if (!order) return null
+
+  /**
+   * Commande sur mesure : le montant ne se recalcule pas, il se relit.
+   *
+   * Le prix d'une machine à faire venir n'est connu qu'après vérification.
+   * Recalculer depuis `products` redonnerait le prix indicatif affiché sur la
+   * fiche, pas celui qui a été confirmé au client — et ferait donc payer un
+   * montant que personne n'a validé.
+   *
+   * Tant qu'aucun montant n'est arrêté, il n'y a rien à encaisser. Refuser ici
+   * plutôt que dans le navigateur est ce qui compte : un panier fabriqué à la
+   * main contournerait un bouton grisé, pas ce retour.
+   *
+   * Ces colonnes sont demandées à part : incluses dans le select ci dessus,
+   * une migration 041 non exécutée ferait échouer la requête entière et
+   * bloquerait TOUS les paiements, y compris ceux des produits ordinaires.
+   */
+  const { data: custom } = await supabase
+    .from('orders')
+    .select('is_custom_order, quoted_price_fcfa')
+    .eq('id', orderId)
+    .maybeSingle()
+
+  if (custom?.is_custom_order) {
+    const quoted = Number(custom.quoted_price_fcfa)
+    // Pas de montant confirmé, ou un montant nul : rien à encaisser. Zéro
+    // rendrait la commande gratuite sans que rien ne le signale.
+    if (order.status === 'awaiting_quote' || !Number.isFinite(quoted) || quoted <= 0) {
+      return null
+    }
+  }
 
   const { data: items } = await supabase
     .from('order_items')
@@ -233,6 +264,21 @@ export async function priceOrder(orderId: string): Promise<PricedOrder | null> {
       quantity: qty,
       unit,
       subtotal,
+    })
+  }
+
+  // Sur une commande sur mesure, le montant des produits est celui confirmé au
+  // client, pas celui recalculé depuis le catalogue. Il a été écrit côté
+  // serveur par l'administration, donc il fait foi. La livraison, elle, reste
+  // recalculée normalement.
+  if (custom?.is_custom_order) {
+    productsTotal = Number(custom.quoted_price_fcfa)
+    lines.length = 0
+    lines.push({
+      label: items.map(i => i.product_name).join(', ') || 'Commande sur mesure',
+      quantity: 1,
+      unit: productsTotal,
+      subtotal: productsTotal,
     })
   }
 

@@ -38,6 +38,7 @@ import { ProductDescription } from '@/components/ProductDescription'
 import { ConfigSummary } from '@/components/ConfigSummary'
 import { BaseConfig } from '@/components/BaseConfig'
 import { IncludedItems } from '@/components/IncludedItems'
+import { CustomOrderForm } from '@/components/CustomOrderForm'
 import {
   buildDescriptionBlocks,
   FALLBACK_GLOSSARY,
@@ -516,6 +517,19 @@ export default function ProductDetail() {
   const displayPrice =
     options.length > 0 ? configuredPrice(basePrice, options, selection) : basePrice
 
+  /**
+   * Machine à faire venir : elle se commande, elle ne se paie pas tout de
+   * suite. Le montant définitif n'est connu qu'après vérification.
+   */
+  const isOnOrder = product.availability === 'on_order'
+
+  /**
+   * Identifiants des valeurs retenues, à plat. C'est tout ce que le serveur
+   * accepte du navigateur : les suppléments qu'ils représentent sont relus en
+   * base, jamais repris de la page.
+   */
+  const selectedValueIds = Object.values(selection).flat()
+
   /** Visuel imposé par la configuration : la couleur choisie, en pratique. */
   const configImage = options.length > 0 ? selectionImage(options, selection) : null
 
@@ -737,6 +751,20 @@ export default function ProductDetail() {
                 un raccourci vers le paiement, pas une variante du bouton
                 voisin, et l'aligner à côté donnait deux actions de poids égal
                 entre lesquelles il fallait trancher. */}
+            {/* Sur commande : on ne fait pas payer ce qu'on n'a pas encore.
+                Le montant définitif n'étant connu qu'après vérification,
+                encaisser ici obligerait à rembourser à la main quand la machine
+                n'est pas obtenue — et aucun remboursement automatique n'existe
+                dans le projet. Le client commande, le montant lui est confirmé,
+                il paie ensuite depuis son compte. */}
+            {isOnOrder ? (
+              <CustomOrderForm
+                productId={product.id}
+                optionValueIds={selectedValueIds}
+                estimatedTotal={displayPrice}
+                userId={user?.id}
+              />
+            ) : (
             <div className="space-y-3">
               <div className="flex items-stretch gap-3">
                 {product.availability !== 'discontinued' && (
@@ -786,6 +814,7 @@ export default function ProductDetail() {
                 Commander maintenant
               </Button>
             </div>
+            )}
 
 
             {/* La section « Livraison et garantie » qui détaillait ces quatre

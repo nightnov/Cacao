@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Order, OrderItem } from '@/types/admin'
 import { formatAmount } from '@/lib/format'
+import { getSupabaseClient } from '@/lib/supabase'
 import { MapPin } from 'lucide-react'
 
 const nextStatus: Record<string, string> = {
@@ -38,6 +39,43 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
   // en développement local comme sur le domaine de production.
   const deliveryLink =
     typeof window !== 'undefined' ? `${window.location.origin}/livraison` : ''
+
+  const [quote, setQuote] = useState('')
+  const [quoting, setQuoting] = useState(false)
+  const [quoteError, setQuoteError] = useState('')
+
+  /**
+   * Confirmation du montant d'une commande sur mesure.
+   *
+   * Le montant est écrit ici, côté administration, et c'est lui que le calcul
+   * serveur relira au moment du paiement — jamais celui recalculé depuis le
+   * catalogue, qui redonnerait le prix indicatif affiché sur la fiche.
+   */
+  const handleQuote = async () => {
+    const montant = Number(quote)
+    if (!Number.isFinite(montant) || montant <= 0) {
+      setQuoteError('Indiquez un montant supérieur à zéro.')
+      return
+    }
+    setQuoteError('')
+    setQuoting(true)
+    const { error } = await getSupabaseClient()
+      .from('orders')
+      .update({
+        quoted_price_fcfa: montant,
+        total_products_fcfa: montant,
+        total_fcfa: montant,
+        status: 'quoted',
+      })
+      .eq('id', order.id)
+    setQuoting(false)
+    if (error) {
+      setQuoteError(error.message)
+      return
+    }
+    // Recharge la liste : le statut affiché doit suivre.
+    await onStatusChange(order.id, 'quoted')
+  }
 
   const handleStatusChange = async () => {
     const next = nextStatus[order.status]
@@ -142,6 +180,54 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
                     </p>
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* Commande sur mesure : c'est ici que le montant se fixe. Tant qu'il
+              ne l'est pas, le calcul serveur refuse tout paiement — un panier
+              fabriqué à la main ne passerait pas davantage. */}
+          {order.status === 'awaiting_quote' && (
+            <div>
+              <h3 className="font-semibold text-ink mb-3">Confirmer le montant</h3>
+              <div className="bg-gold/10 border border-gold/30 rounded-lg p-4">
+                {order.customer_request && (
+                  <p className="text-sm text-ink mb-3 whitespace-pre-wrap">
+                    <span className="text-ink-dim">Demande du client : </span>
+                    {order.customer_request}
+                  </p>
+                )}
+                {order.estimated_total_fcfa != null && (
+                  <p className="text-xs text-ink-dim mb-3">
+                    Montant indicatif vu par le client :{' '}
+                    <span className="font-semibold text-ink tabular-nums">
+                      {formatAmount(order.estimated_total_fcfa)} FCFA
+                    </span>
+                  </p>
+                )}
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    min={1}
+                    value={quote}
+                    onChange={e => setQuote(e.target.value)}
+                    placeholder="Montant confirmé en FCFA"
+                    className="flex-1 px-3 py-2 border border-border rounded-lg bg-bg-panel text-sm tabular-nums focus:outline-none focus:ring-2 focus:ring-gold"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleQuote}
+                    disabled={quoting}
+                    className="px-4 py-2 bg-ink text-ink-invert rounded-lg text-sm font-semibold hover:bg-ink-dim transition-colors disabled:opacity-50"
+                  >
+                    {quoting ? 'Envoi…' : 'Confirmer'}
+                  </button>
+                </div>
+                {quoteError && <p className="text-xs text-danger mt-2">{quoteError}</p>}
+                <p className="text-xs text-ink-dim mt-2">
+                  Le client verra ce montant dans son compte et pourra régler. Appelez le pour le
+                  prévenir : aucun envoi automatique n&apos;existe.
+                </p>
               </div>
             </div>
           )}

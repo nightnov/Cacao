@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { CheckCircle2, AlertCircle } from 'lucide-react'
 import { btn } from '@/lib/ui'
 import { formatAmount } from '@/lib/format'
@@ -88,9 +89,18 @@ export function CustomOrderForm({
   if (!open) {
     return (
       <div>
+        {/* Sans compte, le client ne reverrait jamais sa commande : c'est dans
+            son espace que le montant lui est confirmé et qu'il règle. On le dit
+            avant qu'il remplisse le formulaire, pas après. */}
+        {!userId ? (
+          <Link href="/account/login" className={btn('solid', 'lg', 'w-full')}>
+            Se connecter pour commander
+          </Link>
+        ) : (
         <button type="button" onClick={() => setOpen(true)} className={btn('solid', 'lg', 'w-full')}>
           Commander cette configuration
         </button>
+        )}
         <p className="text-[12.5px] text-ink-faint mt-2 text-center leading-relaxed">
           Prix indicatif. Le montant définitif vous est confirmé avant tout paiement.
         </p>

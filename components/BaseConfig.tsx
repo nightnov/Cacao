@@ -1,4 +1,6 @@
+import { PackageCheck } from 'lucide-react'
 import { specIcon } from '@/lib/specIcons'
+import { conditionLabel } from '@/lib/condition'
 import type { GlossaryEntry } from '@/lib/glossary'
 
 /**
@@ -22,10 +24,14 @@ import type { GlossaryEntry } from '@/lib/glossary'
 export function BaseConfig({
   specs,
   glossary,
+  condition,
 }: {
   specs: Record<string, unknown>
   glossary: GlossaryEntry[]
+  /** État de l'appareil, quand il est renseigné. */
+  condition?: string | null
 }) {
+  const etat = conditionLabel(condition)
   const lignes = [...glossary]
     .sort((a, b) => a.sort_order - b.sort_order)
     .map(entry => ({ entry, valeur: String(specs?.[entry.key] ?? '').trim() }))
@@ -33,7 +39,7 @@ export function BaseConfig({
 
   // Une fiche sans aucune caractéristique saisie ne doit pas afficher un cadre
   // vide surmonté d'un titre : mieux vaut que le bloc n'existe pas.
-  if (lignes.length === 0) return null
+  if (lignes.length === 0 && !etat) return null
 
   return (
     <section className="rounded-xl border border-border bg-bg-raised px-4 py-3.5 mt-4">
@@ -58,6 +64,23 @@ export function BaseConfig({
             </div>
           )
         })}
+
+        {/* L'état vient en dernier, à la même taille que le reste : le taire
+            serait trompeur, l'afficher en gros ferait fuir avant lecture. */}
+        {etat && (
+          <div className="flex items-start gap-2.5">
+            <PackageCheck
+              size={17}
+              strokeWidth={1.7}
+              className="text-accent flex-shrink-0 mt-[3px]"
+              aria-hidden="true"
+            />
+            <div className="min-w-0">
+              <dt className="text-[11.5px] text-ink-faint leading-tight">État</dt>
+              <dd className="text-[13.5px] text-ink font-medium leading-snug">{etat}</dd>
+            </div>
+          </div>
+        )}
       </dl>
     </section>
   )

@@ -55,6 +55,18 @@ export async function POST(request: Request) {
     )
   }
 
+  /**
+   * Un compte est indispensable, et pas seulement par commodité technique :
+   * c'est dans son espace client que le client verra le montant confirmé et
+   * qu'il pourra régler. Sans compte, il ne reverrait jamais sa commande.
+   */
+  if (!userId) {
+    return Response.json(
+      { error: 'Connectez-vous pour commander : c\'est dans votre compte que le montant vous sera confirmé.' },
+      { status: 401 }
+    )
+  }
+
   const supabase = getSupabaseAdmin()
 
   // Le produit et son prix indicatif sont relus en base : ce que le navigateur

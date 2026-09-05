@@ -48,6 +48,7 @@ export function ProductCard({
   created_at,
   avg_rating,
   review_count,
+  availability,
 }: ProductCardProps) {
   const hasPromo = !!compare_at_price_fcfa && compare_at_price_fcfa > price_fcfa
   const discount = hasPromo
@@ -162,6 +163,14 @@ export function ProductCard({
             </span>
           )}
         </div>
+
+        {/* Sur commande : le montant affiché n'est qu'une estimation. Sans
+            cette mention, une machine à faire venir a exactement l'allure
+            d'une machine en stock, et le client compare un prix ferme et un
+            prix indicatif sans le savoir. */}
+        {availability === 'on_order' && (
+          <p className="mt-1 text-[11.5px] text-ink-faint">Prix indicatif · sur commande</p>
+        )}
 
         {/* Sous le prix, pour ne pas séparer le nom de son montant. */}
         {!!review_count && avg_rating != null && (

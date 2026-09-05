@@ -31,7 +31,7 @@ const FALLBACK_FAQS: FAQItem[] = [
   },
   {
     question: 'Quelles sont les villes de livraison ?',
-    answer: 'Nous livrons à Abidjan, Bouaké, Yamoussoukro, San-Pédro et Daloa. Les frais de livraison varient selon la ville.'
+    answer: "Nous livrons dans Abidjan. Les frais dépendent de votre quartier et vous sont indiqués avant le paiement."
   },
   {
     question: 'Combien de temps pour la livraison ?',

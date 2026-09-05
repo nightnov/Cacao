@@ -3,6 +3,7 @@ import { Play, Inter } from 'next/font/google'
 import './globals.css'
 import { getTheme } from '@/lib/theme.server'
 import { buildThemeStyle, DEFAULT_TOKENS } from '@/lib/theme'
+import { CookieBanner } from '@/components/CookieBanner'
 
 // Play : display anguleuse pour les titres et les prix.
 // Inter : texte courant. Deux graisses par famille seulement, pour limiter
@@ -66,7 +67,12 @@ export default async function RootLayout({
       data-theme={theme.slug}
       style={themeStyle as React.CSSProperties}
     >
-      <body className={`${play.variable} ${inter.variable} font-sans`}>{children}</body>
+      <body className={`${play.variable} ${inter.variable} font-sans`}>
+        {children}
+        {/* Posé dans la mise en page commune plutôt que page par page : un
+            bandeau de consentement absent d'un seul écran ne vaudrait rien. */}
+        <CookieBanner />
+      </body>
     </html>
   )
 }

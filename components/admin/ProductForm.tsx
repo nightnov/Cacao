@@ -8,6 +8,7 @@ import { generateVariantCombinations, variantLabel } from '@/lib/variants'
 import { useCategories } from '@/hooks/useCategories'
 import { ProductOptionsPanel } from '@/components/admin/ProductOptionsPanel'
 import { sizeFromWeight, SIZE_LABELS } from '@/lib/delivery'
+import { ITEM_CONDITIONS } from '@/lib/condition'
 import {
   COMPONENT_TYPES,
   componentIcon,
@@ -85,6 +86,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     specs_ports: '',
     tags: '',
     included_items: '',
+    item_condition: '',
     image_urls: [] as string[],
     video_url: '',
     supplier_name: '',
@@ -142,6 +144,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         included_items: Array.isArray(product.included_items)
           ? product.included_items.join(', ')
           : '',
+        item_condition: product.item_condition || '',
         image_urls: product.image_urls || [],
         video_url: product.video_url || '',
         supplier_name: product.supplier_name || '',
@@ -404,6 +407,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         availability: finalAvailability,
         specs,
         tags,
+        item_condition: formData.item_condition || null,
         included_items: formData.included_items
           .split(',')
           .map(i => i.trim())
@@ -461,6 +465,29 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
           const { error: insertVariantsError } = await supabase.from('product_variants').insert(variantPayload)
           if (insertVariantsError) throw insertVariantsError
         }
+      }
+
+      /**
+       * Purge du cache de la vitrine.
+       *
+       * L'accueil est pré-rendu et régénéré au plus toutes les cinq minutes :
+       * sans cet appel, un prix corrigé ici continuait de s'y afficher à
+       * l'ancien montant, ce qui donnait l'impression que l'enregistrement
+       * n'avait pas fonctionné.
+       *
+       * L'échec n'interrompt pas l'enregistrement, qui a déjà réussi : au pire
+       * le changement met les cinq minutes habituelles à apparaître.
+       */
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          await fetch('/api/admin/revalidate', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${session.access_token}` },
+          })
+        }
+      } catch (err) {
+        console.warn('Purge du cache impossible, le site se mettra à jour dans quelques minutes.', err)
       }
 
       setSuccess(true)
@@ -1122,6 +1149,25 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               Description de la fiche, avec le texte du glossaire. Laissé vide, il
               n&apos;affiche rien.
             </p>
+          </div>
+
+          {/* État de l'appareil */}
+          <div>
+            <label className="block text-sm font-semibold text-ink mb-2">État de l&apos;appareil</label>
+            <select
+              name="item_condition"
+              value={formData.item_condition}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+            >
+              {/* Le vide est un choix valide : ne rien dire vaut mieux
+                  qu'affirmer « neuf » par défaut sur du matériel qui ne l'est
+                  pas forcément. */}
+              <option value="">Non précisé</option>
+              {Object.entries(ITEM_CONDITIONS).map(([value, { label }]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
           </div>
 
           {/* Livré avec */}

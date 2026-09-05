@@ -1,20 +1,8 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import {
-  BatteryMedium,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Cpu,
-  HardDrive,
-  MemoryStick,
-  Monitor,
-  MonitorPlay,
-  LayoutGrid,
-  Usb,
-  type LucideIcon,
-} from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react'
+import { specIcon } from '@/lib/specIcons'
 import type { DescriptionBlock } from '@/lib/glossary'
 import { stripDashes } from '@/lib/text'
 
@@ -31,17 +19,6 @@ import { stripDashes } from '@/lib/text'
  * l'une à l'autre sans viser un petit libellé au doigt.
  */
 
-const ICONS: Record<string, LucideIcon> = {
-  cpu: Cpu,
-  ram: MemoryStick,
-  storage: HardDrive,
-  screen: Monitor,
-  gpu: MonitorPlay,
-  battery: BatteryMedium,
-  os: LayoutGrid,
-  ports: Usb,
-}
-
 export function ProductDescription({ blocks }: { blocks: DescriptionBlock[] }) {
   const [open, setOpen] = useState(true)
   const [active, setActive] = useState(0)
@@ -56,7 +33,7 @@ export function ProductDescription({ blocks }: { blocks: DescriptionBlock[] }) {
 
   const current = blocks[Math.min(active, blocks.length - 1)]
   const go = (delta: number) => setActive(i => (i + delta + blocks.length) % blocks.length)
-  const Icon = ICONS[current.icon] || Cpu
+  const Icon = specIcon(current.icon)
 
   return (
     <section className="rounded-xl border border-border bg-bg-panel overflow-hidden">
@@ -86,7 +63,7 @@ export function ProductDescription({ blocks }: { blocks: DescriptionBlock[] }) {
             className="flex md:flex-col gap-2 overflow-x-auto md:overflow-visible no-scrollbar"
           >
             {blocks.map((block, i) => {
-              const BlockIcon = ICONS[block.icon] || Cpu
+              const BlockIcon = specIcon(block.icon)
               const isActive = i === active
               return (
                 <button

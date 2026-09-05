@@ -31,6 +31,8 @@ export interface Product {
   availability: string
   specs: Record<string, unknown>
   tags: string[]
+  /** Ce qui est livré avec l'appareil : chargeur, souris, sacoche, carton. */
+  included_items?: string[] | null
   image_urls: string[]
   video_url: string | null
   supplier_name?: string | null

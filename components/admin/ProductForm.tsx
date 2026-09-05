@@ -84,6 +84,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     specs_os: '',
     specs_ports: '',
     tags: '',
+    included_items: '',
     image_urls: [] as string[],
     video_url: '',
     supplier_name: '',
@@ -138,6 +139,9 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         specs_os: (product.specs?.os as string) || '',
         specs_ports: (product.specs?.ports as string) || '',
         tags: Array.isArray(product.tags) ? product.tags.join(', ') : '',
+        included_items: Array.isArray(product.included_items)
+          ? product.included_items.join(', ')
+          : '',
         image_urls: product.image_urls || [],
         video_url: product.video_url || '',
         supplier_name: product.supplier_name || '',
@@ -400,6 +404,10 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         availability: finalAvailability,
         specs,
         tags,
+        included_items: formData.included_items
+          .split(',')
+          .map(i => i.trim())
+          .filter(Boolean),
         image_urls: formData.image_urls,
         video_url: formData.video_url || null,
         supplier_name: formData.supplier_name || null,
@@ -1113,6 +1121,25 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               Chaque champ rempli fait apparaître son explication dans la section
               Description de la fiche, avec le texte du glossaire. Laissé vide, il
               n&apos;affiche rien.
+            </p>
+          </div>
+
+          {/* Livré avec */}
+          <div>
+            <label className="block text-sm font-semibold text-ink mb-2">
+              Livré avec (séparés par virgules)
+            </label>
+            <input
+              type="text"
+              name="included_items"
+              value={formData.included_items}
+              onChange={handleChange}
+              className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold"
+              placeholder="Ex: Chargeur, Souris, Sacoche, Carton d'origine"
+            />
+            <p className="text-xs text-ink-dim mt-1.5">
+              Ce qui accompagne l&apos;appareil. Laissé vide, rien n&apos;est affiché et rien
+              n&apos;est promis au client.
             </p>
           </div>
 

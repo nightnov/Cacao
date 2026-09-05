@@ -36,6 +36,8 @@ import { ProductGallery } from '@/components/ProductGallery'
 import { ProductConfigurator } from '@/components/ProductConfigurator'
 import { ProductDescription } from '@/components/ProductDescription'
 import { ConfigSummary } from '@/components/ConfigSummary'
+import { BaseConfig } from '@/components/BaseConfig'
+import { IncludedItems } from '@/components/IncludedItems'
 import {
   buildDescriptionBlocks,
   FALLBACK_GLOSSARY,
@@ -67,6 +69,8 @@ interface Product {
   compare_at_price_fcfa: number | null
   availability: 'in_stock' | 'on_order' | 'discontinued'
   specs: Record<string, unknown>
+  /** Ce qui est livré avec l'appareil : chargeur, souris, sacoche, carton. */
+  included_items?: string[] | null
   components?: unknown
   tags: string[]
   image_urls: string[]
@@ -213,6 +217,9 @@ export default function ProductDetail() {
         // la migration 034 : elle est demandée d'abord, puis abandonnée, sans
         // que la fiche cesse de s'afficher.
         const attempts = [
+          // `included_items` n'existe qu'après la migration 044 : demandée en
+          // premier, abandonnée ensuite, sans que la fiche cesse de s'afficher.
+          `${BASE}, short_description, components, included_items, seller_id, sellers(name, created_at)`,
           `${BASE}, short_description, components, seller_id, sellers(name, created_at)`,
           `${BASE}, short_description, components`,
           `${BASE}, components`,
@@ -664,10 +671,14 @@ export default function ProductDetail() {
               productCount={sellerStats?.productCount}
             />
 
-            {/* Le bloc « Caractéristiques » qui figurait ici a été retiré : les
-                sélecteurs ci-dessous montrent déjà le processeur, la mémoire et
-                le stockage retenus, et les répéter à dix centimètres disait deux
-                fois la même chose. Le détail vit dans la section Description. */}
+            {/* Configuration de base et accessoires fournis. Ce bloc avait été
+                retiré au motif que les sélecteurs ci-dessous montraient déjà le
+                processeur et la mémoire : c'était vrai des produits configurés,
+                faux de tous les autres, où plus rien n'apparaissait. Il dit ce
+                que la machine EST ; le résumé de ce que le client a CHOISI
+                reste sous les sélecteurs. */}
+            <BaseConfig specs={product.specs || {}} glossary={glossary} />
+            <IncludedItems items={product.included_items || []} />
 
             <div className="my-5 space-y-5">
               <ProductConfigurator

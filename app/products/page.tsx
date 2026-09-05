@@ -74,7 +74,15 @@ function ProductsContent() {
         if (search) params.set('search', search)
         if (sort) params.set('sort', sort)
         const url = params.toString() ? `/api/products?${params.toString()}` : '/api/products'
-        const res = await fetch(url)
+        /**
+         * `no-store` : le navigateur gardait la réponse d'une visite
+         * précédente. Un produit reclassé dans un autre rayon continuait donc
+         * d'apparaître à son ancienne place, ou disparaissait de la nouvelle,
+         * et le compteur annonçait « 1 produit au catalogue » quand la base en
+         * comptait quatre. Le catalogue est ce qu'un client consulte avant
+         * d'acheter : il ne peut pas décrire l'état d'avant hier.
+         */
+        const res = await fetch(url, { cache: 'no-store' })
         const data = await res.json()
         setProducts(data)
       } catch (error) {
@@ -92,7 +100,7 @@ function ProductsContent() {
     if (loading || products.length >= 6 || search) return
     const fetchPopular = async () => {
       try {
-        const res = await fetch('/api/products?sort=popular')
+        const res = await fetch('/api/products?sort=popular', { cache: 'no-store' })
         const data = await res.json()
         setPopularFallback((data || []).filter((p: Product) => !products.some(existing => existing.id === p.id)).slice(0, 4))
       } catch {

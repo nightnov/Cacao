@@ -120,6 +120,38 @@ export async function GET(req: NextRequest) {
     'tags',
   ])
 
+  /**
+   * Test d'écriture sur les produits.
+   *
+   * Lire et écrire sont deux permissions distinctes : les produits se lisent
+   * grâce à une règle de lecture publique, ce qui ne dit rien du droit de les
+   * modifier. Et une écriture refusée ne renvoie aucune erreur — elle touche
+   * zéro ligne en silence, si bien que le formulaire annonçait « enregistré »
+   * sans que rien n'ait changé.
+   *
+   * On réécrit donc un produit avec sa propre valeur. Rien ne change dans la
+   * base, mais la règle d'écriture est bel et bien sollicitée, et le nombre de
+   * lignes touchées répond à la question.
+   */
+  let ecritureProduits = 'non testee'
+  const { data: cible } = await asUser.from('products').select('id, name').limit(1)
+  if (!cible?.length) {
+    ecritureProduits = 'aucun produit en base pour tester'
+  } else {
+    const { data: touchees, error: erreurEcriture } = await asUser
+      .from('products')
+      .update({ name: cible[0].name })
+      .eq('id', cible[0].id)
+      .select('id')
+
+    ecritureProduits = erreurEcriture
+      ? `refusee avec erreur → ${erreurEcriture.message}`
+      : touchees?.length
+        ? 'ok'
+        : 'REFUSEE EN SILENCE : zero ligne modifiee, aucune erreur. La regle ' +
+          'd ecriture sur products est absente ou ne reconnait pas votre compte.'
+  }
+
   // La jointure vers profiles est le second suspect : la liste la demande, et
   // un refus de lecture sur profiles ferait échouer la requête des commandes.
   const { error: erreurJointure } = await asUser
@@ -135,6 +167,7 @@ export async function GET(req: NextRequest) {
     colonnesProduitsManquantes: colonnesProduitsManquantes.length
       ? colonnesProduitsManquantes
       : 'aucune',
+    ecritureProduits,
     jointureProfiles: erreurJointure ? erreurJointure.message : 'ok',
     diagnostic:
       reellementEnBase === 0
@@ -148,7 +181,9 @@ export async function GET(req: NextRequest) {
             : erreurJointure
               ? 'Les commandes sont lisibles, mais la jointure vers profiles echoue et fait ' +
                 'echouer la requete de la liste.'
-              : 'Tout ce qui est teste ici repond correctement. Ouvrez la page Commandes : elle ' +
-                'affiche desormais le message exact renvoye par la base.',
+              : ecritureProduits !== 'ok'
+                ? 'Les lectures repondent toutes. C est l ecriture sur les produits qui est ' +
+                  'refusee : voir la ligne ecritureProduits.'
+                : 'Tout ce qui est teste ici repond correctement, lectures comme ecritures.',
   })
 }

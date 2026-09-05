@@ -24,16 +24,37 @@ type Filter = 'all' | 'never' | 'failed'
 
 const CARD = 'bg-bg-panel border border-border rounded-2xl'
 
-/** Un numéro ivoirien saisi « 07 00 00 00 00 » devient « 2250700000000 ». */
-function waLink(phone: string | undefined, orderNumber: string): string | null {
+/**
+ * Un numéro ivoirien saisi « 07 00 00 00 00 » devient « 2250700000000 ».
+ *
+ * Le texte dépend de ce que dit le dernier paiement, et ce n'est pas un détail
+ * de politesse. Le message était figé sur « votre commande n'a pas été réglée »
+ * quel que soit l'état réel : un client dont le paiement a abouti mais dont la
+ * commande est restée bloquée recevait donc l'accusation d'un impayé pour un
+ * dysfonctionnement qui n'est pas le sien. On ne réclame pas de l'argent déjà
+ * reçu.
+ */
+function waLink(
+  phone: string | undefined,
+  orderNumber: string,
+  lastPayment: Row['lastPayment']
+): string | null {
   if (!phone) return null
   const digits = phone.replace(/\D/g, '')
   if (digits.length < 8) return null
   const full = digits.startsWith('225') ? digits : `225${digits}`
-  const text = encodeURIComponent(
-    `Bonjour, votre commande ${orderNumber} sur CACAO n'a pas été réglée. Souhaitez-vous la finaliser ?`
-  )
-  return `https://wa.me/${full}?text=${text}`
+
+  const message =
+    lastPayment === 'successful'
+      ? `Bonjour, nous avons bien reçu le paiement de votre commande ${orderNumber} sur CACAO. ` +
+        `Nous la préparons et nous vous recontactons pour la livraison.`
+      : lastPayment === 'failed'
+        ? `Bonjour, le paiement de votre commande ${orderNumber} sur CACAO n'est pas allé au bout. ` +
+          `Souhaitez-vous réessayer ?`
+        : `Bonjour, votre commande ${orderNumber} sur CACAO est enregistrée mais le paiement ` +
+          `n'a pas été finalisé. Souhaitez-vous la terminer ?`
+
+  return `https://wa.me/${full}?text=${encodeURIComponent(message)}`
 }
 
 export default function AdminAbandoned() {
@@ -207,7 +228,7 @@ export default function AdminAbandoned() {
           <ul className="divide-y divide-border">
             {visible.map(r => {
               const phone = r.shipping_address?.phone
-              const wa = waLink(phone, r.order_number)
+              const wa = waLink(phone, r.order_number, r.lastPayment)
               return (
                 <li key={r.id} className="p-4 flex flex-wrap items-start gap-3">
                   <div className="min-w-0 flex-1">
@@ -231,6 +252,19 @@ export default function AdminAbandoned() {
                         <span> · paiement lancé, non terminé</span>
                       )}
                     </p>
+
+                    {/* Argent encaissé, commande restée en attente. Ce n'est
+                        pas un impayé : c'est la confirmation qui n'est pas
+                        redescendue de MoneyFusion. Sans cet avertissement, la
+                        commande dort dans cette liste et le client, qui a
+                        pourtant payé, n'est jamais livré. */}
+                    {r.lastPayment === 'successful' && (
+                      <p className="mt-2 text-[12px] text-danger font-semibold border border-danger/40 bg-danger/10 rounded-lg px-2.5 py-1.5">
+                        Paiement reçu mais commande non confirmée. Vérifiez l encaissement chez
+                        MoneyFusion, puis passez la commande en « Confirmée ». Ne réclamez pas le
+                        paiement à ce client.
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2">

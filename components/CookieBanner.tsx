@@ -20,23 +20,43 @@ import { btn } from '@/lib/ui'
  */
 const STORAGE_KEY = 'cacao-cookies'
 
+/** Le choix vaut s'il est retrouvé d'un côté ou de l'autre. */
+function choixDejaFait(): boolean {
+  try {
+    if (localStorage.getItem(STORAGE_KEY)) return true
+  } catch {
+    // Stockage refusé : le cookie reste à consulter.
+  }
+  try {
+    return document.cookie.split('; ').some(c => c.startsWith(`${STORAGE_KEY}=`))
+  } catch {
+    return false
+  }
+}
+
 export function CookieBanner() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    try {
-      if (!localStorage.getItem(STORAGE_KEY)) setVisible(true)
-    } catch {
-      // Navigation privée ou stockage refusé : on n'insiste pas. Un bandeau
-      // qu'on ne peut pas faire disparaître serait pire que pas de bandeau.
-    }
+    if (choixDejaFait()) return
+    setVisible(true)
   }, [])
 
   const choisir = (valeur: 'accepte' | 'refuse') => {
     try {
       localStorage.setItem(STORAGE_KEY, valeur)
     } catch {
-      // Sans stockage, le choix vaut pour la visite en cours.
+      // Sans stockage, le cookie ci dessous prend le relais.
+    }
+    // Le choix est écrit deux fois, et ce n'est pas de la redondance inutile.
+    // Certains navigateurs vident le stockage local d'un site qu'on visite peu,
+    // ou le refusent en navigation privée, tout en gardant les cookies. Le
+    // bandeau réapparaissait alors sans que le visiteur ait rien changé, ce
+    // qui donne l'impression qu'on ignore sa réponse.
+    try {
+      document.cookie = `${STORAGE_KEY}=${valeur}; path=/; max-age=31536000; SameSite=Lax`
+    } catch {
+      // Sans cookie ni stockage, le choix vaut pour la visite en cours.
     }
     setVisible(false)
   }

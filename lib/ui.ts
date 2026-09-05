@@ -224,13 +224,14 @@ export const SCROLL_ROW =
 /**
  * Largeur d'une carte dans cette rangée. Neutre dès que la grille reprend.
  *
- * 62 % de la largeur et non 80 % : à 80 %, une carte occupait tout l'écran du
- * téléphone et la suivante restait invisible. Rien n'indiquait alors qu'il y
- * avait autre chose à voir, et la rangée passait pour un produit unique
- * démesuré. Le bord de la carte suivante qui dépasse est ce qui apprend au
- * doigt qu'il peut glisser — aucune légende ne remplace ça.
+ * 70 % de la largeur, mesuré sur le site de référence : la carte reste assez
+ * grande pour que la photo se lise, et la suivante dépasse d'environ un
+ * sixième d'écran. Ce bord qui affleure est ce qui apprend au doigt qu'il peut
+ * glisser — aucune légende ne remplace ça. À 80 %, la carte occupait tout
+ * l'écran, la suivante restait invisible, et la rangée passait pour un produit
+ * unique démesuré.
  */
-export const SCROLL_CARD = 'w-[62vw] max-w-[260px] flex-shrink-0 snap-start sm:w-auto sm:max-w-none'
+export const SCROLL_CARD = 'w-[70vw] max-w-[300px] flex-shrink-0 snap-start sm:w-auto sm:max-w-none'
 
 /**
  * Lien encadré, isolé dans une zone aérée.

@@ -4,6 +4,7 @@ import { Footer } from '@/components/Footer'
 import { ProductCard } from '@/components/ProductCard'
 import { PromoCarousel } from '@/components/PromoCarousel'
 import { NewsletterForm } from '@/components/NewsletterForm'
+import { ScrollRow } from '@/components/ScrollRow'
 import {
   btn, categoryAccent, TITLE_SECTION, TITLE_CARD, SCROLL_ROW, SCROLL_CARD,
   LINK_FRAMED, LINK_FRAMED_ARROW,
@@ -92,13 +93,13 @@ function ProductSection({ title, products, href }: { title: string; products: Pr
       </div>
       {/* Trois colonnes et non quatre : les cartes gagnent en largeur, la photo
           du produit devient lisible et le nom cesse d'être tronqué. */}
-      <div className={`${SCROLL_ROW} gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-8`}>
+      <ScrollRow count={products.length} className="gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-8">
         {products.map(p => (
           <div key={p.id} className={SCROLL_CARD}>
             <ProductCard {...p} />
           </div>
         ))}
-      </div>
+      </ScrollRow>
     </section>
   )
 }
@@ -300,7 +301,7 @@ export default async function Home() {
         {/* Cartes hautes avec visuel : une photo de machine dit en un coup
             d'œil ce que contient le rayon, là où quatre icônes de trait se
             ressemblaient toutes. */}
-        <div className={`${SCROLL_ROW} gap-4 sm:grid-cols-2 lg:grid-cols-4 sm:gap-6`}>
+        <ScrollRow count={gammes.length} className="gap-4 sm:grid-cols-2 lg:grid-cols-4 sm:gap-6">
           {gammes.map(({ cat, min, count }) => {
             const Icon = cat.icon
             // Teinte du rayon : elle habille le bouton et le montant, rien
@@ -413,7 +414,7 @@ export default async function Home() {
               </Link>
             )
           })}
-        </div>
+        </ScrollRow>
       </section>
 
       {/* Meilleures ventes, une section par famille, trois modèles chacune.

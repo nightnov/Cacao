@@ -165,6 +165,36 @@ export async function GET(req: NextRequest) {
    * On lit donc côté service, sans filtre, ce que la base sait vraiment.
    */
   const db = getSupabaseAdmin()
+
+  /**
+   * Les rayons déclarés, et la valeur réellement écrite sur chaque produit.
+   *
+   * La page d'un rayon filtre en base sur cette valeur, tandis que le bas de
+   * page regroupe les mêmes produits côté navigateur. Les deux affichaient des
+   * comptes différents pour « PC Bureau », ce qui n'est possible que si la
+   * valeur demandée par le lien et celle inscrite sur les produits ne se
+   * correspondent pas exactement. Un espace en trop ou une majuscule suffit,
+   * et rien à l'écran ne le laisse voir.
+   */
+  const { data: rayons } = await db.from('categories').select('value, label, sort_order')
+  const { data: tousProduits } = await db.from('products').select('name, category, status')
+
+  const parRayon = new Map<string, number>()
+  for (const p of tousProduits || []) {
+    const cle = JSON.stringify(p.category)
+    parRayon.set(cle, (parRayon.get(cle) || 0) + 1)
+  }
+
+  const rayonsDeclares = (rayons || []).map(r => JSON.stringify(r.value))
+
+  const catalogue = {
+    rayonsDeclares,
+    valeursEcritesSurLesProduits: Object.fromEntries(parRayon),
+    // Une valeur portée par des produits mais absente des rayons déclarés
+    // rend ces produits introuvables par le menu.
+    valeursOrphelines: [...parRayon.keys()].filter(v => !rayonsDeclares.includes(v)),
+    produits: (tousProduits || []).map(p => `${p.name} → ${JSON.stringify(p.category)} (${p.status})`),
+  }
   const { data: dernieres } = await db
     .from('orders')
     .select('id, order_number, status, total_fcfa, created_at')
@@ -202,7 +232,8 @@ export async function GET(req: NextRequest) {
     // Repère de version. Sans lui, une page servie depuis le cache ressemble
     // trait pour trait à une page à jour, et on cherche dans un resultat
     // périmé une ligne qui n'y a jamais été.
-    version: 4,
+    version: 5,
+    catalogue,
     notificationsDePaiementRecues: notificationsRecues,
     etatDesCommandes,
     ...identite,

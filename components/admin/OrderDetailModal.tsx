@@ -33,12 +33,11 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
   const [updating, setUpdating] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
 
-  // Construit dans le navigateur plutôt qu'écrit en dur : le lien doit rester
-  // juste en développement local comme sur le domaine de production.
+  // La même adresse pour tous les colis : le livreur l'enregistre une fois.
+  // Construite dans le navigateur plutôt qu'écrite en dur, pour rester juste
+  // en développement local comme sur le domaine de production.
   const deliveryLink =
-    typeof window !== 'undefined' && order.delivery_token
-      ? `${window.location.origin}/livraison/${order.delivery_token}`
-      : ''
+    typeof window !== 'undefined' ? `${window.location.origin}/livraison` : ''
 
   const handleStatusChange = async () => {
     const next = nextStatus[order.status]
@@ -162,9 +161,9 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
 
           {/* Lien du livreur : c'est lui qui rend le code utilisable. Sans ce
               lien, le livreur n'a aucun moyen de vérifier quoi que ce soit. */}
-          {order.delivery_token && (
+          {order.delivery_code && (
             <div>
-              <h3 className="font-semibold text-ink mb-3">Lien à envoyer au livreur</h3>
+              <h3 className="font-semibold text-ink mb-3">Lien du livreur</h3>
               <div className="bg-bg-raised rounded-lg p-4 border border-border">
                 {order.delivered_at ? (
                   <p className="text-sm text-ink">
@@ -178,8 +177,9 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
                 ) : (
                   <>
                     <p className="text-xs text-ink-dim mb-3">
-                      Envoyez ce lien au livreur avec le colis. Il y saisira le code que le client
-                      lui donnera à la remise. Ne le transmettez jamais au client.
+                      Même adresse pour tous les colis : le livreur l&apos;enregistre une fois. Il y
+                      saisira le code que le client lui donnera à la remise. Ne le transmettez
+                      jamais au client.
                     </p>
                     <button
                       type="button"

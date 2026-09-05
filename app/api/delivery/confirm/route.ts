@@ -1,86 +1,126 @@
+import { createHash } from 'crypto'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 
 /**
  * Confirmation de remise par le livreur.
  *
- * Le livreur n'a pas de compte : il détient le lien du colis, et le client lui
- * dicte le code au moment de la remise. C'est la réunion des deux qui vaut
- * preuve — le lien seul ne suffit pas, le code seul non plus.
+ * Le livreur n'a pas de compte. Il ouvre une page unique, dont l'adresse lui a
+ * été donnée une fois pour toutes, et saisit le code que le client lui dicte
+ * au moment de la remise. C'est cela qui vaut preuve : le code n'est
+ * obtenable qu'en rencontrant le client.
  *
- * La vérification est faite ici et pas dans le navigateur : sinon il suffirait
- * d'ouvrir les outils du navigateur pour lire le code attendu dans la page.
+ * Puisque l'adresse de la page est connue de tous, c'est le code seul qui
+ * protège. Deux garde fous le rendent suffisant :
+ *
+ *   • sa longueur — six chiffres, soit un million de combinaisons pour les
+ *     commandes créées depuis la migration 043 ;
+ *   • la limite d'essais ci dessous, comptée par appareil.
+ *
+ * Et rien n'est révélé tant que le code n'est pas juste : un essai raté
+ * n'apprend même pas si une commande existe.
  */
-const MAX_ATTEMPTS = 5
+const MAX_ATTEMPTS_PER_HOUR = 10
+
+function hashIp(request: Request): string {
+  const forwarded = request.headers.get('x-forwarded-for') || ''
+  const ip = forwarded.split(',')[0].trim() || request.headers.get('x-real-ip') || 'inconnue'
+  // L'adresse n'est pas conservée en clair : compter les essais ne demande pas
+  // de savoir qui les fait.
+  return createHash('sha256')
+    .update(`${ip}|${process.env.SUPABASE_SERVICE_ROLE_KEY || 'cacao'}`)
+    .digest('hex')
+}
 
 export async function POST(request: Request) {
-  let body: { token?: unknown; code?: unknown }
+  let body: { code?: unknown }
   try {
     body = await request.json()
   } catch {
     return Response.json({ error: 'Requête illisible.' }, { status: 400 })
   }
 
-  const token = typeof body.token === 'string' ? body.token : ''
   const code = typeof body.code === 'string' ? body.code.trim() : ''
-
-  if (!/^[0-9a-f]{64}$/.test(token)) {
-    return Response.json({ error: 'Lien invalide.' }, { status: 400 })
-  }
-  if (!/^\d{4}$/.test(code)) {
-    return Response.json({ error: 'Le code comporte quatre chiffres.' }, { status: 400 })
+  // Quatre chiffres restent acceptés : les commandes passées avant la
+  // migration 043 en portent un, et le client l'a peut être noté.
+  if (!/^\d{4,6}$/.test(code)) {
+    return Response.json({ error: 'Le code comporte six chiffres.' }, { status: 400 })
   }
 
   const supabase = getSupabaseAdmin()
+  const ipHash = hashIp(request)
+  const since = new Date(Date.now() - 3600_000).toISOString()
 
-  const { data: order, error } = await supabase
-    .from('orders')
-    .select('id, order_number, status, delivery_code, delivery_attempts, delivered_at')
-    .eq('delivery_token', token)
-    .maybeSingle()
+  const { count } = await supabase
+    .from('delivery_attempts')
+    .select('id', { count: 'exact', head: true })
+    .eq('ip_hash', ipHash)
+    .gte('created_at', since)
 
-  if (error || !order) {
-    return Response.json({ error: 'Lien invalide.' }, { status: 404 })
-  }
-
-  if (order.delivered_at) {
-    return Response.json({ error: 'Cette livraison a déjà été confirmée.' }, { status: 409 })
-  }
-
-  if ((order.delivery_attempts ?? 0) >= MAX_ATTEMPTS) {
+  if ((count ?? 0) >= MAX_ATTEMPTS_PER_HOUR) {
     return Response.json(
-      { error: 'Trop de codes erronés. Contactez le vendeur pour confirmer la remise.' },
+      { error: 'Trop d\'essais. Réessayez dans une heure ou contactez le vendeur.' },
       { status: 429 }
     )
   }
 
-  if (order.delivery_code !== code) {
-    // Le compteur monte avant la réponse : sans cela, interrompre la requête
-    // suffirait à essayer indéfiniment.
-    await supabase
-      .from('orders')
-      .update({ delivery_attempts: (order.delivery_attempts ?? 0) + 1 })
-      .eq('id', order.id)
+  const { data: matches, error } = await supabase
+    .from('orders')
+    .select('id, order_number, shipping_address')
+    .eq('delivery_code', code)
+    .is('delivered_at', null)
+    .not('status', 'in', '(cancelled,refunded,delivered)')
+    .limit(2)
 
-    const left = MAX_ATTEMPTS - (order.delivery_attempts ?? 0) - 1
+  if (error) {
+    console.error('Livraison : lecture impossible.', error)
+    return Response.json({ error: 'Confirmation impossible pour le moment.' }, { status: 500 })
+  }
+
+  // L'essai est enregistré avant la réponse : interrompre la requête ne doit
+  // pas permettre de recommencer sans compter.
+  await supabase.from('delivery_attempts').insert({
+    ip_hash: ipHash,
+    succeeded: matches?.length === 1
+  })
+
+  if (!matches || matches.length === 0) {
     return Response.json(
-      {
-        error: left > 0
-          ? `Code incorrect. Il reste ${left} essai${left > 1 ? 's' : ''}.`
-          : 'Code incorrect. Le lien est désormais bloqué, contactez le vendeur.'
-      },
-      { status: 400 }
+      { error: 'Code inconnu. Vérifiez auprès du client.' },
+      { status: 404 }
     )
   }
 
+  // Deux commandes en cours portant le même code : improbable sur un million
+  // de combinaisons, mais confirmer la mauvaise serait pire que de s'arrêter.
+  if (matches.length > 1) {
+    return Response.json(
+      { error: 'Ce code correspond à plusieurs commandes. Contactez le vendeur.' },
+      { status: 409 }
+    )
+  }
+
+  const order = matches[0]
   const { error: updateError } = await supabase
     .from('orders')
     .update({ status: 'delivered', delivered_at: new Date().toISOString() })
     .eq('id', order.id)
+    // La commande ne doit pas avoir été confirmée entre la lecture et
+    // l'écriture : sans cette condition, deux envois simultanés passeraient
+    // tous les deux.
+    .is('delivered_at', null)
 
   if (updateError) {
     console.error('Livraison : confirmation impossible.', updateError)
     return Response.json({ error: 'Confirmation impossible pour le moment.' }, { status: 500 })
   }
 
-  return Response.json({ ok: true, order_number: order.order_number })
+  const address = (order.shipping_address || {}) as { full_name?: string }
+
+  return Response.json({
+    ok: true,
+    order_number: order.order_number,
+    // Renvoyé seulement après un code juste : le livreur vérifie qu'il est
+    // bien chez la bonne personne, et rien n'a fuité en cas d'essai raté.
+    recipient: address.full_name || null
+  })
 }

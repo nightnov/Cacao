@@ -41,8 +41,20 @@ function generateOrderNumber(): string {
   return `CMD-${datePart}-${randomPart}`
 }
 
+/**
+ * Six chiffres et non quatre.
+ *
+ * La confirmation de livraison se fait sur une page unique, dont l'adresse est
+ * connue de quiconque a livré une fois. C'est donc le code seul qui protège.
+ * Quatre chiffres n'offraient que neuf mille combinaisons, essayables une à
+ * une en quelques minutes ; six en offrent un million.
+ *
+ * Le tirage reste celui du navigateur : le code n'a pas à être imprévisible au
+ * sens cryptographique, il doit seulement être assez long pour que la
+ * recherche au hasard ne soit pas rentable face à la limite d'essais.
+ */
 function generateDeliveryCode(): string {
-  return Math.floor(1000 + Math.random() * 9000).toString()
+  return Math.floor(100000 + Math.random() * 900000).toString()
 }
 
 export default function Checkout() {

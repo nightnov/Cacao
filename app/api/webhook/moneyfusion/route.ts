@@ -36,6 +36,44 @@ export async function POST(request: Request) {
 
     const supabaseAdmin = getSupabaseAdmin()
 
+    /**
+     * Cette adresse est publique : n'importe qui peut lui envoyer un message.
+     *
+     * Sans vérification, il suffisait d'écrire « paiement abouti » pour cette
+     * commande pour la faire passer en confirmée, déduire le stock et repartir
+     * avec un ordinateur sans avoir rien payé. La commande n'a même pas besoin
+     * d'être la sienne : son identifiant apparaît dans l'adresse de la page de
+     * retour.
+     *
+     * On exige donc que le jeton annoncé soit un de ceux que nous avons
+     * nous mêmes obtenus de MoneyFusion en ouvrant ce paiement, et qu'il
+     * appartienne bien à cette commande. Un inconnu ne peut pas le deviner :
+     * il est produit par MoneyFusion et n'a jamais circulé publiquement.
+     *
+     * Ce n'est pas une signature cryptographique et je ne le présente pas
+     * comme telle. C'est ce qui est vérifiable sans documentation
+     * supplémentaire, et cela ferme la porte grande ouverte.
+     */
+    if (payload.event === 'payin.session.completed') {
+      const { data: connu } = await supabaseAdmin
+        .from('payment_logs')
+        .select('id')
+        .eq('order_id', orderId)
+        .eq('moneyfusion_transaction_id', payload.tokenPay)
+        .limit(1)
+
+      if (!connu?.length) {
+        console.error(
+          'Notification de paiement rejetée : jeton inconnu pour la commande',
+          orderId,
+          payload.tokenPay
+        )
+        // On répond 200 : rien ne sert d'apprendre à l'expéditeur si son essai
+        // a porté, et une erreur ferait réessayer un émetteur légitime.
+        return Response.json({ received: true })
+      }
+    }
+
     // Idempotence: on ignore si le statut n'a pas changé (Moneyfusion peut
     // renvoyer plusieurs fois le même événement).
     const { data: existingOrder } = await supabaseAdmin

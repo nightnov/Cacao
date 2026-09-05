@@ -160,6 +160,10 @@ export async function GET(req: NextRequest) {
     .limit(1)
 
   return NextResponse.json({
+    // Repère de version. Sans lui, une page servie depuis le cache ressemble
+    // trait pour trait à une page à jour, et on cherche dans un resultat
+    // périmé une ligne qui n'y a jamais été.
+    version: 3,
     ...identite,
     commandesVuesParVotreCompte: vuParVous ?? 0,
     commandesReellementEnBase: reellementEnBase ?? 0,

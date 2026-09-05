@@ -24,8 +24,11 @@ export default function AdminDiagnostic() {
           setErreur('Aucune session. Reconnectez vous à l administration.')
           return
         }
+        // `no-store` : un diagnostic servi depuis le cache décrit l'état d'hier
+        // et ferait chercher une panne déjà réparée.
         const res = await fetch('/api/admin/diagnostic', {
           headers: { Authorization: `Bearer ${session.access_token}` },
+          cache: 'no-store',
         })
         setResultat(await res.json())
       } catch (e) {

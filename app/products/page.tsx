@@ -42,7 +42,7 @@ const sortOptions = [
 
 function ProductGrid({ products }: { products: Product[] }) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-5 gap-y-8">
       {products.map(product => (
         <ProductCard key={product.id} {...product} />
       ))}
@@ -335,10 +335,17 @@ function ProductsContent() {
             </div>
           </aside>
 
-          {/* Grille produits */}
+          {/* Grille produits.
+              Une colonne sur téléphone, deux sur tablette, trois au plus sur
+              grand écran. À deux colonnes sur un écran de 375 px, une carte
+              faisait 165 px : la photo devenait une vignette où l'on ne
+              distinguait ni la façade, ni les ports, ni la finition. On ne
+              choisit pas une machine à plusieurs centaines de milliers de
+              francs sur une image de cette taille. La page est plus longue,
+              et c'est le prix d'un achat qu'on voit venir. */}
           <div>
             {loading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="animate-pulse">
                     <div className="bg-bg-raised aspect-square rounded-xl"></div>
@@ -351,7 +358,7 @@ function ProductsContent() {
               </div>
             ) : filteredProducts.length > 0 ? (
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {filteredProducts.map(product => (
                     <ProductCard key={product.id} {...product} />
                   ))}
@@ -379,7 +386,7 @@ function ProductsContent() {
                         Voir tout le rayon
                       </Link>
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                       {produits.map(p => (
                         <ProductCard key={p.id} {...p} />
                       ))}

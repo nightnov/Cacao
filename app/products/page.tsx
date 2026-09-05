@@ -73,7 +73,12 @@ function ProductsContent() {
         if (category) params.set('category', category)
         if (search) params.set('search', search)
         if (sort) params.set('sort', sort)
-        const url = params.toString() ? `/api/products?${params.toString()}` : '/api/products'
+        // Un instant qui change à chaque appel. `cache: no-store` demande
+        // poliment au navigateur de ne rien garder ; une adresse qu'il n'a
+        // jamais vue ne lui laisse pas le choix, et cela vaut aussi pour tout
+        // cache posé entre lui et nous.
+        params.set('_', String(Date.now()))
+        const url = `/api/products?${params.toString()}`
         /**
          * `no-store` : le navigateur gardait la réponse d'une visite
          * précédente. Un produit reclassé dans un autre rayon continuait donc
@@ -100,7 +105,7 @@ function ProductsContent() {
     if (loading || products.length >= 6 || search) return
     const fetchPopular = async () => {
       try {
-        const res = await fetch('/api/products?sort=popular', { cache: 'no-store' })
+        const res = await fetch(`/api/products?sort=popular&_=${Date.now()}`, { cache: 'no-store' })
         const data = await res.json()
         setPopularFallback((data || []).filter((p: Product) => !products.some(existing => existing.id === p.id)).slice(0, 4))
       } catch {

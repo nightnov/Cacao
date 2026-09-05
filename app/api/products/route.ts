@@ -36,7 +36,13 @@ export async function GET(request: Request) {
       await supabase.from('search_logs').insert([{ query: search, results_count: products.length }])
     }
 
-    return Response.json(products)
+    // Le catalogue est ce qu'un client consulte avant d'acheter : aucune
+    // couche intermédiaire ne doit en garder une copie. Un prix ou un rayon
+    // corrigé doit être visible à la seconde suivante, pas au bon vouloir d'un
+    // cache dont personne ne connaît la durée.
+    return Response.json(products, {
+      headers: { 'Cache-Control': 'no-store, max-age=0' },
+    })
   } catch (error) {
     console.error('API error:', error)
     return Response.json({ error: 'Failed to fetch products' }, { status: 500 })

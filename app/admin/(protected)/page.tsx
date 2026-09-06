@@ -11,6 +11,7 @@ import { StatusBadge, StatusTone } from '@/components/admin/StatusBadge'
 import { Avatar } from '@/components/admin/Avatar'
 import { Order } from '@/types/admin'
 import { formatAmount } from '@/lib/format'
+import { OuvertureChecklist } from '@/components/admin/OuvertureChecklist'
 
 const MONTH_LABELS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
 
@@ -385,6 +386,11 @@ export default function AdminDashboard() {
     <div>
       <h1 className="font-serif font-semibold text-4xl text-ink mb-2">Tableau de bord</h1>
       <p className="text-ink-dim mb-8">Bienvenue dans l&apos;administration Cacao</p>
+
+      {/* Ce qui empêcherait un vrai client d'aller au bout. Placé avant les
+          chiffres : ces manques ne se voient nulle part ailleurs, et chacun
+          correspond à quelqu'un qui abandonne sans vous le dire. */}
+      <OuvertureChecklist />
 
       {/* ── À traiter ──────────────────────────────────────────────────────
           Placé avant les totaux : un cumul se consulte, une action s'exécute.

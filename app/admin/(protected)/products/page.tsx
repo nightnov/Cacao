@@ -37,7 +37,18 @@ export default function AdminProducts() {
       const supabase = getSupabaseClient()
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, slug, description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url, status, variant_options')
+        /**
+         * Cette liste alimente aussi le formulaire d'édition.
+         *
+         * Toute colonne absente ici arrivait au formulaire à `undefined`, et le
+         * formulaire la réécrivait à `null` en enregistrant : ouvrir un produit
+         * pour corriger son prix effaçait au passage sa taille de colis, son
+         * poids, son résumé, ses composants, son contenu de boîte et son état.
+         * Silencieusement, sans erreur.
+         *
+         * Toute colonne que le formulaire lit doit donc figurer ici.
+         */
+        .select('id, name, slug, description, short_description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url, status, variant_options, parcel_size, weight_kg, components, included_items, item_condition')
         .order('created_at', { ascending: false })
 
       if (error) throw error

@@ -122,7 +122,34 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
   const [variantOptionRows, setVariantOptionRows] = useState<VariantOptionRow[]>([{ name: '', valuesText: '' }])
   const [variantRows, setVariantRows] = useState<VariantRow[]>([])
 
+  /**
+   * Fiche complète relue en base à l'ouverture.
+   *
+   * Le formulaire réécrit le produit en entier : toute colonne qu'il n'a pas
+   * reçue repartirait à `null`. Dépendre des colonnes que la liste a bien voulu
+   * demander rendait donc l'effacement possible à distance, sans que ce fichier
+   * change. Il relit lui même ce qu'il va réécrire.
+   */
+  const [complet, setComplet] = useState<Product | null>(null)
+
   useEffect(() => {
+    if (!product) return
+    let vivant = true
+    ;(async () => {
+      const { data } = await getSupabaseClient()
+        .from('products')
+        .select('*')
+        .eq('id', product.id)
+        .maybeSingle()
+      if (vivant && data) setComplet(data as unknown as Product)
+    })()
+    return () => {
+      vivant = false
+    }
+  }, [product])
+
+  useEffect(() => {
+    const product = complet
     if (product) {
       setFormData({
         name: product.name,
@@ -219,7 +246,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         fetchVariants()
       }
     }
-  }, [product])
+  }, [complet])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target

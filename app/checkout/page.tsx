@@ -412,9 +412,15 @@ export default function Checkout() {
       const { error: itemsError } = await supabase.from('order_items').insert(orderItemsPayload)
       if (itemsError) throw itemsError
 
+      // Le jeton de session accompagne la demande : le serveur vérifie que la
+      // commande appartient bien à qui la fait payer.
+      const { data: { session } } = await supabase.auth.getSession()
       const initiateResponse = await fetch('/api/payment/initiate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token || ''}`,
+        },
         body: JSON.stringify({
           orderId: order.id,
           orderNumber,

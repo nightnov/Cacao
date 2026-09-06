@@ -1,3 +1,4 @@
+import { createClient } from '@supabase/supabase-js'
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
 import { priceOrder } from '@/lib/pricing.server'
 
@@ -16,6 +17,44 @@ export async function POST(request: Request) {
 
     if (!orderId || !orderNumber || !items?.length || !phone || !fullName) {
       return Response.json({ error: 'Données de commande incomplètes' }, { status: 400 })
+    }
+
+    /**
+     * On ne lance un paiement que pour sa propre commande.
+     *
+     * La route n'exigeait rien : n'importe qui pouvait envoyer l'identifiant
+     * d'une commande et obtenir un lien de paiement à son nom, avec le numéro
+     * de téléphone de son choix. Personne n'y gagnait d'argent, mais cela
+     * suffisait à savoir qu'une commande existe, à polluer le journal des
+     * paiements, et à faire partir des demandes de paiement chez MoneyFusion
+     * au nom de clients qui n'avaient rien demandé.
+     */
+    const jeton = request.headers.get('authorization')?.replace(/^Bearer /i, '')
+    if (!jeton) {
+      return Response.json({ error: 'Connectez vous pour payer.' }, { status: 401 })
+    }
+
+    const commeClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+      { global: { headers: { Authorization: `Bearer ${jeton}` } }, auth: { persistSession: false } }
+    )
+
+    const { data: session } = await commeClient.auth.getUser()
+    if (!session.user) {
+      return Response.json({ error: 'Session expirée. Reconnectez vous.' }, { status: 401 })
+    }
+
+    // La lecture passe par les droits du client : une commande qui ne lui
+    // appartient pas ne lui est tout simplement pas retournée.
+    const { data: sienne } = await commeClient
+      .from('orders')
+      .select('id')
+      .eq('id', orderId)
+      .maybeSingle()
+
+    if (!sienne) {
+      return Response.json({ error: 'Commande introuvable.' }, { status: 404 })
     }
 
     // Le montant est recalculé à partir des prix en base et non repris de la

@@ -136,9 +136,15 @@ export default function Account() {
     setPayingOrder(order.id)
     try {
       const items = itemsByOrder[order.id] || []
+      // Le jeton de session accompagne la demande : le serveur vérifie que la
+      // commande appartient bien à qui la fait payer.
+      const { data: { session } } = await getSupabaseClient().auth.getSession()
       const res = await fetch('/api/payment/initiate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session?.access_token || ''}`,
+        },
         body: JSON.stringify({
           orderId: order.id,
           orderNumber: order.order_number,

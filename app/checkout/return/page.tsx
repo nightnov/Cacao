@@ -7,6 +7,7 @@ import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { Button } from '@/components/Button'
 import { getSupabaseClient } from '@/lib/supabase'
+import { DeliveryQr } from '@/components/DeliveryQr'
 
 type CheckState = 'checking' | 'paid' | 'pending' | 'failed' | 'not_found'
 
@@ -22,7 +23,12 @@ function CodeBlock({ code }: { code: string }) {
   return (
     <div className="bg-accent/10 border border-accent/30 rounded-lg p-4 mb-6 text-left">
       <p className="text-xs font-semibold text-accent uppercase mb-1 text-center">Code de livraison</p>
-      <p className="text-3xl font-bold text-ink tracking-widest mb-2 text-center tabular-nums">{code}</p>
+      <p className="text-3xl font-bold text-ink tracking-widest mb-3 text-center tabular-nums">{code}</p>
+      {/* Le QR ne remplace pas les chiffres, il les double : le livreur pressé
+          scanne, celui dont le téléphone ne scanne pas saisit. */}
+      <div className="mb-3">
+        <DeliveryQr code={code} />
+      </div>
       <p className="text-xs text-ink-dim text-center">
         Notez ce code. Vous le donnez au livreur seulement au moment où il vous remet le colis, jamais
         avant. Vous le retrouvez à tout moment dans « Mon compte », puis « Mes commandes ».

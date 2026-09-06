@@ -11,6 +11,7 @@ import { Button } from '@/components/Button'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { formatAmount } from '@/lib/format'
+import { DeliveryQr } from '@/components/DeliveryQr'
 
 interface Profile {
   phone: string | null
@@ -663,9 +664,16 @@ export default function Account() {
                                 <div className="bg-accent/10 border border-accent/30 rounded-lg p-3 mb-3 text-center">
                                   <p className="text-[10px] font-semibold text-accent uppercase mb-0.5">Code de livraison</p>
                                   <p className="text-xl font-bold text-ink tracking-widest">{order.delivery_code}</p>
-                                  <p className="text-[10px] text-ink-dim mt-1">
+                                  <p className="text-[10px] text-ink-dim mt-1 mb-3">
                                     À donner au livreur uniquement à la remise du colis
                                   </p>
+                                  {/* Le QR n'est qu'un raccourci pour le même
+                                      code : le livreur pressé le scanne au lieu
+                                      de saisir six chiffres. Les chiffres
+                                      restent affichés au dessus, car un
+                                      téléphone sans application de scan ne doit
+                                      pas empêcher une livraison. */}
+                                  <DeliveryQr code={order.delivery_code} />
                                 </div>
                               )}
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CheckCircle2, AlertCircle } from 'lucide-react'
 import { btn } from '@/lib/ui'
 
@@ -21,6 +21,27 @@ export function DeliveryConfirmForm() {
   const [error, setError] = useState('')
   const [sending, setSending] = useState(false)
   const [confirmed, setConfirmed] = useState<Confirmed | null>(null)
+  const [scanne, setScanne] = useState(false)
+
+  /**
+   * Code apporté par le QR que le client vient de montrer.
+   *
+   * Il remplit le champ, il ne valide pas à la place du livreur. Un scan
+   * réussi n'est pas une remise : le bouton reste à presser, une fois le colis
+   * effectivement dans les mains du client. Confirmer automatiquement
+   * reviendrait à valider une livraison depuis le trottoir.
+   *
+   * L'adresse est nettoyée dans la foulée : le code cesse d'exister dans
+   * l'historique du navigateur du livreur, où il n'a rien à faire.
+   */
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const recu = (params.get('c') || '').replace(/\D/g, '').slice(0, 6)
+    if (!recu) return
+    setCode(recu)
+    setScanne(true)
+    window.history.replaceState(null, '', window.location.pathname)
+  }, [])
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -97,7 +118,9 @@ export function DeliveryConfirmForm() {
       </button>
 
       <p className="text-[12.5px] text-ink-faint text-center">
-        Demandez le code au client au moment où vous lui remettez le colis.
+        {scanne
+          ? 'Code lu. Confirmez une fois le colis remis au client.'
+          : 'Demandez le code au client au moment où vous lui remettez le colis. Il peut aussi vous montrer son QR à scanner.'}
       </p>
     </form>
   )

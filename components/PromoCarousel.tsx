@@ -95,7 +95,13 @@ export function PromoCarousel({
          compromis assumé : ce qui touche les bords gauche et droit sort du
          cadre, d'où la consigne de centrer texte et logo, rappelée dans
          l'écran d'administration. */
-      className="w-full h-full object-cover md:object-contain"
+      /* `object-contain` à toutes les tailles. Le recadrage n'était appliqué
+         que sur téléphone, là où il fait justement le plus de dégâts : une
+         bannière porte son texte dans l'image, et remplir une hauteur fixe
+         revenait à rogner les deux bords. « PROMOTION PHANTEKS » devenait
+         « MOTION ANTEKS ». Le conteneur suit désormais les proportions de
+         l'image, si bien qu'il n'y a plus ni recadrage ni bande vide. */
+      className="w-full h-full object-contain"
     />
   )
 

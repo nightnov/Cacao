@@ -217,14 +217,14 @@ export default async function Home() {
           <PromoCarousel
             slides={slides}
             intervalMs={heroSettings.intervalMs}
-            /* 45 % de la hauteur d'écran, c'était près de la moitié du premier
-               regard occupée par la seule bannière : il fallait faire défiler
-               avant d'apercevoir le moindre produit. Ramenée à 260 px, elle
-               reste largement visible et laisse la page commencer.
-               L'image est recadrée à cette taille plutôt que réduite, sinon
-               elle redeviendrait une bande illisible. */
+            /* La bannière suit les proportions de l'image à toutes les
+               tailles. Une hauteur fixe de 260 px sur téléphone obligeait à
+               recadrer un visuel deux fois plus large que haut : les bords
+               partaient, et avec eux le début et la fin du message. Réduite à
+               ses proportions, elle occupe moins de place et se lit en entier
+               — ce qui règle du même coup le reproche fait à sa hauteur. */
             bleed
-            className="w-full h-[260px] md:h-auto md:aspect-[2000/700]"
+            className="w-full aspect-[2000/700]"
           />
         </section>
       )}
@@ -281,7 +281,7 @@ export default async function Home() {
             <PromoCarousel
               slides={slides}
               intervalMs={heroSettings.intervalMs}
-              className="h-[220px] sm:h-[300px] lg:h-[360px]"
+              className="aspect-[2000/700]"
             />
           )}
         </div>

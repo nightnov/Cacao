@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Archive, ArchiveRestore } from 'lucide-react'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/Button'
 import ProductForm from '@/components/admin/ProductForm'
@@ -27,10 +27,21 @@ export default function AdminProducts() {
   const [showForm, setShowForm] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [page, setPage] = useState(1)
+  /**
+   * Les produits retirés forment une liste à part, comme les commandes rangées.
+   *
+   * Mélangés aux autres, ils encombraient l'écran et se rouvraient par erreur.
+   * Séparés, la liste courante ne montre que ce qui est réellement en vente.
+   */
+  const [voirRetires, setVoirRetires] = useState(false)
 
   useEffect(() => {
     fetchProducts()
   }, [])
+
+  useEffect(() => {
+    setPage(1)
+  }, [voirRetires])
 
   const fetchProducts = async () => {
     try {
@@ -81,7 +92,22 @@ export default function AdminProducts() {
       return
     }
     setProducts(products.map(p => (p.id === id ? { ...p, status: 'draft' } : p)))
-    alert('Produit retiré de la vente. Il n apparaît plus dans la boutique, et les commandes qui le contiennent restent intactes.')
+  }
+
+  /** Remet en vente un produit retiré. */
+  const remettreEnVente = async (id: string) => {
+    const supabase = getSupabaseClient()
+    const { data, error } = await supabase
+      .from('products')
+      .update({ status: 'active' })
+      .eq('id', id)
+      .select('id')
+
+    if (error || !data?.length) {
+      alert('La remise en vente a échoué. ' + (error?.message || 'Aucune ligne modifiée.'))
+      return
+    }
+    setProducts(products.map(p => (p.id === id ? { ...p, status: 'active' } : p)))
   }
 
   const handleDelete = async (id: string) => {
@@ -163,7 +189,10 @@ export default function AdminProducts() {
     fetchProducts()
   }
 
-  const pagedProducts = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const enVente = products.filter(p => p.status !== 'draft')
+  const retires = products.filter(p => p.status === 'draft')
+  const visibles = voirRetires ? retires : enVente
+  const pagedProducts = visibles.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   const columns: Column<Product>[] = [
     {
@@ -219,7 +248,23 @@ export default function AdminProducts() {
       render: p => (
         <div className="flex justify-end gap-1">
           <IconButton icon={Pencil} label="Modifier" onClick={() => handleEdit(p)} />
-          <IconButton icon={Trash2} label="Supprimer" tone="danger" onClick={() => handleDelete(p.id)} />
+          {p.status === 'draft' ? (
+            <IconButton
+              icon={ArchiveRestore}
+              label="Remettre en vente"
+              onClick={() => remettreEnVente(p.id)}
+            />
+          ) : (
+            <IconButton
+              icon={Archive}
+              label="Retirer de la vente"
+              onClick={() => retirerDeLaVente(p.id)}
+            />
+          )}
+          {/* La suppression définitive reste possible, mais elle n'est plus le
+              geste par défaut : elle échoue sur un produit déjà commandé, et
+              retirer de la vente répond au besoin dans presque tous les cas. */}
+          <IconButton icon={Trash2} label="Supprimer définitivement" tone="danger" onClick={() => handleDelete(p.id)} />
         </div>
       )
     }
@@ -227,17 +272,35 @@ export default function AdminProducts() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="font-serif font-semibold text-4xl text-ink">Produits</h1>
-        <Button
-          variant="primary"
-          onClick={() => {
-            setSelectedProduct(null)
-            setShowForm(true)
-          }}
-        >
-          <Plus size={16} /> Ajouter produit
-        </Button>
+      <div className="flex items-center justify-between mb-8 gap-3 flex-wrap">
+        <h1 className="font-serif font-semibold text-4xl text-ink">
+          {voirRetires ? 'Produits retirés' : 'Produits'}
+        </h1>
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Le compte figure sur le bouton : sans lui, rien n'indique qu'il y
+              a quelque chose à aller voir, et le second bloc reste ignoré. */}
+          {(voirRetires || retires.length > 0) && (
+            <button
+              onClick={() => setVoirRetires(v => !v)}
+              className="px-4 py-2 rounded-full text-sm font-semibold border-2 border-ink text-ink hover:bg-ink hover:text-ink-invert transition-colors"
+            >
+              {voirRetires
+                ? `Revenir aux produits en vente (${enVente.length})`
+                : `Voir les produits retirés (${retires.length})`}
+            </button>
+          )}
+          {!voirRetires && (
+            <Button
+              variant="primary"
+              onClick={() => {
+                setSelectedProduct(null)
+                setShowForm(true)
+              }}
+            >
+              <Plus size={16} /> Ajouter produit
+            </Button>
+          )}
+        </div>
       </div>
 
       <TableShell
@@ -245,13 +308,15 @@ export default function AdminProducts() {
         rows={pagedProducts}
         rowKey={p => p.id}
         loading={loading}
-        emptyMessage="Aucun produit trouvé"
+        emptyMessage={voirRetires ? 'Aucun produit retiré' : 'Aucun produit trouvé'}
         emptyAction={
-          <Button variant="primary" onClick={() => setShowForm(true)}>
-            <Plus size={16} /> Créer le premier produit
-          </Button>
+          voirRetires ? undefined : (
+            <Button variant="primary" onClick={() => setShowForm(true)}>
+              <Plus size={16} /> Créer le premier produit
+            </Button>
+          )
         }
-        footer={<Pagination page={page} pageSize={PAGE_SIZE} total={products.length} onPageChange={setPage} />}
+        footer={<Pagination page={page} pageSize={PAGE_SIZE} total={visibles.length} onPageChange={setPage} />}
       />
 
       {/* Form Modal */}

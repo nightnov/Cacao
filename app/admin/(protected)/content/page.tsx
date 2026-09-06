@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { getSupabaseClient } from '@/lib/supabase'
+import { BasculeRangees } from '@/components/admin/BasculeRangees'
 import {
   AlertTriangle,
   ArrowDown,
@@ -77,6 +78,9 @@ export default function AdminContent() {
   const [busy, setBusy] = useState(false)
   const [missingTable, setMissingTable] = useState(false)
   const [message, setMessage] = useState<{ kind: 'ok' | 'ko'; text: string } | null>(null)
+  // Une question masquée n'a plus rien à faire dans la liste de travail : elle
+  // s'y relit, s'y remonte, et fait croire qu'elle est en ligne.
+  const [voirMasquees, setVoirMasquees] = useState(false)
 
   const load = async () => {
     const supabase = getSupabaseClient()
@@ -169,11 +173,18 @@ export default function AdminContent() {
     await load()
   }
 
-  const move = async (i: number, dir: -1 | 1) => {
+  /**
+   * Échange une question avec sa voisine **dans la liste affichée**.
+   *
+   * Les positions sont celles du bloc courant, pas celles de la table : passer
+   * par l'index brut ferait permuter une question visible avec une question
+   * masquée, et le bouton semblerait ne rien faire.
+   */
+  const move = async (liste: FaqItem[], i: number, dir: -1 | 1) => {
     const t = i + dir
-    if (t < 0 || t >= rows.length) return
-    const a = rows[i]
-    const b = rows[t]
+    if (t < 0 || t >= liste.length) return
+    const a = liste[i]
+    const b = liste[t]
     setBusy(true)
     const supabase = getSupabaseClient()
     await supabase.from('faq_items').update({ sort_order: b.sort_order }).eq('id', a.id!)
@@ -190,11 +201,17 @@ export default function AdminContent() {
     )
   }
 
+  const affichees = rows.filter(r => r.is_visible)
+  const masquees = rows.filter(r => !r.is_visible)
+  const visibles = voirMasquees ? masquees : affichees
+
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="font-serif text-3xl text-ink">Contenu</h1>
+          <h1 className="font-serif text-3xl text-ink">
+            {voirMasquees ? 'Questions masquées' : 'Contenu'}
+          </h1>
           <p className="text-sm text-ink-dimmer mt-1">
             Les questions fréquentes affichées sur{' '}
             <Link href="/faq" target="_blank" className="text-gold hover:underline">
@@ -203,13 +220,25 @@ export default function AdminContent() {
             .
           </p>
         </div>
-        <button
-          onClick={add}
-          disabled={busy || missingTable}
-          className="flex items-center gap-1.5 px-4 py-2 bg-gold hover:bg-gold-dim disabled:opacity-50 text-ink-invert rounded-xl font-semibold text-sm whitespace-nowrap"
-        >
-          <Plus size={15} /> Ajouter
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <BasculeRangees
+            actif={voirMasquees}
+            onToggle={() => setVoirMasquees(v => !v)}
+            compteCourant={affichees.length}
+            compteRange={masquees.length}
+            nomCourant="questions affichées"
+            nomRange="questions masquées"
+          />
+          {!voirMasquees && (
+            <button
+              onClick={add}
+              disabled={busy || missingTable}
+              className="flex items-center gap-1.5 px-4 py-2 bg-gold hover:bg-gold-dim disabled:opacity-50 text-ink-invert rounded-xl font-semibold text-sm whitespace-nowrap"
+            >
+              <Plus size={15} /> Ajouter
+            </button>
+          )}
+        </div>
       </div>
 
       {missingTable && (
@@ -270,13 +299,15 @@ export default function AdminContent() {
         </div>
       )}
 
-      {rows.length === 0 && !missingTable ? (
+      {visibles.length === 0 && !missingTable ? (
         <p className={`${CARD} p-8 text-center text-sm text-ink-dimmer`}>
-          Aucune question. La page /faq affiche la liste de secours écrite dans le code.
+          {voirMasquees
+            ? 'Aucune question masquée.'
+            : 'Aucune question. La page /faq affiche la liste de secours écrite dans le code.'}
         </p>
       ) : (
         <div className="space-y-3">
-          {rows.map((r, i) => {
+          {visibles.map((r, i) => {
             const d = valueOf(r)
             const hits = claimsIn(`${d.question} ${d.answer}`)
             return (
@@ -289,7 +320,7 @@ export default function AdminContent() {
                 <div className="flex items-start gap-3">
                   <div className="flex flex-col pt-1">
                     <button
-                      onClick={() => move(i, -1)}
+                      onClick={() => move(visibles, i, -1)}
                       disabled={i === 0 || busy}
                       className="text-ink-dimmer hover:text-gold disabled:opacity-25"
                       aria-label="Monter"
@@ -297,8 +328,8 @@ export default function AdminContent() {
                       <ArrowUp size={13} />
                     </button>
                     <button
-                      onClick={() => move(i, 1)}
-                      disabled={i === rows.length - 1 || busy}
+                      onClick={() => move(visibles, i, 1)}
+                      disabled={i === visibles.length - 1 || busy}
                       className="text-ink-dimmer hover:text-gold disabled:opacity-25"
                       aria-label="Descendre"
                     >

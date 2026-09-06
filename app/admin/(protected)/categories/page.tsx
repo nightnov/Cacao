@@ -8,6 +8,7 @@ import {
   FALLBACK_CATEGORIES,
 } from '@/lib/categories'
 import { invalidateCategoriesCache } from '@/hooks/useCategories'
+import { BasculeRangees } from '@/components/admin/BasculeRangees'
 import {
   AlertTriangle,
   ArrowDown,
@@ -58,6 +59,9 @@ export default function AdminCategories() {
   const fileRef = useRef<HTMLInputElement>(null)
   const [missingTable, setMissingTable] = useState(false)
   const [message, setMessage] = useState<{ kind: 'ok' | 'ko'; text: string } | null>(null)
+  // Un rayon masqué n'apparaît nulle part sur la boutique : le laisser dans la
+  // liste principale laissait croire qu'il était en ligne.
+  const [voirMasques, setVoirMasques] = useState(false)
 
   const load = async () => {
     const supabase = getSupabaseClient()
@@ -95,12 +99,16 @@ export default function AdminCategories() {
     return true
   }
 
-  const move = async (index: number, direction: -1 | 1) => {
+  /**
+   * Les positions sont celles du bloc affiché, pas celles de la table :
+   * permuter avec un rayon masqué donnerait un bouton qui semble inerte.
+   */
+  const move = async (liste: Category[], index: number, direction: -1 | 1) => {
     const target = index + direction
-    if (target < 0 || target >= rows.length) return
+    if (target < 0 || target >= liste.length) return
 
-    const a = rows[index]
-    const b = rows[target]
+    const a = liste[index]
+    const b = liste[target]
     const supabase = getSupabaseClient()
 
     // Les deux positions sont échangées explicitement plutôt que réindexées :
@@ -255,21 +263,39 @@ export default function AdminCategories() {
     )
   }
 
+  const enLigne = rows.filter(c => c.is_visible)
+  const masques = rows.filter(c => !c.is_visible)
+  const visibles = voirMasques ? masques : enLigne
+
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="font-serif text-3xl text-ink">Rayons</h1>
+          <h1 className="font-serif text-3xl text-ink">
+            {voirMasques ? 'Rayons masqués' : 'Rayons'}
+          </h1>
           <p className="text-sm text-ink-dimmer mt-1">
             Les catégories affichées dans le menu, sur l’accueil et dans le catalogue.
           </p>
         </div>
-        <button
-          onClick={startNew}
-          className="flex items-center gap-1.5 px-4 py-2 bg-gold hover:bg-gold-dim text-ink-invert rounded-xl font-semibold text-sm whitespace-nowrap"
-        >
-          <Plus size={15} /> Nouveau rayon
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <BasculeRangees
+            actif={voirMasques}
+            onToggle={() => setVoirMasques(v => !v)}
+            compteCourant={enLigne.length}
+            compteRange={masques.length}
+            nomCourant="rayons en ligne"
+            nomRange="rayons masqués"
+          />
+          {!voirMasques && (
+            <button
+              onClick={startNew}
+              className="flex items-center gap-1.5 px-4 py-2 bg-gold hover:bg-gold-dim text-ink-invert rounded-xl font-semibold text-sm whitespace-nowrap"
+            >
+              <Plus size={15} /> Nouveau rayon
+            </button>
+          )}
+        </div>
       </div>
 
       {missingTable && (
@@ -478,13 +504,15 @@ export default function AdminCategories() {
           </p>
         </div>
 
-        {rows.length === 0 ? (
+        {visibles.length === 0 ? (
           <p className="p-8 text-center text-sm text-ink-dimmer">
-            Aucun rayon en base. Exécutez la migration 021 pour reprendre les rayons existants.
+            {voirMasques
+              ? 'Aucun rayon masqué.'
+              : 'Aucun rayon en base. Exécutez la migration 021 pour reprendre les rayons existants.'}
           </p>
         ) : (
           <ul>
-            {rows.map((cat, i) => {
+            {visibles.map((cat, i) => {
               const Icon = categoryIcon(cat.icon)
               const used = counts[cat.value] || 0
               return (
@@ -496,7 +524,7 @@ export default function AdminCategories() {
                 >
                   <div className="flex flex-col">
                     <button
-                      onClick={() => move(i, -1)}
+                      onClick={() => move(visibles, i, -1)}
                       disabled={i === 0 || busy}
                       className="text-ink-dimmer hover:text-gold disabled:opacity-25"
                       aria-label="Monter"
@@ -504,8 +532,8 @@ export default function AdminCategories() {
                       <ArrowUp size={13} />
                     </button>
                     <button
-                      onClick={() => move(i, 1)}
-                      disabled={i === rows.length - 1 || busy}
+                      onClick={() => move(visibles, i, 1)}
+                      disabled={i === visibles.length - 1 || busy}
                       className="text-ink-dimmer hover:text-gold disabled:opacity-25"
                       aria-label="Descendre"
                     >

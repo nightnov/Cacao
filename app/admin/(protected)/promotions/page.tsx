@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { getSupabaseClient } from '@/lib/supabase'
 import { formatAmount } from '@/lib/format'
 import { AlertTriangle, Loader2, Plus, Trash2 } from 'lucide-react'
+import { BasculeRangees } from '@/components/admin/BasculeRangees'
 
 type Kind = 'percent' | 'amount' | 'free_shipping'
 
@@ -69,6 +70,9 @@ export default function AdminPromotions() {
   const [volumeThreshold, setVolumeThreshold] = useState('1000000')
   const [volumePercent, setVolumePercent] = useState('10')
   const [message, setMessage] = useState<{ kind: 'ok' | 'ko'; text: string } | null>(null)
+  // Les codes désactivés s'accumulent et n'ont plus rien à dire sur la liste
+  // courante : ils forment un second bloc, consultable quand on le demande.
+  const [voirDesactivees, setVoirDesactivees] = useState(false)
 
   const load = async () => {
     const supabase = getSupabaseClient()
@@ -240,16 +244,32 @@ export default function AdminPromotions() {
     )
   }
 
+  const enService = rows.filter(p => p.is_active)
+  const desactivees = rows.filter(p => !p.is_active)
+  const visibles = voirDesactivees ? desactivees : enService
+
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="font-serif text-3xl text-ink">Promotions</h1>
+          <h1 className="font-serif text-3xl text-ink">
+            {voirDesactivees ? 'Promotions désactivées' : 'Promotions'}
+          </h1>
           <p className="text-sm text-ink-dimmer mt-1">
             {counts.active} active{counts.active > 1 ? 's' : ''} · {counts.scheduled} programmée
             {counts.scheduled > 1 ? 's' : ''} · {counts.over} terminée{counts.over > 1 ? 's' : ''}
           </p>
         </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <BasculeRangees
+            actif={voirDesactivees}
+            onToggle={() => setVoirDesactivees(v => !v)}
+            compteCourant={enService.length}
+            compteRange={desactivees.length}
+            nomCourant="promotions en service"
+            nomRange="promotions désactivées"
+          />
+          {!voirDesactivees && (
         <button
           onClick={() => {
             setEditing({ ...BLANK })
@@ -259,6 +279,8 @@ export default function AdminPromotions() {
         >
           <Plus size={15} /> Nouvelle promotion
         </button>
+          )}
+        </div>
       </div>
 
       {missingTable && (
@@ -511,9 +533,11 @@ export default function AdminPromotions() {
       </section>
 
       <section className={CARD}>
-        {rows.length === 0 ? (
+        {visibles.length === 0 ? (
           <p className="p-8 text-center text-sm text-ink-dimmer">
-            Aucune promotion. Créez un code pour qu’il devienne saisissable au moment de payer.
+            {voirDesactivees
+              ? 'Aucune promotion désactivée.'
+              : 'Aucune promotion. Créez un code pour qu’il devienne saisissable au moment de payer.'}
           </p>
         ) : (
           <div className="overflow-x-auto">
@@ -531,7 +555,7 @@ export default function AdminPromotions() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map(p => {
+                {visibles.map(p => {
                   const st = statusOf(p)
                   return (
                     <tr key={p.id} className="border-b border-border last:border-0">

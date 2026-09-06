@@ -193,10 +193,15 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
             .eq('product_id', product.id)
 
           const variantes = (data as unknown as ProductVariant[]) || []
-          const { data: couts } = await supabase
-            .from('variant_sourcing')
-            .select('variant_id, cost_fcfa')
-            .in('variant_id', variantes.map(v => v.id))
+          // Une liste vide produirait un filtre `in.()` que PostgREST rejette.
+          const couts = variantes.length
+            ? (
+                await supabase
+                  .from('variant_sourcing')
+                  .select('variant_id, cost_fcfa')
+                  .in('variant_id', variantes.map(v => v.id))
+              ).data
+            : []
           const coutPar = new Map((couts || []).map(c => [c.variant_id, c.cost_fcfa]))
 
           setVariantRows(
@@ -543,11 +548,26 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
           const { data: creees, error: insertVariantsError } = await supabase
             .from('product_variants')
             .insert(variantPayload)
-            .select('id')
+            .select('id, option_values')
           if (insertVariantsError) throw insertVariantsError
 
+          /**
+           * L'appariement se fait sur la combinaison d'options, pas sur la
+           * position. Rien ne garantit que la base rende les lignes dans
+           * l'ordre d'envoi, et un décalage ici attribuerait silencieusement
+           * le prix d'achat d'une configuration à une autre.
+           */
+          const cle = (v: Record<string, string>) =>
+            Object.keys(v).sort().map(k => `${k}=${v[k]}`).join('|')
+          const coutPar = new Map(
+            variantRows.map(r => [cle(r.option_values), r.supplier_cost_fcfa])
+          )
+
           const coutsAEcrire = (creees || [])
-            .map((v, i) => ({ variant_id: v.id, cout: variantRows[i]?.supplier_cost_fcfa }))
+            .map(v => ({
+              variant_id: v.id,
+              cout: coutPar.get(cle(v.option_values as Record<string, string>)),
+            }))
             .filter(c => c.cout !== '' && c.cout !== undefined && c.cout !== null)
             .map(c => ({ variant_id: c.variant_id, cost_fcfa: Number(c.cout) }))
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Eye, Archive, ArchiveRestore } from 'lucide-react'
 import { getSupabaseClient } from '@/lib/supabase'
-import OrderDetailModal from '@/components/admin/OrderDetailModal'
+import OrderDetailModal, { Sourcing } from '@/components/admin/OrderDetailModal'
 import { TableShell, Column } from '@/components/admin/TableShell'
 import { StatusBadge, StatusTone } from '@/components/admin/StatusBadge'
 import { IconButton } from '@/components/admin/IconButton'
@@ -35,6 +35,7 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [orderItems, setOrderItems] = useState<OrderItem[]>([])
+  const [sourcing, setSourcing] = useState<Record<string, Sourcing>>({})
   // Le filtre se lit dans l'adresse. C'est ce qui permet aux compteurs du
   // tableau de bord d'ouvrir directement la bonne liste : sans cela, le lien
   // arrivait ici et affichait toutes les commandes, ce qui donne l'impression
@@ -97,11 +98,33 @@ export default function AdminOrders() {
       const supabase = getSupabaseClient()
       const { data, error } = await supabase
         .from('order_items')
-        .select('id, product_name, quantity, unit_price_fcfa, subtotal_fcfa, variant_label')
+        .select('id, product_id, product_name, quantity, unit_price_fcfa, subtotal_fcfa, variant_label')
         .eq('order_id', order.id)
 
       if (error) throw error
       setOrderItems(data || [])
+
+      /**
+       * Où aller chercher chaque pièce. C'est la question qui se pose au
+       * moment exact où l'on ouvre une commande, et elle se posait jusqu'ici
+       * de mémoire.
+       *
+       * L'échec est silencieux : ne pas savoir où acheter ne doit pas empêcher
+       * de consulter la commande.
+       */
+      const ids = (data || []).map(i => i.product_id).filter(Boolean)
+      if (ids.length > 0) {
+        const { data: sources } = await supabase
+          .from('product_sourcing')
+          .select('product_id, source_url, platform, cost_fcfa')
+          .in('product_id', ids)
+        setSourcing(
+          Object.fromEntries((sources || []).map(s => [s.product_id, s])) as Record<string, Sourcing>
+        )
+      } else {
+        setSourcing({})
+      }
+
       setSelectedOrder(order)
     } catch (error) {
       alert('Erreur lors du chargement des détails')
@@ -303,6 +326,7 @@ export default function AdminOrders() {
         <OrderDetailModal
           order={selectedOrder}
           items={orderItems}
+          sourcing={sourcing}
           onClose={() => setSelectedOrder(null)}
           onStatusChange={handleStatusChange}
         />

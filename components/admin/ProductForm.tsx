@@ -8,6 +8,7 @@ import { generateVariantCombinations, variantLabel } from '@/lib/variants'
 import { useCategories } from '@/hooks/useCategories'
 import { ProductOptionsPanel } from '@/components/admin/ProductOptionsPanel'
 import { sizeFromWeight, SIZE_LABELS } from '@/lib/delivery'
+import { plateformeDe } from '@/lib/approvisionnement'
 import { ITEM_CONDITIONS } from '@/lib/condition'
 import {
   COMPONENT_TYPES,
@@ -33,6 +34,8 @@ interface VariantRow {
   supplier_cost_fcfa: string | number
   stock: string | number
   image_url: string
+  /** Connu seulement pour une variante déjà en base ; sert à retrouver son coût. */
+  id?: string
 }
 
 function slugify(value: string): string {
@@ -147,12 +150,32 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         item_condition: product.item_condition || '',
         image_urls: product.image_urls || [],
         video_url: product.video_url || '',
-        supplier_name: product.supplier_name || '',
-        supplier_url: product.supplier_url || '',
-        supplier_product_id: product.supplier_product_id || '',
-        supplier_cost_fcfa: product.supplier_cost_fcfa ?? '',
+        // L'approvisionnement ne vient plus du produit : il vit dans une table
+        // à part, que seule l'administration peut lire. Chargé juste après.
+        supplier_name: '',
+        supplier_url: '',
+        supplier_product_id: '',
+        supplier_cost_fcfa: '',
         status: product.status || 'active'
       })
+
+      const chargerApprovisionnement = async () => {
+        const supabase = getSupabaseClient()
+        const { data } = await supabase
+          .from('product_sourcing')
+          .select('source_url, platform, external_id, cost_fcfa')
+          .eq('product_id', product.id)
+          .maybeSingle()
+        if (!data) return
+        setFormData(prev => ({
+          ...prev,
+          supplier_url: data.source_url || '',
+          supplier_name: data.platform || '',
+          supplier_product_id: data.external_id || '',
+          supplier_cost_fcfa: data.cost_fcfa ?? '',
+        }))
+      }
+      chargerApprovisionnement()
 
       setComponentRows(sanitizeComponents(product.components))
 
@@ -166,15 +189,23 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
           const supabase = getSupabaseClient()
           const { data } = await supabase
             .from('product_variants')
-            .select('id, option_values, sku, price_fcfa, supplier_cost_fcfa, stock, image_url')
+            .select('id, option_values, sku, price_fcfa, stock, image_url')
             .eq('product_id', product.id)
 
+          const variantes = (data as unknown as ProductVariant[]) || []
+          const { data: couts } = await supabase
+            .from('variant_sourcing')
+            .select('variant_id, cost_fcfa')
+            .in('variant_id', variantes.map(v => v.id))
+          const coutPar = new Map((couts || []).map(c => [c.variant_id, c.cost_fcfa]))
+
           setVariantRows(
-            ((data as unknown as ProductVariant[]) || []).map(v => ({
+            variantes.map(v => ({
+              id: v.id,
               option_values: v.option_values,
               sku: v.sku || '',
               price_fcfa: v.price_fcfa,
-              supplier_cost_fcfa: v.supplier_cost_fcfa ?? '',
+              supplier_cost_fcfa: coutPar.get(v.id) ?? '',
               stock: v.stock,
               image_url: v.image_url || ''
             }))
@@ -251,7 +282,6 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         description: data.description || prev.description,
         price_fcfa: data.price_fcfa || prev.price_fcfa,
         image_urls: data.image_urls?.length ? data.image_urls : prev.image_urls,
-        supplier_name: data.supplier_name || prev.supplier_name
       }))
       setImportSuccess(true)
       setTimeout(() => setImportSuccess(false), 3000)
@@ -414,10 +444,6 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
           .filter(Boolean),
         image_urls: formData.image_urls,
         video_url: formData.video_url || null,
-        supplier_name: formData.supplier_name || null,
-        supplier_url: formData.supplier_url || null,
-        supplier_product_id: formData.supplier_product_id || null,
-        supplier_cost_fcfa: formData.supplier_cost_fcfa === '' ? null : Number(formData.supplier_cost_fcfa),
         status: formData.status,
         // meta_title et meta_description ne sont plus envoyés : le formulaire
         // ne les saisit plus. Les écrire à null aurait effacé sans prévenir ce
@@ -463,6 +489,39 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         productId = created.id
       }
 
+      /**
+       * Approvisionnement : écrit à part, jamais dans `products`.
+       *
+       * La ligne est remplacée entièrement à chaque enregistrement. Vider le
+       * champ d'adresse doit effacer l'information, pas laisser en base un
+       * lien périmé vers une fiche qui n'existe plus.
+       */
+      if (productId) {
+        const source = formData.supplier_url.trim()
+        const cout =
+          formData.supplier_cost_fcfa === '' ? null : Number(formData.supplier_cost_fcfa)
+        const reference = formData.supplier_product_id.trim()
+
+        if (source || cout !== null || reference) {
+          const { error: erreurSource } = await supabase.from('product_sourcing').upsert(
+            {
+              product_id: productId,
+              source_url: source || null,
+              // Déduit de l'adresse : un nom saisi à la main se désynchronise
+              // du lien à la première correction.
+              platform: plateformeDe(source) || null,
+              external_id: reference || null,
+              cost_fcfa: cout,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: 'product_id' }
+          )
+          if (erreurSource) throw erreurSource
+        } else {
+          await supabase.from('product_sourcing').delete().eq('product_id', productId)
+        }
+      }
+
       if (productId) {
         const { error: deleteVariantsError } = await supabase
           .from('product_variants')
@@ -476,12 +535,28 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
             option_values: r.option_values,
             sku: r.sku || null,
             price_fcfa: Number(r.price_fcfa) || 0,
-            supplier_cost_fcfa: r.supplier_cost_fcfa === '' ? null : Number(r.supplier_cost_fcfa),
             stock: Number(r.stock) || 0,
             image_url: r.image_url || null
           }))
-          const { error: insertVariantsError } = await supabase.from('product_variants').insert(variantPayload)
+          // `select()` rend les identifiants créés : ce sont eux qui portent
+          // les coûts d'achat, écrits ensuite dans la table réservée.
+          const { data: creees, error: insertVariantsError } = await supabase
+            .from('product_variants')
+            .insert(variantPayload)
+            .select('id')
           if (insertVariantsError) throw insertVariantsError
+
+          const coutsAEcrire = (creees || [])
+            .map((v, i) => ({ variant_id: v.id, cout: variantRows[i]?.supplier_cost_fcfa }))
+            .filter(c => c.cout !== '' && c.cout !== undefined && c.cout !== null)
+            .map(c => ({ variant_id: c.variant_id, cost_fcfa: Number(c.cout) }))
+
+          if (coutsAEcrire.length > 0) {
+            const { error: erreurCouts } = await supabase
+              .from('variant_sourcing')
+              .upsert(coutsAEcrire, { onConflict: 'variant_id' })
+            if (erreurCouts) throw erreurCouts
+          }
         }
       }
 
@@ -552,11 +627,19 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
             </div>
           )}
 
-          {/* Fournisseur */}
+          {/* Où se procurer la pièce. Visible de vous seul. */}
           <div className="border border-border rounded-lg p-4 bg-bg-raised">
-            <h3 className="font-semibold text-ink mb-1">Fournisseur (optionnel)</h3>
+            <h3 className="font-semibold text-ink mb-1">Où se procurer ce produit (optionnel)</h3>
             <p className="text-xs text-ink-dimmer mb-3">
-              Si ce produit vient d&apos;une plateforme comme Jumia : collez son URL puis cliquez sur « Importer » pour pré-remplir automatiquement le nom, la description, le prix et les photos. Vérifiez toujours les informations importées avant d&apos;enregistrer.
+              Collez l&apos;adresse de la fiche sur la plateforme où vous achetez. Le nom
+              de la plateforme s&apos;en déduit tout seul. Quand une commande tombe, ce
+              lien s&apos;affiche à côté du produit commandé : vous savez immédiatement où
+              aller. Le bouton « Importer » reprend le nom, la description, le prix et
+              les photos ; vérifiez les avant d&apos;enregistrer.
+            </p>
+            <p className="text-xs text-ink-dimmer mb-3">
+              Ces informations ne sortent jamais de cette page : elles sont enregistrées
+              dans une table que la boutique ne peut pas lire.
             </p>
 
             {importError && (
@@ -570,7 +653,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2">
-                <label className="block text-xs font-semibold text-ink mb-1">URL du produit fournisseur</label>
+                <label className="block text-xs font-semibold text-ink mb-1">Adresse de la fiche d&apos;origine</label>
                 <div className="flex gap-2">
                   <input
                     type="url"
@@ -584,20 +667,18 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                     {importing ? 'Import...' : 'Importer'}
                   </Button>
                 </div>
+                {/* Le nom déduit s'affiche au lieu de se saisir : c'est ce qui
+                    garantit qu'il désigne toujours le lien réellement enregistré. */}
+                {formData.supplier_url.trim() && (
+                  <p className="mt-1.5 text-xs text-ink-dim">
+                    {plateformeDe(formData.supplier_url)
+                      ? <>Plateforme reconnue : <span className="font-semibold text-ink">{plateformeDe(formData.supplier_url)}</span></>
+                      : 'Adresse non reconnue. Vérifiez qu elle commence par https://'}
+                  </p>
+                )}
               </div>
               <div>
-                <label className="block text-xs font-semibold text-ink mb-1">Nom du fournisseur</label>
-                <input
-                  type="text"
-                  name="supplier_name"
-                  value={formData.supplier_name}
-                  onChange={handleChange}
-                  placeholder="Ex: Jumia"
-                  className="w-full px-3 py-2 text-sm border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-gold bg-bg-panel"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-ink mb-1">Référence fournisseur</label>
+                <label className="block text-xs font-semibold text-ink mb-1">Référence chez le revendeur</label>
                 <input
                   type="text"
                   name="supplier_product_id"
@@ -608,7 +689,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-ink mb-1">Coût fournisseur (FCFA)</label>
+                <label className="block text-xs font-semibold text-ink mb-1">Prix d&apos;achat (FCFA)</label>
                 <input
                   type="number"
                   name="supplier_cost_fcfa"

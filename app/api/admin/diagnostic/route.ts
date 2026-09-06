@@ -108,10 +108,8 @@ export async function GET(req: NextRequest) {
     'item_condition',
     'included_items',
     'price_is_estimate',
-    'supplier_name',
-    'supplier_url',
-    'supplier_product_id',
-    'supplier_cost_fcfa',
+    // Les colonnes supplier_* ont quitté `products` (migration 049) : elles
+    // vivent dans `product_sourcing`, hors de portée de la boutique.
     'status',
     'variant_options',
     'compare_at_price_fcfa',

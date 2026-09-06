@@ -9,7 +9,6 @@ export interface ProductVariant {
   option_values: Record<string, string>
   sku: string | null
   price_fcfa: number
-  supplier_cost_fcfa: number | null
   stock: number
   image_url: string | null
 }
@@ -37,10 +36,11 @@ export interface Product {
   item_condition?: string | null
   image_urls: string[]
   video_url: string | null
-  supplier_name?: string | null
-  supplier_url?: string | null
-  supplier_product_id?: string | null
-  supplier_cost_fcfa?: number | null
+  /**
+   * Rien sur l'approvisionnement ici : `products` se lit publiquement, et une
+   * règle de sécurité filtre des lignes, jamais des colonnes. Ces informations
+   * vivent dans `product_sourcing`, table réservée à l'administration.
+   */
   status?: 'draft' | 'active'
   meta_title?: string | null
   meta_description?: string | null
@@ -106,6 +106,8 @@ export interface OrderItem {
   unit_price_fcfa: number
   subtotal_fcfa: number
   variant_label?: string | null
+  /** Permet de retrouver où se procurer la pièce quand la commande tombe. */
+  product_id?: string | null
 }
 
 export interface Message {

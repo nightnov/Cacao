@@ -355,7 +355,9 @@ export default function ProductDetail() {
         if (typedProduct.variant_options && typedProduct.variant_options.length > 0) {
           const { data: variantsData } = await supabase
             .from('product_variants')
-            .select('id, product_id, option_values, sku, price_fcfa, supplier_cost_fcfa, stock, image_url')
+            // Le prix d'achat n'est pas demandé ici : cette page s'exécute dans
+            // le navigateur du client, tout ce qu'elle lit lui est visible.
+            .select('id, product_id, option_values, sku, price_fcfa, stock, image_url')
             .eq('product_id', typedProduct.id)
           setVariants((variantsData as unknown as ProductVariant[]) || [])
         } else {

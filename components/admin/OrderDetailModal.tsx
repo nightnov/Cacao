@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { Order, OrderItem } from '@/types/admin'
 import { formatAmount } from '@/lib/format'
 import { getSupabaseClient } from '@/lib/supabase'
-import { MapPin, MessageCircle } from 'lucide-react'
+import { MapPin, MessageCircle, ExternalLink } from 'lucide-react'
 import { lienWhatsapp, messagesPour, numeroWhatsapp } from '@/lib/whatsapp'
 
 const nextStatus: Record<string, string> = {
@@ -24,14 +24,27 @@ const statusLabels: Record<string, string> = {
   refunded: 'Remboursée'
 }
 
+/**
+ * Où se procurer une pièce. Chargé par la liste des commandes depuis
+ * `product_sourcing`, table que la boutique ne peut pas lire.
+ */
+export interface Sourcing {
+  product_id: string
+  source_url: string | null
+  platform: string | null
+  cost_fcfa: number | null
+}
+
 interface OrderDetailModalProps {
   order: Order
   items: OrderItem[]
+  /** Indexé par identifiant de produit. Vide tant que rien n'est renseigné. */
+  sourcing?: Record<string, Sourcing>
   onClose: () => void
   onStatusChange: (orderId: string, newStatus: string) => Promise<void>
 }
 
-export default function OrderDetailModal({ order, items, onClose, onStatusChange }: OrderDetailModalProps) {
+export default function OrderDetailModal({ order, items, sourcing = {}, onClose, onStatusChange }: OrderDetailModalProps) {
   const [updating, setUpdating] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
 
@@ -339,25 +352,58 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
           <div>
             <h3 className="font-semibold text-ink mb-3">Produits commandés</h3>
             <div className="space-y-2">
-              {items.map(item => (
-                <div key={item.id} className="flex items-center justify-between bg-bg-raised rounded-lg p-4 border border-border">
-                  <div>
-                    <p className="font-medium text-ink">{item.product_name}</p>
-                    {item.variant_label && (
-                      <p className="text-xs text-ink-dimmer">{item.variant_label}</p>
-                    )}
-                    <p className="text-sm text-ink-dim">Quantité: {item.quantity}</p>
+              {items.map(item => {
+                const source = item.product_id ? sourcing[item.product_id] : undefined
+                return (
+                <div key={item.id} className="bg-bg-raised rounded-lg p-4 border border-border">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-ink">{item.product_name}</p>
+                      {item.variant_label && (
+                        <p className="text-xs text-ink-dimmer">{item.variant_label}</p>
+                      )}
+                      <p className="text-sm text-ink-dim">Quantité: {item.quantity}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-ink">
+                        {formatAmount(item.subtotal_fcfa)} FCFA
+                      </p>
+                      <p className="text-sm text-ink-dim">
+                        {formatAmount(item.unit_price_fcfa)} FCFA x {item.quantity}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-ink">
-                      {formatAmount(item.subtotal_fcfa)} FCFA
+
+                  {/* Où aller chercher la pièce. La ligne n'apparaît que si
+                      l'adresse a été renseignée sur la fiche : proposer un
+                      lien vide ferait perdre le temps qu'il doit faire gagner. */}
+                  {source?.source_url ? (
+                    <div className="mt-3 pt-3 border-t border-border flex items-center justify-between gap-3">
+                      <a
+                        href={source.source_url}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-gold hover:underline"
+                      >
+                        <ExternalLink size={14} />
+                        Se procurer{source.platform ? ` sur ${source.platform}` : ''}
+                      </a>
+                      {source.cost_fcfa !== null && source.cost_fcfa !== undefined && (
+                        <span className="text-xs text-ink-dimmer">
+                          Achat {formatAmount(source.cost_fcfa)} FCFA
+                          {' · marge '}
+                          {formatAmount(item.unit_price_fcfa - source.cost_fcfa)} FCFA
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="mt-3 pt-3 border-t border-border text-xs text-ink-dimmer">
+                      Aucune adresse d approvisionnement sur cette fiche.
                     </p>
-                    <p className="text-sm text-ink-dim">
-                      {formatAmount(item.unit_price_fcfa)} FCFA x {item.quantity}
-                    </p>
-                  </div>
+                  )}
                 </div>
-              ))}
+                )
+              })}
             </div>
           </div>
 

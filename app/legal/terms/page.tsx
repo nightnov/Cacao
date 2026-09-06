@@ -37,6 +37,17 @@ export default function Terms() {
             <p>
               Nous nous efforçons de maintenir des informations précises sur nos produits et prix. Cependant, des erreurs peuvent survenir. Nous nous réservons le droit de corriger tout prix ou description erronée avant votre paiement.
             </p>
+            {/* La même réserve que sur les fiches produit, ici en toutes
+                lettres. Affichée à l'écran, elle informe ; écrite dans les
+                conditions, elle engage — et les deux doivent dire la même
+                chose, sans quoi la plus favorable au client l'emporterait. */}
+            <p className="mt-3">
+              Les photographies illustrant nos produits sont fournies à titre indicatif. Le
+              produit livré peut présenter de légères différences avec l&apos;image, notamment
+              de teinte, de finition ou de composants équivalents, sans que ses
+              caractéristiques annoncées en soient affectées. Ces caractéristiques,
+              énumérées sur la fiche du produit, sont seules contractuelles.
+            </p>
           </div>
 
           <div>

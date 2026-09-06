@@ -706,6 +706,23 @@ export default function ProductDetail() {
             />
             <IncludedItems items={product.included_items || []} />
 
+            {/* Mention affichée sur toutes les fiches, sans exception.
+                Les visuels viennent des fabricants et des fournisseurs : une
+                teinte, un modèle de ventilateur ou la disposition d'un
+                assemblage peuvent différer de la photo sans que la machine
+                vendue soit autre. Le dire à l'avance, à l'endroit où le client
+                regarde l'image, coûte une ligne ; ne pas le dire coûte un
+                litige, et le client aurait raison de le soulever puisque rien
+                ne l'aurait prévenu.
+
+                Volontairement discrète mais lisible : une mention qu'on cache
+                ne protège personne, une mention qui crie fait douter du
+                produit. */}
+            <p className="mt-3 text-[12.5px] text-ink-faint leading-relaxed">
+              Les photos sont fournies à titre indicatif. Le produit livré peut présenter de
+              légères différences avec l&apos;image.
+            </p>
+
             <div className="my-5 space-y-5">
               <ProductConfigurator
                 options={options}

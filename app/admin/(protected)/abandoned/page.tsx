@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { getSupabaseClient } from '@/lib/supabase'
 import { formatAmount } from '@/lib/format'
 import { Archive, Info, Loader2, MessageCircle, Phone } from 'lucide-react'
+import { lienWhatsapp, messagesPour, numeroWhatsapp } from '@/lib/whatsapp'
 
 interface Order {
   id: string
@@ -37,24 +38,21 @@ const CARD = 'bg-bg-panel border border-border rounded-2xl'
 function waLink(
   phone: string | undefined,
   orderNumber: string,
-  lastPayment: Row['lastPayment']
+  lastPayment: Row['lastPayment'],
+  prenom?: string
 ): string | null {
-  if (!phone) return null
-  const digits = phone.replace(/\D/g, '')
-  if (digits.length < 8) return null
-  const full = digits.startsWith('225') ? digits : `225${digits}`
+  const numero = numeroWhatsapp(phone)
+  if (!numero) return null
 
-  const message =
-    lastPayment === 'successful'
-      ? `Bonjour, nous avons bien reçu le paiement de votre commande ${orderNumber} sur CACAO. ` +
-        `Nous la préparons et nous vous recontactons pour la livraison.`
-      : lastPayment === 'failed'
-        ? `Bonjour, le paiement de votre commande ${orderNumber} sur CACAO n'est pas allé au bout. ` +
-          `Souhaitez-vous réessayer ?`
-        : `Bonjour, votre commande ${orderNumber} sur CACAO est enregistrée mais le paiement ` +
-          `n'a pas été finalisé. Souhaitez-vous la terminer ?`
+  // Le statut sert de vérité générale, mais ici le dernier paiement en sait
+  // davantage : une commande reste « pending » alors que l'argent est arrivé
+  // quand la confirmation n'est pas redescendue. Réclamer un paiement déjà
+  // reçu est la seule erreur qu'on ne peut pas rattraper.
+  const statut =
+    lastPayment === 'successful' ? 'confirmed' : lastPayment === 'failed' ? 'pending' : 'pending'
 
-  return `https://wa.me/${full}?text=${encodeURIComponent(message)}`
+  const [message] = messagesPour({ statut, numeroCommande: orderNumber, prenom })
+  return lienWhatsapp(numero, message.texte)
 }
 
 export default function AdminAbandoned() {
@@ -287,7 +285,12 @@ export default function AdminAbandoned() {
           <ul className="divide-y divide-border">
             {visible.map(r => {
               const phone = r.shipping_address?.phone
-              const wa = waLink(phone, r.order_number, r.lastPayment)
+              const wa = waLink(
+                phone,
+                r.order_number,
+                r.lastPayment,
+                r.shipping_address?.full_name || undefined
+              )
               return (
                 <li key={r.id} className="p-4 flex flex-wrap items-start gap-3">
                   <div className="min-w-0 flex-1">

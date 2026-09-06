@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { Order, OrderItem } from '@/types/admin'
 import { formatAmount } from '@/lib/format'
 import { getSupabaseClient } from '@/lib/supabase'
-import { MapPin } from 'lucide-react'
+import { MapPin, MessageCircle } from 'lucide-react'
+import { lienWhatsapp, messagesPour, numeroWhatsapp } from '@/lib/whatsapp'
 
 const nextStatus: Record<string, string> = {
   pending: 'confirmed',
@@ -33,6 +34,11 @@ interface OrderDetailModalProps {
 export default function OrderDetailModal({ order, items, onClose, onStatusChange }: OrderDetailModalProps) {
   const [updating, setUpdating] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
+
+  // Sans numéro exploitable, aucun bouton n'est proposé : un bouton qui ouvre
+  // WhatsApp sur un numéro invalide fait perdre plus de temps qu'il n'en fait
+  // gagner.
+  const numeroClient = numeroWhatsapp(order.shipping_address?.phone)
 
   // La même adresse pour tous les colis : le livreur l'enregistre une fois.
   // Construite dans le navigateur plutôt qu'écrite en dur, pour rester juste
@@ -181,6 +187,41 @@ export default function OrderDetailModal({ order, items, onClose, onStatusChange
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Messages prêts à envoyer.
+              Le site n'envoie rien : il ouvre WhatsApp avec le texte déjà
+              écrit, et c'est vous qui appuyez sur envoyer. Meta interdit
+              l'envoi automatique depuis un compte ordinaire, et les outils qui
+              le promettent font bannir le numéro.
+              Les textes suivent l'état de la commande : un message figé finit
+              toujours par mentir, comme celui qui annonçait un impayé à des
+              clients ayant déjà réglé. */}
+          {numeroClient && (
+            <div>
+              <h3 className="font-semibold text-ink mb-3">Écrire au client</h3>
+              <div className="flex flex-wrap gap-2">
+                {messagesPour({
+                  statut: order.status,
+                  numeroCommande: order.order_number,
+                  prenom: order.profiles?.first_name || order.shipping_address?.full_name,
+                }).map(m => (
+                  <a
+                    key={m.cle}
+                    href={lienWhatsapp(numeroClient, m.texte)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={m.texte}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-gold hover:bg-gold-dim text-ink-invert rounded-lg font-semibold text-xs"
+                  >
+                    <MessageCircle size={14} /> {m.libelle}
+                  </a>
+                ))}
+              </div>
+              <p className="text-xs text-ink-dimmer mt-2">
+                WhatsApp s ouvre avec le message déjà écrit. Vous le relisez et vous l envoyez.
+              </p>
             </div>
           )}
 

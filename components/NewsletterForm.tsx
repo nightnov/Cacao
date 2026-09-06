@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState } from 'react'
-import { getSupabaseClient } from '@/lib/supabase'
 
 /**
  * Inscription à la lettre d'information.
@@ -19,13 +18,16 @@ export function NewsletterForm() {
     if (!email.trim()) return
     setStatus('loading')
     try {
-      const supabase = getSupabaseClient()
-      const { error } = await supabase
-        .from('newsletter_subscribers')
-        .insert([{ email: email.trim() }])
-      // 23505 : adresse déjà inscrite. Ce n'est pas un échec du point de vue
-      // du visiteur, qui voulait précisément être dans la liste.
-      if (error && error.code !== '23505') throw error
+      // L'inscription passe par le serveur, qui borne le nombre de tentatives
+      // par appareil. Écrire depuis le navigateur revenait à laisser
+      // n'importe qui inscrire les adresses de son choix, y compris celles de
+      // tiers, ce qui aurait fait de vos envois du courrier non sollicité.
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      })
+      if (!res.ok) throw new Error('Inscription refusée.')
       setStatus('success')
       setEmail('')
     } catch (err) {

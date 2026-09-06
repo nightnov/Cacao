@@ -257,10 +257,16 @@ export default function ProductDetail() {
         setAdded(false)
         setSelectedOptions({})
 
-        supabase.from('product_views').insert([{ product_id: typedProduct.id }]).then(
-          () => {},
-          () => {}
-        )
+        // Le comptage passe par le serveur, qui borne les vues par appareil.
+        // Écrire depuis le navigateur permettait de gonfler la popularité d'un
+        // produit à volonté, et c'est elle qui décide de l'ordre « Plus
+        // populaires ». Un échec est ignoré : une statistique ne doit jamais
+        // gêner la consultation d'une fiche.
+        fetch('/api/track/view', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product_id: typedProduct.id }),
+        }).catch(() => {})
 
         const { data: reviewsData } = await supabase
           .from('reviews')

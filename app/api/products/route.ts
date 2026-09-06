@@ -1,10 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
 import { fetchCatalog } from '@/lib/catalog.server'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-)
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin'
+import { limiteAtteinte } from '@/lib/rateLimit.server'
 
 /**
  * La lecture elle même vit dans `lib/catalog.server.ts`, partagée avec la page
@@ -32,8 +28,15 @@ export async function GET(request: Request) {
 
     // Journalisation des recherches : propre à cette route, puisqu'elle seule
     // reçoit une intention de recherche formulée par un visiteur.
-    if (search) {
-      await supabase.from('search_logs').insert([{ query: search, results_count: products.length }])
+    //
+    // Bornée par appareil, et la requête tronquée : sans cela, un script
+    // pouvait remplir la table de textes arbitraires jusqu'à épuiser le quota
+    // de la base, et noyer les vraies recherches dont vous tirez ce que vos
+    // clients cherchent sans le trouver.
+    if (search && !(await limiteAtteinte({ request, seau: 'recherche', max: 60 }))) {
+      await getSupabaseAdmin()
+        .from('search_logs')
+        .insert([{ query: search.slice(0, 120), results_count: products.length }])
     }
 
     // Le catalogue est ce qu'un client consulte avant d'acheter : aucune

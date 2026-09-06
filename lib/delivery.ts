@@ -151,7 +151,9 @@ export function deliveryOptions(
   if (pickup.enabled && pickup.address) {
     options.push({
       mode: 'retrait',
-      label: 'Retrait sur place — gratuit',
+      // « gratuit » seul se lisait comme « rien à payer ». Ce qui est sans
+      // frais, c'est la livraison : la commande, elle, se règle en ligne.
+      label: 'Retrait sur place — sans frais de livraison',
       fcfa: 0,
       detail: pickup.hours ? `${pickup.address} · ${pickup.hours}` : pickup.address,
     })

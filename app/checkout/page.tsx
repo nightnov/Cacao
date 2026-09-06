@@ -637,9 +637,22 @@ export default function Checkout() {
 
             <div className="bg-bg-panel rounded-lg border border-border p-6">
               <h2 className="font-serif font-semibold text-xl text-ink mb-3">Paiement</h2>
+              {/* Ce bloc décrivait un paiement « à venir » et une équipe qui
+                  rappelle pour organiser le règlement. Le code redirige en
+                  réalité vers MoneyFusion dès la validation : le texte
+                  annonçait au client l'inverse de ce qui allait se passer. */}
               <p className="text-sm text-ink-dim">
-                Le paiement par Mobile Money (MoneyFusion) arrive très prochainement. Votre commande sera enregistrée et notre équipe vous contactera pour organiser le règlement et la livraison.
+                En validant, vous êtes redirigé vers le paiement sécurisé Mobile Money
+                (Wave, Orange Money, MTN, Moov) ou carte bancaire. La commande n est
+                préparée qu une fois le paiement reçu.
               </p>
+              {mode === 'retrait' && (
+                <p className="mt-3 text-sm font-semibold text-ink">
+                  Retrait sur place : le règlement se fait maintenant, en ligne. Une
+                  fois le paiement reçu, nous vous appelons pour convenir du point de
+                  rendez vous. Aucun paiement n est accepté sur place.
+                </p>
+              )}
             </div>
           </div>
 

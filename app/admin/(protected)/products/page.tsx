@@ -60,11 +60,59 @@ export default function AdminProducts() {
     }
   }
 
+  /**
+   * Retire un produit de la vente sans toucher à l'historique.
+   *
+   * Un produit déjà commandé ne peut pas être effacé : ses lignes de commande
+   * le référencent, et ces lignes sont des pièces comptables. Le passer en
+   * brouillon le fait disparaître de la boutique tout en laissant lisibles les
+   * commandes qui le contiennent.
+   */
+  const retirerDeLaVente = async (id: string) => {
+    const supabase = getSupabaseClient()
+    const { data, error } = await supabase
+      .from('products')
+      .update({ status: 'draft' })
+      .eq('id', id)
+      .select('id')
+
+    if (error || !data?.length) {
+      alert('Le retrait a échoué. ' + (error?.message || 'Aucune ligne modifiée.'))
+      return
+    }
+    setProducts(products.map(p => (p.id === id ? { ...p, status: 'draft' } : p)))
+    alert('Produit retiré de la vente. Il n apparaît plus dans la boutique, et les commandes qui le contiennent restent intactes.')
+  }
+
   const handleDelete = async (id: string) => {
+    const supabase = getSupabaseClient()
+
+    /**
+     * On regarde d'abord si le produit a déjà été commandé.
+     *
+     * Sans cette vérification, la base refusait la suppression avec un message
+     * technique sur une contrainte de clé étrangère, incompréhensible et qui
+     * donnait l'impression que la suppression était cassée. Elle ne l'est pas :
+     * elle est interdite, pour une bonne raison.
+     */
+    const { count } = await supabase
+      .from('order_items')
+      .select('id', { count: 'exact', head: true })
+      .eq('product_id', id)
+
+    if (count && count > 0) {
+      const retirer = confirm(
+        `Ce produit apparaît dans ${count} ligne${count > 1 ? 's' : ''} de commande. ` +
+          'Le supprimer effacerait ces commandes de votre comptabilité, ce qui n est pas possible.\n\n' +
+          'Voulez vous plutôt le retirer de la vente ? Il disparaîtra de la boutique et vos commandes resteront intactes.'
+      )
+      if (retirer) await retirerDeLaVente(id)
+      return
+    }
+
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) return
 
     try {
-      const supabase = getSupabaseClient()
       // `select()` est indispensable : une suppression refusée par les droits
       // en base ne remonte aucune erreur, elle supprime zéro ligne en silence.
       // Sans lui, la ligne disparaissait de l'écran et revenait au rechargement.
@@ -86,6 +134,17 @@ export default function AdminProducts() {
       setProducts(products.filter(p => p.id !== id))
       alert('Produit supprimé')
     } catch (error) {
+      // 23503 : une autre table référence encore ce produit. Le message brut de
+      // Postgres parle de contrainte de clé étrangère et n'apprend rien.
+      const code = (error as { code?: string })?.code
+      if (code === '23503') {
+        const retirer = confirm(
+          'Ce produit est rattaché à une commande et ne peut donc pas être effacé.\n\n' +
+            'Voulez vous le retirer de la vente ?'
+        )
+        if (retirer) await retirerDeLaVente(id)
+        return
+      }
       alert(
         'Erreur lors de la suppression : ' +
           (error instanceof Error ? error.message : 'cause inconnue')

@@ -45,6 +45,16 @@ export function ProductGallery({
 
   const [active, setActive] = useState(0)
 
+  /**
+   * Adresses dont le chargement a échoué.
+   *
+   * Sur la grande zone média, une image absente affichait la croix de fichier
+   * cassé du navigateur en plein milieu de la fiche : l'acheteur y lit une
+   * panne du site plutôt qu'une photo manquante. On n'affiche alors rien, et
+   * le cadre reste propre.
+   */
+  const [cassees, setCassees] = useState<string[]>([])
+
   // Choisir une couleur doit changer le visuel affiché. On se cale sur l'image
   // de la valeur si elle fait partie de la galerie ; sinon elle est montrée
   // telle quelle, sans perdre les vignettes.
@@ -88,14 +98,30 @@ export function ProductGallery({
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />
-        ) : shownImage ? (
+        ) : shownImage && !cassees.includes(shownImage) ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={shownImage}
             alt={productName}
+            onError={() => setCassees(l => [...l, shownImage])}
             className="relative w-full h-full object-contain p-6"
           />
-        ) : null}
+        ) : (
+          <svg
+            width="44"
+            height="44"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="rgb(var(--c-border-mid))"
+            strokeWidth="1.3"
+            aria-hidden="true"
+            className="relative"
+          >
+            <rect x="2" y="3" width="20" height="14" rx="2" />
+            <line x1="8" y1="21" x2="16" y2="21" />
+            <line x1="12" y1="17" x2="12" y2="21" />
+          </svg>
+        )}
       </div>
 
       {/* Vignettes. Masquées s'il n'y a qu'un seul média : une rangée d'une
@@ -136,7 +162,12 @@ export function ProductGallery({
                   </>
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={m.src} alt="" className="w-full h-full object-contain p-1.5" />
+                  <img
+                    src={m.src}
+                    alt=""
+                    onError={() => setCassees(l => [...l, m.src])}
+                    className="w-full h-full object-contain p-1.5"
+                  />
                 )}
               </button>
             )

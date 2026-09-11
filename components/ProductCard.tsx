@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { FavoriteButton } from '@/components/FavoriteButton'
 import { StarRating } from '@/components/StarRating'
@@ -63,6 +64,16 @@ export function ProductCard({
   // une sélection alors que rien n'était retenu au passage au panier.
   const displayImage = image_urls?.[0]
 
+  /**
+   * Une image qui n'arrive pas repasse sur l'icône neutre.
+   *
+   * Sans ce repli, le navigateur affiche sa croix de fichier cassé suivie du
+   * nom du produit : la carte a l'air en panne, alors que c'est une seule
+   * photo qui manque. L'icône dit la même chose — pas de visuel — sans faire
+   * douter du reste de la boutique.
+   */
+  const [imageCassee, setImageCassee] = useState(false)
+
   // Teinte du rayon : elle ne sert qu'à la bordure du survol. Un rayon inconnu
   // retombe sur la couleur commerciale plutôt que de n'avoir aucune teinte.
   const accent = categoryAccent(category)
@@ -87,12 +98,13 @@ export function ProductCard({
           className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_50%_45%,rgb(var(--c-bg-raised)/0.55),transparent_70%)]"
         />
 
-        {displayImage ? (
+        {displayImage && !imageCassee ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={displayImage}
             alt={name}
             loading="lazy"
+            onError={() => setImageCassee(true)}
             /* `contain` et non `cover` : un PNG détouré recadré perdrait
                justement ce qu'on cherche à montrer. */
             className="relative w-full h-full object-contain p-5 transition-transform duration-500 ease-out group-hover:scale-[1.05]"

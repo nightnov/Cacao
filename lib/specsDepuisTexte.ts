@@ -80,12 +80,23 @@ function lireCpu(t: string): string | undefined {
   return undefined
 }
 
+/**
+ * Façons d'écrire un gigaoctet et un téraoctet dans une annonce.
+ *
+ * « Go » et « GB » ne suffisent pas : sur les places de marché locales on lit
+ * couramment « 8giga », « 256 gig », « 1 tera », souvent sans espace avant
+ * l'unité. Écarter ces graphies revenait à ne rien lire du tout sur la plupart
+ * des annonces.
+ */
+const GIGA = '(?:go|gb|giga(?:s|octets?)?|gig|g)'
+const TERA = '(?:to|tb|tera(?:s|octets?)?|t)'
+
 function lireRam(t: string): string | undefined {
   // La taille n'est retenue que collée au mot mémoire : sans ça, « 8 Go » peut
   // tout aussi bien désigner une clé USB citée plus bas dans l'annonce.
   const taille = premier(t, [
-    /\b(?:memoire(?:\s+vive)?|ram)\s*[:\-]?\s*(\d{1,3})\s*(?:go|gb)\b/,
-    /\b(\d{1,3})\s*(?:go|gb)\s*(?:de\s+)?(?:ram|memoire|ddr)/,
+    new RegExp(`\\b(?:memoire(?:\\s+vive)?|ram)\\s*[:\\-]?\\s*(\\d{1,3})\\s*${GIGA}\\b`),
+    new RegExp(`\\b(\\d{1,3})\\s*${GIGA}\\s*(?:de\\s+)?(?:ram|memoire|ddr)`),
   ])
   if (!taille) return undefined
 
@@ -103,8 +114,8 @@ function lireStockage(t: string): string | undefined {
   const support = '(ssd|nvme|emmc|hdd|disque dur|disque)'
 
   const enTo = premier(t, [
-    new RegExp(`\\b(\\d(?:[.,]\\d)?)\\s*(?:to|tb)\\s*(?:de\\s+)?${support}`),
-    new RegExp(`\\b${support}\\s*(?:de\\s+)?(\\d(?:[.,]\\d)?)\\s*(?:to|tb)\\b`),
+    new RegExp(`\\b(\\d(?:[.,]\\d)?)\\s*${TERA}\\s*(?:de\\s+)?${support}`),
+    new RegExp(`\\b${support}\\s*(?:de\\s+)?(\\d(?:[.,]\\d)?)\\s*${TERA}\\b`),
   ])
   if (enTo) {
     const nombre = (enTo[1].match(/\d/) ? enTo[1] : enTo[2]).replace('.', ',')
@@ -113,8 +124,8 @@ function lireStockage(t: string): string | undefined {
   }
 
   const enGo = premier(t, [
-    new RegExp(`\\b(\\d{3,4})\\s*(?:go|gb)\\s*(?:de\\s+)?${support}`),
-    new RegExp(`\\b${support}\\s*(?:de\\s+)?(\\d{3,4})\\s*(?:go|gb)\\b`),
+    new RegExp(`\\b(\\d{3,4})\\s*${GIGA}\\s*(?:de\\s+)?${support}`),
+    new RegExp(`\\b${support}\\s*(?:de\\s+)?(\\d{3,4})\\s*${GIGA}\\b`),
   ])
   if (enGo) {
     const nombre = enGo[1].match(/\d/) ? enGo[1] : enGo[2]
@@ -231,20 +242,38 @@ function lireEtat(t: string): string | undefined {
   return undefined
 }
 
-/** Lit tout ce qui est identifiable dans le texte d'une annonce. */
-export function lireAnnonce(...morceaux: (string | null | undefined)[]): LectureAnnonce {
-  const t = aplatir(morceaux.filter(Boolean).join(' \n '))
-  if (!t.trim()) return {}
+/**
+ * Lit ce qui est identifiable dans une annonce.
+ *
+ * Les deux sources ne sont pas de même valeur, et c'est pour ça qu'elles sont
+ * séparées ici. Le titre et le descriptif sont écrits par le vendeur et ne
+ * parlent que de son article. Le corps de la page, lui, contient aussi les
+ * menus du site : la page CoinAfrique embarque la liste complète des villes,
+ * des rayons et des filtres, dont une case « Produit neuf » et un rayon
+ * « Véhicules ». Chercher l'état ou le rayon là dedans revenait à annoncer du
+ * neuf sur toutes les annonces, y compris celles d'occasion.
+ *
+ * Le corps ne sert donc qu'aux caractéristiques techniques, que les menus du
+ * site ne contiennent pas ; le rayon et l'état viennent du vendeur seul.
+ */
+export function lireAnnonce(
+  titre?: string | null,
+  descriptif?: string | null,
+  corps?: string | null
+): LectureAnnonce {
+  const duVendeur = aplatir([titre, descriptif].filter(Boolean).join(' \n '))
+  const tout = aplatir([titre, descriptif, corps].filter(Boolean).join(' \n '))
+  if (!tout.trim()) return {}
 
   const lecture: LectureAnnonce = {
-    cpu: lireCpu(t),
-    ram: lireRam(t),
-    storage: lireStockage(t),
-    screen: lireEcran(t),
-    gpu: lireGpu(t),
-    os: lireOs(t),
-    category: lireRayon(t),
-    item_condition: lireEtat(t),
+    cpu: lireCpu(tout),
+    ram: lireRam(tout),
+    storage: lireStockage(tout),
+    screen: lireEcran(tout),
+    gpu: lireGpu(tout),
+    os: lireOs(tout),
+    category: lireRayon(duVendeur),
+    item_condition: lireEtat(duVendeur),
   }
 
   // Les clés sans valeur sont retirées : le formulaire distingue « rien trouvé »

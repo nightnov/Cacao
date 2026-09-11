@@ -51,6 +51,38 @@ interface ScrapedProduct {
  * Les balises de programme et de style sont retirées d'abord : leur contenu
  * est truffé de nombres et de sigles qui déclencheraient de fausses lectures.
  */
+/**
+ * Charge la page, avec quelques reprises sur les pannes passagères.
+ *
+ * Mesuré sur CoinAfrique : quatre requêtes sur cinq reviennent en erreur 500,
+ * la cinquième rend la page entière. Sans reprise, l'import échouait donc la
+ * plupart du temps sur une annonce parfaitement lisible, et l'outil passait
+ * pour cassé alors qu'il suffisait de redemander.
+ *
+ * Seules les pannes serveur sont reprises. Un refus (401, 403) ou une page
+ * absente (404) se répète à l'identique : insister ne ferait qu'allonger
+ * l'attente avant un message qu'on connaît déjà.
+ */
+async function lireAvecReprises(url: string, essais = 4): Promise<Response> {
+  let derniere: Response | null = null
+
+  for (let i = 0; i < essais; i++) {
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36',
+        'Accept-Language': 'fr-FR,fr;q=0.9'
+      },
+      signal: AbortSignal.timeout(15000)
+    })
+
+    if (res.ok || res.status < 500) return res
+    derniere = res
+    await new Promise(r => setTimeout(r, 600 * (i + 1)))
+  }
+
+  return derniere as Response
+}
+
 function texteVisible($: cheerio.CheerioAPI): string {
   const corps = $('body').clone()
   corps.find('script, style, noscript, svg, nav, header, footer').remove()
@@ -168,13 +200,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const res = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36',
-        'Accept-Language': 'fr-FR,fr;q=0.9'
-      },
-      signal: AbortSignal.timeout(15000)
-    })
+    const res = await lireAvecReprises(url)
 
     if (!res.ok) {
       // Message distinct pour le refus : c'est le cas le plus fréquent en

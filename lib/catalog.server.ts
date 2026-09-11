@@ -13,9 +13,34 @@ import { createClient } from '@supabase/supabase-js'
  * notes, mêmes couleurs.
  */
 
+/**
+ * Aucune réponse de la base n'est gardée en mémoire.
+ *
+ * Next remplace la fonction `fetch` du serveur par une version qui conserve
+ * les réponses, classées par adresse. Les appels de cette bibliothèque en sont
+ * faits, et chaque filtre produit une adresse différente : la liste des
+ * portables était donc gardée à part de la liste complète, et restait celle du
+ * jour où elle avait été calculée.
+ *
+ * Le résultat était une contradiction observable en ligne : le catalogue
+ * complet renvoyait cinq portables au même instant où le rayon Portables n'en
+ * renvoyait qu'un. Ajouter un paramètre inutile à l'adresse depuis le
+ * navigateur n'y changeait rien, puisque la mémoire fautive est côté serveur,
+ * sur l'appel vers la base.
+ *
+ * `force-dynamic` sur la route ne suffit pas : il porte sur le rendu de la
+ * page, pas sur les appels qu'elle déclenche. C'est donc ici, au plus près de
+ * la base, que le refus doit être posé.
+ */
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+  {
+    global: {
+      fetch: (input: RequestInfo | URL, init?: RequestInit) =>
+        fetch(input, { ...init, cache: 'no-store' }),
+    },
+  }
 )
 
 export interface CatalogProduct {

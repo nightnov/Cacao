@@ -9,7 +9,8 @@ import { useCategories } from '@/hooks/useCategories'
 import { ProductOptionsPanel } from '@/components/admin/ProductOptionsPanel'
 import { sizeFromWeight, SIZE_LABELS } from '@/lib/delivery'
 import { plateformeDe } from '@/lib/approvisionnement'
-import { mettreAuCarre } from '@/lib/imageCarre'
+import { analyserImage, composerCarre, AnalyseImage, Reglage } from '@/lib/imageCarre'
+import { CalibrageImage } from '@/components/admin/CalibrageImage'
 import { ITEM_CONDITIONS } from '@/lib/condition'
 import {
   COMPONENT_TYPES,
@@ -354,58 +355,97 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     }
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || files.length === 0) return
+  /**
+   * Photos choisies, en attente de calibrage.
+   *
+   * Elles défilent une par une : le calibrage se juge sur une photo précise,
+   * et regrouper les réglages de plusieurs images sur un seul écran obligerait
+   * à retenir laquelle est laquelle.
+   */
+  const [aCalibrer, setACalibrer] = useState<File[]>([])
+  const [analyse, setAnalyse] = useState<AnalyseImage | null>(null)
 
-    setUploading(true)
-    setError('')
+  /** Envoie un fichier déjà prêt et ajoute son adresse à la fiche. */
+  const envoyerPhoto = async (fichier: File) => {
+    const supabase = getSupabaseClient()
+    const ext = fichier.name.split('.').pop()
+    const path = `products/${crypto.randomUUID()}.${ext}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('product-images')
+      .upload(path, fichier)
+    if (uploadError) throw uploadError
+
+    const { data } = supabase.storage.from('product-images').getPublicUrl(path)
+    setFormData(prev => ({ ...prev, image_urls: [...prev.image_urls, data.publicUrl] }))
+  }
+
+  // Prépare la photo en tête de file. Une photo que l'analyse ne sait pas lire
+  // part telle quelle : il n'y a rien à calibrer sur une lecture ratée.
+  useEffect(() => {
+    if (analyse || aCalibrer.length === 0) return
+    let vivant = true
+    ;(async () => {
+      const fichier = aCalibrer[0]
+      const lue = await analyserImage(fichier)
+      if (!vivant) return
+      if (lue) {
+        setAnalyse(lue)
+        return
+      }
+      try {
+        await envoyerPhoto(fichier)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Erreur lors de l'envoi de la photo")
+      }
+      setACalibrer(f => f.slice(1))
+    })()
+    return () => {
+      vivant = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aCalibrer, analyse])
+
+  const terminerCalibrage = async (reglage: Reglage | null) => {
+    const courante = analyse
+    setAnalyse(null)
+    setACalibrer(f => f.slice(1))
+    if (!courante) return
 
     try {
-      const supabase = getSupabaseClient()
-      const uploadedUrls: string[] = []
-
-      for (const file of Array.from(files)) {
-        if (!file.type.startsWith('image/')) continue
-        if (file.size > 5 * 1024 * 1024) {
-          throw new Error(`"${file.name}" dépasse 5 Mo`)
-        }
-
-        /**
-         * Mise au carré avant l'envoi.
-         *
-         * Les photos viennent de vendeurs différents : l'une est détourée au
-         * ras de la machine, l'autre flotte dans une grande marge vide. Côte à
-         * côte, la première paraît énorme et la seconde minuscule, alors que
-         * les deux occupent la même case. La marge fait partie du fichier :
-         * aucune règle d'affichage ne la rattrape, il faut la retirer ici.
-         *
-         * La taille est vérifiée avant, sur le fichier que vous avez choisi :
-         * c'est ce nombre que vous voyez dans votre dossier, et le refuser sur
-         * une version transformée serait incompréhensible.
-         */
-        const aEnvoyer = await mettreAuCarre(file)
-
-        const ext = aEnvoyer.name.split('.').pop()
-        const path = `products/${crypto.randomUUID()}.${ext}`
-
-        const { error: uploadError } = await supabase.storage
-          .from('product-images')
-          .upload(path, aEnvoyer)
-
-        if (uploadError) throw uploadError
-
-        const { data } = supabase.storage.from('product-images').getPublicUrl(path)
-        uploadedUrls.push(data.publicUrl)
+      if (reglage) {
+        setUploading(true)
+        const fichier = await composerCarre(courante, reglage)
+        if (fichier) await envoyerPhoto(fichier)
       }
-
-      setFormData(prev => ({ ...prev, image_urls: [...prev.image_urls, ...uploadedUrls] }))
-    } catch (err: any) {
-      setError(err.message || "Erreur lors de l'upload de l'image")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erreur lors de l'envoi de la photo")
     } finally {
       setUploading(false)
-      if (fileInputRef.current) fileInputRef.current.value = ''
+      courante.source.close()
     }
+  }
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    setError('')
+
+    const retenus: File[] = []
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith('image/')) continue
+      // La taille est vérifiée sur le fichier que vous avez choisi : c'est ce
+      // nombre que vous voyez dans votre dossier. La refuser sur une version
+      // transformée par nos soins serait incompréhensible.
+      if (file.size > 5 * 1024 * 1024) {
+        setError(`"${file.name}" dépasse 5 Mo`)
+        continue
+      }
+      retenus.push(file)
+    }
+
+    setACalibrer(f => [...f, ...retenus])
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const handleRemoveImage = async (url: string) => {
@@ -846,11 +886,11 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               className="hidden"
             />
             <p className="text-xs text-ink-dimmer">
-              La première photo sera l&apos;image principale. Vos photos sont{' '}
-              <strong>mises au carré automatiquement</strong> : la marge vide autour du
-              produit est retirée, puis l&apos;image est recomposée pour que toutes
-              occupent la même place dans le catalogue. Vous pouvez donc envoyer la
-              photo telle que vous l&apos;avez trouvée. 5 Mo max par photo.
+              La première photo sera l&apos;image principale. Chaque photo est{' '}
+              <strong>mise au carré</strong> puis vous est montrée telle qu&apos;elle
+              apparaîtra dans le catalogue : la marge vide est retirée, et vous pouvez
+              ajuster la taille et la position avant de valider. Vous pouvez donc
+              envoyer la photo telle que vous l&apos;avez trouvée. 5 Mo max par photo.
             </p>
           </div>
 
@@ -1487,6 +1527,17 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
           </div>
         </form>
       </div>
+
+      {/* Calibrage. Placé hors du formulaire : à l'intérieur, la touche Entrée
+          dans le curseur de taille aurait enregistré le produit. */}
+      {analyse && (
+        <CalibrageImage
+          analyse={analyse}
+          compteRestant={aCalibrer.length}
+          onValider={reglage => terminerCalibrage(reglage)}
+          onAnnuler={() => terminerCalibrage(null)}
+        />
+      )}
     </div>
   )
 }

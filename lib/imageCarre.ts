@@ -116,25 +116,48 @@ function contenu(
   return { x: gauche, y: haut, w, h }
 }
 
+/** Ce que l'analyse a compris d'une photo, avant toute recomposition. */
+export interface AnalyseImage {
+  source: ImageBitmap
+  /** Zone utile de la photo d'origine, marge uniforme retirée. */
+  src: { x: number; y: number; w: number; h: number }
+  fond: Fond
+  nom: string
+  /** Vrai si une bordure uniforme a effectivement été trouvée et retirée. */
+  rognee: boolean
+}
+
+/** Réglage de cadrage. Neutre par défaut : le calcul automatique s'applique. */
+export interface Reglage {
+  /** Multiplie la taille du produit dans le carré. 1 = réglage automatique. */
+  zoom: number
+  /** Décalage horizontal, en part du côté. 0 = centré. */
+  dx: number
+  /** Décalage vertical, en part du côté. 0 = centré. */
+  dy: number
+}
+
+export const REGLAGE_NEUTRE: Reglage = { zoom: 1, dx: 0, dy: 0 }
+
 /**
- * Renvoie une version carrée du fichier, ou le fichier d'origine si rien ne
- * peut être fait de sûr.
+ * Analyse une photo sans la modifier.
  *
- * Le repli sur l'original est délibéré : une photo qu'on n'a pas su analyser
- * doit rester telle que vous l'avez fournie. Renvoyer un carré fabriqué à
- * partir d'une lecture ratée abîmerait la photo sans prévenir.
+ * Renvoie `null` quand rien ne peut être fait de sûr — format vectoriel,
+ * fichier illisible, canevas indisponible. L'appelant envoie alors la photo
+ * telle quelle : une image qu'on n'a pas su lire doit rester celle que vous
+ * avez fournie, pas un carré fabriqué à partir d'une lecture ratée.
  */
-export async function mettreAuCarre(fichier: File): Promise<File> {
-  if (typeof document === 'undefined') return fichier
+export async function analyserImage(fichier: File): Promise<AnalyseImage | null> {
+  if (typeof document === 'undefined') return null
   // Les images vectorielles n'ont pas de pixels à analyser et se redimensionnent
   // déjà proprement : les passer au canevas ne ferait que les dégrader.
-  if (fichier.type === 'image/svg+xml') return fichier
+  if (fichier.type === 'image/svg+xml') return null
 
   let source: ImageBitmap
   try {
     source = await createImageBitmap(fichier)
   } catch {
-    return fichier
+    return null
   }
 
   try {
@@ -149,7 +172,10 @@ export async function mettreAuCarre(fichier: File): Promise<File> {
     analyse.width = aw
     analyse.height = ah
     const ctxA = analyse.getContext('2d', { willReadFrequently: true })
-    if (!ctxA) return fichier
+    if (!ctxA) {
+      source.close()
+      return null
+    }
     ctxA.drawImage(source, 0, 0, aw, ah)
     const { data } = ctxA.getImageData(0, 0, aw, ah)
 
@@ -158,45 +184,98 @@ export async function mettreAuCarre(fichier: File): Promise<File> {
     // rogne rien : le bord n'est pas une marge, c'est le sujet.
     const boite = fond.uniforme ? contenu(data, aw, ah, fond) : null
 
-    const src = boite
-      ? {
-          x: boite.x / echelle,
-          y: boite.y / echelle,
-          w: boite.w / echelle,
-          h: boite.h / echelle,
-        }
-      : { x: 0, y: 0, w: source.width, h: source.height }
-
-    const sortie = document.createElement('canvas')
-    sortie.width = COTE
-    sortie.height = COTE
-    const ctx = sortie.getContext('2d')
-    if (!ctx) return fichier
-
-    // Le fond n'est repeint que s'il est opaque. Sur une image détourée on
-    // laisse la transparence : inventer un blanc collerait un rectangle clair
-    // au milieu du panneau sombre de la fiche.
-    if (fond.uniforme && fond.a >= 16) {
-      ctx.fillStyle = `rgb(${fond.r} ${fond.g} ${fond.b})`
-      ctx.fillRect(0, 0, COTE, COTE)
+    return {
+      source,
+      fond,
+      nom: fichier.name,
+      rognee: !!boite,
+      src: boite
+        ? { x: boite.x / echelle, y: boite.y / echelle, w: boite.w / echelle, h: boite.h / echelle }
+        : { x: 0, y: 0, w: source.width, h: source.height },
     }
+  } catch {
+    source.close()
+    return null
+  }
+}
 
-    ctx.imageSmoothingQuality = 'high'
-    const facteur = (COTE * REMPLISSAGE) / Math.max(src.w, src.h)
-    const w = src.w * facteur
-    const h = src.h * facteur
-    ctx.drawImage(source, src.x, src.y, src.w, src.h, (COTE - w) / 2, (COTE - h) / 2, w, h)
+/**
+ * Dessine le carré final sur un canevas donné.
+ *
+ * L'aperçu du calibrage et le fichier envoyé passent tous les deux par ici :
+ * un aperçu calculé autrement mentirait sur le résultat, et c'est exactement
+ * ce qu'on vous demande de juger à l'écran.
+ */
+export function dessinerCarre(
+  canevas: HTMLCanvasElement,
+  analyse: AnalyseImage,
+  reglage: Reglage
+): void {
+  const cote = canevas.width
+  const ctx = canevas.getContext('2d')
+  if (!ctx) return
 
-    const blob = await new Promise<Blob | null>(resolve =>
-      sortie.toBlob(resolve, 'image/webp', 0.92)
-    )
-    if (!blob) return fichier
+  ctx.clearRect(0, 0, cote, cote)
 
-    const nom = fichier.name.replace(/\.[^.]+$/, '') + '.webp'
-    return new File([blob], nom, { type: 'image/webp' })
+  // Le fond n'est repeint que s'il était opaque. Sur une image détourée on
+  // laisse la transparence : inventer un blanc collerait un rectangle clair
+  // au milieu du panneau sombre de la fiche.
+  if (analyse.fond.uniforme && analyse.fond.a >= 16) {
+    ctx.fillStyle = `rgb(${analyse.fond.r} ${analyse.fond.g} ${analyse.fond.b})`
+    ctx.fillRect(0, 0, cote, cote)
+  }
+
+  ctx.imageSmoothingQuality = 'high'
+  const { src } = analyse
+  const facteur = (cote * REMPLISSAGE * reglage.zoom) / Math.max(src.w, src.h)
+  const w = src.w * facteur
+  const h = src.h * facteur
+  ctx.drawImage(
+    analyse.source,
+    src.x,
+    src.y,
+    src.w,
+    src.h,
+    (cote - w) / 2 + reglage.dx * cote,
+    (cote - h) / 2 + reglage.dy * cote,
+    w,
+    h
+  )
+}
+
+/** Fabrique le fichier carré définitif à partir d'une analyse et d'un réglage. */
+export async function composerCarre(
+  analyse: AnalyseImage,
+  reglage: Reglage = REGLAGE_NEUTRE
+): Promise<File | null> {
+  const sortie = document.createElement('canvas')
+  sortie.width = COTE
+  sortie.height = COTE
+  dessinerCarre(sortie, analyse, reglage)
+
+  const blob = await new Promise<Blob | null>(resolve =>
+    sortie.toBlob(resolve, 'image/webp', 0.92)
+  )
+  if (!blob) return null
+
+  const nom = analyse.nom.replace(/\.[^.]+$/, '') + '.webp'
+  return new File([blob], nom, { type: 'image/webp' })
+}
+
+/**
+ * Version carrée du fichier, cadrage automatique, sans intervention.
+ *
+ * Le repli sur l'original est délibéré : une photo qu'on n'a pas su analyser
+ * doit rester telle que vous l'avez fournie.
+ */
+export async function mettreAuCarre(fichier: File): Promise<File> {
+  const analyse = await analyserImage(fichier)
+  if (!analyse) return fichier
+  try {
+    return (await composerCarre(analyse)) || fichier
   } catch {
     return fichier
   } finally {
-    source.close()
+    analyse.source.close()
   }
 }

@@ -19,6 +19,15 @@ interface ProductCardProps {
   created_at?: string
   avg_rating?: number | null
   review_count?: number
+  /**
+   * Charge la photo tout de suite, sans attendre qu'on s'en approche.
+   *
+   * Le chargement différé fait gagner du temps sur un catalogue de cinquante
+   * machines. Sur une rangée de quatre suggestions, il ne fait rien gagner et
+   * coûte cher : la photo n'arrive qu'au moment où l'œil est déjà dessus, et
+   * tout ce qui interrompt ce chargement laisse une case vide définitive.
+   */
+  eager?: boolean
 }
 
 const NEW_THRESHOLD_DAYS = 14
@@ -50,6 +59,7 @@ export function ProductCard({
   avg_rating,
   review_count,
   availability,
+  eager = false,
 }: ProductCardProps) {
   const hasPromo = !!compare_at_price_fcfa && compare_at_price_fcfa > price_fcfa
   const discount = hasPromo
@@ -103,7 +113,7 @@ export function ProductCard({
           <img
             src={displayImage}
             alt={name}
-            loading="lazy"
+            loading={eager ? 'eager' : 'lazy'}
             onError={() => setImageCassee(true)}
             /* `contain` et non `cover` : un PNG détouré recadré perdrait
                justement ce qu'on cherche à montrer. */

@@ -19,8 +19,32 @@
  * Ce module ne s'exécute que dans le navigateur : il utilise un canevas.
  */
 
-/** Côté du carré produit. Au delà, le fichier grossit sans gain visible. */
-const COTE = 1200
+/**
+ * Côté maximal du carré produit. Au delà, le fichier grossit sans gain visible
+ * même sur un grand écran à forte densité.
+ */
+const COTE_MAX = 1600
+
+/**
+ * Côté minimal.
+ *
+ * En dessous, la photo devient floue dès qu'on ouvre la fiche produit. Une
+ * source un peu plus petite est donc légèrement agrandie, ce qui est un moindre
+ * mal comparé à une image nette mais minuscule dans une grande case.
+ */
+const COTE_MIN = 900
+
+/**
+ * Côté retenu pour une photo donnée.
+ *
+ * Agrandir une photo au delà de ses pixels n'ajoute aucun détail : cela ne
+ * fabrique que des octets. On se cale donc sur ce que la source contient
+ * réellement, borné des deux côtés.
+ */
+function coteUtile(src: { w: number; h: number }): number {
+  const necessaire = Math.round(Math.max(src.w, src.h) / REMPLISSAGE)
+  return Math.max(COTE_MIN, Math.min(COTE_MAX, necessaire))
+}
 
 /** Part du carré occupée par le produit. Le reste est une marge d'air égale. */
 const REMPLISSAGE = 0.88
@@ -249,12 +273,16 @@ export async function composerCarre(
   reglage: Reglage = REGLAGE_NEUTRE
 ): Promise<File | null> {
   const sortie = document.createElement('canvas')
-  sortie.width = COTE
-  sortie.height = COTE
+  const cote = coteUtile(analyse.src)
+  sortie.width = cote
+  sortie.height = cote
   dessinerCarre(sortie, analyse, reglage)
 
+  // 0,95 plutôt que 0,92 : sur une photo de matériel, les arêtes nettes et les
+  // surfaces métalliques laissent voir les artefacts de compression bien avant
+  // qu'une photo ordinaire ne les montre. Le surcoût en octets est modeste.
   const blob = await new Promise<Blob | null>(resolve =>
-    sortie.toBlob(resolve, 'image/webp', 0.92)
+    sortie.toBlob(resolve, 'image/webp', 0.95)
   )
   if (!blob) return null
 

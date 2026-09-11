@@ -1131,8 +1131,11 @@ export default function ProductDetail() {
           <div>
             <h2 className="font-serif font-semibold text-2xl text-ink mb-6">Vous aimerez aussi</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-5 gap-y-8">
+              {/* Quatre photos au maximum : les charger tout de suite ne coûte
+                  rien, et évite la case vide quand le chargement différé ne se
+                  déclenche pas ou se fait interrompre. */}
               {related.map(p => (
-                <ProductCard key={p.id} {...p} />
+                <ProductCard key={p.id} {...p} eager />
               ))}
             </div>
           </div>

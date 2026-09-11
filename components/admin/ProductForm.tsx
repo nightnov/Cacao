@@ -282,6 +282,8 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
   const [importing, setImporting] = useState(false)
   const [importError, setImportError] = useState('')
   const [importSuccess, setImportSuccess] = useState(false)
+  /** Nombre de caractéristiques lues dans l'annonce au dernier import. */
+  const [luDansAnnonce, setLuDansAnnonce] = useState(0)
 
   const handleImportFromUrl = async () => {
     if (!formData.supplier_url.trim()) {
@@ -308,15 +310,42 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Erreur lors de l\'import')
 
+      const lecture = data.lecture || {}
+
+      /**
+       * Une caractéristique lue ne s'impose jamais à une saisie existante.
+       *
+       * L'annonce d'origine est un point de départ, pas une référence : vous
+       * corrigez souvent ce que le vendeur a mal écrit, et un import relancé
+       * pour récupérer une image ne doit pas effacer ces corrections.
+       */
+      const siVide = (actuel: string, trouve: string | undefined) => actuel || trouve || ''
+
+      // Le rayon n'est repris que s'il est réellement ouvert sur la boutique :
+      // écrire une clé absente de la liste afficherait un menu vide.
+      const rayonConnu =
+        lecture.category && categories.some(c => c.value === lecture.category)
+          ? lecture.category
+          : ''
+
       setFormData(prev => ({
         ...prev,
         name: data.name || prev.name,
         description: data.description || prev.description,
         price_fcfa: data.price_fcfa || prev.price_fcfa,
         image_urls: data.image_urls?.length ? data.image_urls : prev.image_urls,
+        category: prev.category || rayonConnu,
+        item_condition: siVide(prev.item_condition, lecture.item_condition),
+        specs_cpu: siVide(prev.specs_cpu, lecture.cpu),
+        specs_ram: siVide(prev.specs_ram, lecture.ram),
+        specs_storage: siVide(prev.specs_storage, lecture.storage),
+        specs_screen: siVide(prev.specs_screen, lecture.screen),
+        specs_gpu: siVide(prev.specs_gpu, lecture.gpu),
+        specs_os: siVide(prev.specs_os, lecture.os),
       }))
+      setLuDansAnnonce(Object.keys(lecture).length)
       setImportSuccess(true)
-      setTimeout(() => setImportSuccess(false), 3000)
+      setTimeout(() => setImportSuccess(false), 8000)
     } catch (err: any) {
       setImportError(err.message || 'Impossible d\'importer depuis cette URL. Remplissez le formulaire manuellement.')
     } finally {
@@ -682,7 +711,11 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               de la plateforme s&apos;en déduit tout seul. Quand une commande tombe, ce
               lien s&apos;affiche à côté du produit commandé : vous savez immédiatement où
               aller. Le bouton « Importer » reprend le nom, la description, le prix et
-              les photos ; vérifiez les avant d&apos;enregistrer.
+              les photos, et cherche dans le texte de l&apos;annonce le processeur, la
+              mémoire, le disque, l&apos;écran, la carte graphique, le système, le rayon
+              et l&apos;état. Il ne remplit que les cases encore vides, et laisse vide
+              tout ce que l&apos;annonce n&apos;écrit pas noir sur blanc. Vérifiez avant
+              d&apos;enregistrer.
             </p>
             <p className="text-xs text-ink-dimmer mb-3">
               Ces informations ne sortent jamais de cette page : elles sont enregistrées
@@ -694,7 +727,13 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
             )}
             {importSuccess && (
               <div className="bg-green/10 border border-green/30 text-green-bright px-3 py-2 rounded text-xs mb-3 font-semibold">
-                ✓ Informations importées — vérifiez-les avant d&apos;enregistrer.
+                {/* Le compte est annoncé pour que l'absence de lecture se voie :
+                    sans lui, une annonce trop pauvre pour livrer la moindre
+                    caractéristique ressemble à un import réussi. */}
+                ✓ Informations importées.{' '}
+                {luDansAnnonce > 0
+                  ? `${luDansAnnonce} caractéristique${luDansAnnonce > 1 ? 's ont' : ' a'} été lue${luDansAnnonce > 1 ? 's' : ''} dans l'annonce : relisez les plus bas, le vendeur se trompe parfois.`
+                  : "Aucune caractéristique n'était écrite clairement dans l'annonce : remplissez les à la main."}
               </div>
             )}
 

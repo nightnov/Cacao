@@ -1,5 +1,6 @@
 import * as cheerio from 'cheerio'
 import { createClient } from '@supabase/supabase-js'
+import { lireAnnonce, LectureAnnonce } from '@/lib/specsDepuisTexte'
 
 const ADMIN_UUID = 'f4e9e8fd-8e85-4045-a6e5-c2c62204c5ff'
 
@@ -35,6 +36,25 @@ interface ScrapedProduct {
   price_currency?: string
   image_urls?: string[]
   supplier_name?: string
+  /** Ce que le texte de l'annonce a permis de lire. Absent si rien n'est sûr. */
+  lecture?: LectureAnnonce
+}
+
+/**
+ * Texte visible de la page.
+ *
+ * Les places de marché ivoiriennes écrivent le processeur et la mémoire dans
+ * le corps de l'annonce, pas dans les métadonnées : `og:description` est
+ * tronquée à deux lignes et les données structurées sont souvent absentes.
+ * Lire le corps est donc le seul moyen d'atteindre ces caractéristiques.
+ *
+ * Les balises de programme et de style sont retirées d'abord : leur contenu
+ * est truffé de nombres et de sigles qui déclencheraient de fausses lectures.
+ */
+function texteVisible($: cheerio.CheerioAPI): string {
+  const corps = $('body').clone()
+  corps.find('script, style, noscript, svg, nav, header, footer').remove()
+  return corps.text().replace(/\s+/g, ' ').slice(0, 20000)
 }
 
 function hostToSupplierName(url: string): string {
@@ -173,9 +193,18 @@ export async function POST(request: Request) {
     const jsonLd = parseJsonLdProduct($)
     const og = parseOpenGraph($)
 
+    const nom = jsonLd.name || og.name
+    const descriptif = jsonLd.description || og.description
+
+    // Le titre passe en premier : c'est la partie la mieux rédigée d'une
+    // annonce, et en cas de contradiction avec le corps c'est elle qui décrit
+    // l'article mis en vente plutôt que les articles suggérés autour.
+    const lecture = lireAnnonce(nom, descriptif, texteVisible($))
+
     const result: ScrapedProduct = {
-      name: jsonLd.name || og.name,
-      description: jsonLd.description || og.description,
+      name: nom,
+      description: descriptif,
+      lecture: Object.keys(lecture).length ? lecture : undefined,
       price_fcfa: jsonLd.price_currency && jsonLd.price_currency !== 'XOF' ? undefined : jsonLd.price_fcfa,
       price_currency: jsonLd.price_currency,
       image_urls: [...(jsonLd.image_urls || []), ...(og.image_urls || [])].filter(Boolean).slice(0, 8),

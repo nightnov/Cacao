@@ -10,6 +10,7 @@ import {
   LINK_FRAMED, LINK_FRAMED_ARROW,
 } from '@/lib/ui'
 import { HERO_SETTING_KEYS, parseHeroSettings, type PromoSlide } from '@/lib/hero'
+import { VITRINE_SETTING_KEYS, parseVitrineMode, produitsEnVitrine } from '@/lib/vitrine'
 import {
   MapPin, ShieldCheck, Truck, RotateCcw, Headphones,
   Keyboard, Mouse, HardDrive, CreditCard, ArrowRight, TrendingUp
@@ -118,7 +119,7 @@ async function loadHome() {
       return [] as Product[]
     }),
     fetchCategoryRows().catch(() => null),
-    fetchHero(HERO_SETTING_KEYS).catch(err => {
+    fetchHero([...HERO_SETTING_KEYS, ...VITRINE_SETTING_KEYS]).catch(err => {
       console.error('Accueil : lecture du bandeau impossible.', err)
       return { settings: null, slides: [] as PromoSlide[] }
     }),
@@ -141,14 +142,23 @@ async function loadHome() {
     products: productsResult,
     categories: categories.filter(c => c.isVisible !== false),
     heroSettings: parseHeroSettings(hero.settings),
+    vitrineMode: parseVitrineMode(hero.settings),
     slides: hero.slides as PromoSlide[],
   }
 }
 
 export default async function Home() {
-  const { products, categories, heroSettings, slides } = await loadHome()
+  const { products, categories, heroSettings, vitrineMode, slides } = await loadHome()
 
-  const popular = [...products].sort((a, b) => (b.view_count || 0) - (a.view_count || 0)).slice(0, 4)
+  /**
+   * Produits mis en avant.
+   *
+   * En mode choisi, seuls les produits que vous avez retenus. En mode auto, le
+   * classement au nombre de vues, comme avant. C'est ce qui évite qu'une fiche
+   * créée ce matin, photo approximative comprise, se retrouve en vitrine
+   * l'après midi sans que personne l'ait décidé.
+   */
+  const popular = produitsEnVitrine(products, vitrineMode).slice(0, 4)
   const deals = products.filter(p => !!p.compare_at_price_fcfa && p.compare_at_price_fcfa > p.price_fcfa).slice(0, 4)
 
   // Le carrousel n'apparaît que s'il a réellement quelque chose à montrer :
@@ -170,10 +180,19 @@ export default async function Home() {
    * l'impression d'un affichage cassé.
    */
   const popularRank = new Map(popular.map((p, i) => [p.id, i]))
+  // En mode choisi, chaque rayon ne montre que ses produits retenus. Sans ce
+  // filtre, la vitrine du haut était triée mais les rangées par famille juste
+  // en dessous continuaient d'afficher tout le catalogue, ce qui annulait le
+  // réglage là où il se voit le plus.
+  const pourVitrine =
+    vitrineMode === 'choisi' && products.some(p => p.mis_en_avant)
+      ? products.filter(p => p.mis_en_avant)
+      : products
+
   const bestSellersByFamily = categories
     .map(cat => ({
       cat,
-      items: products
+      items: pourVitrine
         .filter(p => p.category === cat.value)
         .sort(
           (a, b) =>

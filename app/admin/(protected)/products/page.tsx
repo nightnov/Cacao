@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Pencil, Trash2, Archive, ArchiveRestore, Unlink } from 'lucide-react'
+import { Plus, Pencil, Trash2, Archive, ArchiveRestore, Unlink, Star } from 'lucide-react'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/Button'
 import ProductForm from '@/components/admin/ProductForm'
@@ -45,10 +45,70 @@ export default function AdminProducts() {
   const [liensMorts, setLiensMorts] = useState<Set<string>>(new Set())
   const [verification, setVerification] = useState('')
 
+  /**
+   * Produits mis en avant sur l'accueil, et mode de remplissage.
+   *
+   * Gardés à part de `products` : la liste des produits se recharge à chaque
+   * enregistrement, et la vitrine ne doit pas dépendre de ce rythme.
+   */
+  const [vitrine, setVitrine] = useState<Set<string>>(new Set())
+  const [vitrineMode, setVitrineMode] = useState<'auto' | 'choisi'>('auto')
+
   useEffect(() => {
     fetchProducts()
     chargerLiensMorts()
+    chargerVitrine()
   }, [])
+
+  const chargerVitrine = async () => {
+    // Tolérant à une migration non appliquée : la page doit s'ouvrir même si
+    // les colonnes de vitrine n'existent pas encore.
+    try {
+      const supabase = getSupabaseClient()
+      const [marques, reglage] = await Promise.all([
+        supabase.from('products').select('id').eq('mis_en_avant', true),
+        supabase.from('site_settings').select('value').eq('key', 'vitrine_mode').maybeSingle(),
+      ])
+      setVitrine(new Set((marques.data || []).map(p => p.id as string)))
+      setVitrineMode(reglage.data?.value === 'choisi' ? 'choisi' : 'auto')
+    } catch {
+      setVitrine(new Set())
+    }
+  }
+
+  const changerMode = async (mode: 'auto' | 'choisi') => {
+    const { error } = await getSupabaseClient()
+      .from('site_settings')
+      .upsert({ key: 'vitrine_mode', value: mode }, { onConflict: 'key' })
+    if (error) {
+      alert('Le changement de mode a échoué. ' + error.message)
+      return
+    }
+    setVitrineMode(mode)
+  }
+
+  /** Fait entrer ou sortir un produit de la vitrine de l'accueil. */
+  const basculerVitrine = async (id: string) => {
+    const dedans = vitrine.has(id)
+    // `select()` est indispensable : une écriture refusée par les droits en
+    // base ne remonte aucune erreur, elle ne touche aucune ligne en silence.
+    const { data, error } = await getSupabaseClient()
+      .from('products')
+      .update({ mis_en_avant: !dedans })
+      .eq('id', id)
+      .select('id')
+
+    if (error || !data?.length) {
+      alert('La mise en avant a échoué. ' + (error?.message || 'Aucune ligne modifiée.'))
+      return
+    }
+    setVitrine(prev => {
+      const suivant = new Set(prev)
+      if (dedans) suivant.delete(id)
+      else suivant.add(id)
+      return suivant
+    })
+  }
 
   const chargerLiensMorts = async () => {
     // Un échec est sans gravité : la table peut ne pas encore avoir les
@@ -311,6 +371,25 @@ export default function AdminProducts() {
       align: 'right',
       render: p => (
         <div className="flex justify-end gap-1">
+          {/* L'étoile n'agit que sur l'accueil. Un produit non retenu reste
+              entièrement visible dans le catalogue et par la recherche. */}
+          <button
+            type="button"
+            onClick={() => basculerVitrine(p.id)}
+            title={
+              vitrine.has(p.id)
+                ? 'Retirer de la vitrine de l accueil'
+                : 'Mettre en avant sur l accueil'
+            }
+            aria-pressed={vitrine.has(p.id)}
+            className={`p-2 rounded-lg transition-colors ${
+              vitrine.has(p.id)
+                ? 'text-gold hover:bg-bg-raised'
+                : 'text-ink-dimmer hover:text-ink hover:bg-bg-raised'
+            }`}
+          >
+            <Star size={16} fill={vitrine.has(p.id) ? 'currentColor' : 'none'} />
+          </button>
           <IconButton icon={Pencil} label="Modifier" onClick={() => handleEdit(p)} />
           {p.status === 'draft' ? (
             <IconButton
@@ -371,6 +450,46 @@ export default function AdminProducts() {
             </Button>
           )}
         </div>
+      </div>
+
+      {/* Réglage de la vitrine. Placé au dessus de la liste, juste avant les
+          étoiles sur lesquelles il agit : séparé dans un autre écran, on
+          coche des produits sans voir qu'ils ne servent à rien. */}
+      <div className="mb-6 bg-bg-raised border border-border rounded-lg px-4 py-3.5">
+        <p className="text-sm font-semibold text-ink mb-1">Vitrine de l&apos;accueil</p>
+        <p className="text-xs text-ink-dimmer mb-3">
+          Ce réglage ne décide que de ce qui est mis en avant sur la page
+          d&apos;accueil. Tous vos produits restent visibles dans le catalogue et
+          par la recherche, quel que soit le mode.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {([
+            ['auto', 'Les plus consultés', 'Classement automatique au nombre de vues.'],
+            ['choisi', 'Ceux que je choisis', 'Seuls les produits marqués d une étoile ci dessous.'],
+          ] as const).map(([valeur, titre, aide]) => (
+            <button
+              key={valeur}
+              type="button"
+              onClick={() => changerMode(valeur)}
+              title={aide}
+              className={`px-4 py-2 rounded-full text-sm font-semibold border-2 transition-colors ${
+                vitrineMode === valeur
+                  ? 'border-ink bg-ink text-ink-invert'
+                  : 'border-border-strong text-ink-dim hover:border-ink hover:text-ink'
+              }`}
+            >
+              {titre}
+            </button>
+          ))}
+        </div>
+        {vitrineMode === 'choisi' && vitrine.size === 0 && (
+          // Sans cette phrase, l'accueil semblerait ignorer le réglage.
+          <p className="mt-3 text-xs text-ink-dim">
+            Aucun produit n&apos;est encore marqué : l&apos;accueil continue donc
+            d&apos;afficher les plus consultés. Cliquez sur l&apos;étoile des produits
+            à mettre en avant.
+          </p>
+        )}
       </div>
 
       {verification && (

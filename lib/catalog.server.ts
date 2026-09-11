@@ -61,10 +61,22 @@ export interface CatalogProduct {
   review_count?: number
   view_count?: number
   colors?: { value: string; image_url: string | null }[]
+  mis_en_avant?: boolean | null
+  rang_vitrine?: number | null
 }
 
 const COLUMNS =
   'id, name, slug, description, category, price_fcfa, compare_at_price_fcfa, availability, specs, tags, image_urls, video_url, created_at'
+
+/**
+ * Colonnes de vitrine, demandées à part.
+ *
+ * PostgREST rejette la requête entière si une seule colonne demandée n'existe
+ * pas. Les ajouter à `COLUMNS` ferait donc disparaître tout le catalogue entre
+ * le déploiement du code et l'exécution de la migration — le site vide, sans
+ * message, pendant l'intervalle. On tente avec, et on retombe sans.
+ */
+const COLUMNS_VITRINE = `${COLUMNS}, mis_en_avant, rang_vitrine`
 
 /** Nom d'option à retenir pour les pastilles de couleur, accents et casse ignorés. */
 const COLOR_OPTION = /^couleurs?$/i
@@ -78,23 +90,36 @@ export async function fetchCatalog({
   search?: string | null
   sort?: string | null
 } = {}): Promise<CatalogProduct[]> {
-  let query = supabase.from('products').select(COLUMNS).eq('status', 'active')
+  const construire = (colonnes: string) => {
+    let query = supabase.from('products').select(colonnes).eq('status', 'active')
 
-  if (sort === 'price_asc') {
-    query = query.order('price_fcfa', { ascending: true })
-  } else if (sort === 'price_desc') {
-    query = query.order('price_fcfa', { ascending: false })
-  } else {
-    query = query.order('created_at', { ascending: false })
+    if (sort === 'price_asc') {
+      query = query.order('price_fcfa', { ascending: true })
+    } else if (sort === 'price_desc') {
+      query = query.order('price_fcfa', { ascending: false })
+    } else {
+      query = query.order('created_at', { ascending: false })
+    }
+
+    if (category) query = query.eq('category', category)
+    if (search) query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`)
+
+    return query
   }
 
-  if (category) query = query.eq('category', category)
-  if (search) query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`)
+  let { data, error } = await construire(COLUMNS_VITRINE)
 
-  const { data, error } = await query
+  // Les colonnes de vitrine n'existent pas encore : on relit sans elles plutôt
+  // que de laisser le catalogue vide le temps d'appliquer la migration.
+  if (error) {
+    ;({ data, error } = await construire(COLUMNS))
+  }
   if (error) throw error
 
-  let products = (data || []) as CatalogProduct[]
+  // Le passage par `unknown` est nécessaire : la liste de colonnes étant une
+  // variable et non un texte écrit sur place, Supabase ne peut plus en déduire
+  // la forme des lignes et propose un type d'erreur.
+  let products = (data || []) as unknown as CatalogProduct[]
   const productIds = products.map(p => p.id)
   if (productIds.length === 0) return products
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Pencil, Trash2, Archive, ArchiveRestore } from 'lucide-react'
+import { Plus, Pencil, Trash2, Archive, ArchiveRestore, Unlink } from 'lucide-react'
 import { getSupabaseClient } from '@/lib/supabase'
 import { Button } from '@/components/Button'
 import ProductForm from '@/components/admin/ProductForm'
@@ -35,9 +35,63 @@ export default function AdminProducts() {
    */
   const [voirRetires, setVoirRetires] = useState(false)
 
+  /**
+   * Produits dont l'annonce d'origine a disparu.
+   *
+   * La vérification tourne toute seule chaque nuit, mais son résultat ne sert
+   * à rien s'il reste en base : c'est ici, à côté du produit, qu'il vous dit
+   * d'aller chercher une autre source.
+   */
+  const [liensMorts, setLiensMorts] = useState<Set<string>>(new Set())
+  const [verification, setVerification] = useState('')
+
   useEffect(() => {
     fetchProducts()
+    chargerLiensMorts()
   }, [])
+
+  const chargerLiensMorts = async () => {
+    // Un échec est sans gravité : la table peut ne pas encore avoir les
+    // colonnes de suivi si la migration n'a pas été appliquée. La liste des
+    // produits doit s'afficher quoi qu'il arrive.
+    try {
+      const { data } = await getSupabaseClient()
+        .from('product_sourcing')
+        .select('product_id')
+        .not('annonce_retiree_le', 'is', null)
+      setLiensMorts(new Set((data || []).map(l => l.product_id as string)))
+    } catch {
+      setLiensMorts(new Set())
+    }
+  }
+
+  /** Lance la vérification sans attendre la nuit. */
+  const verifierMaintenant = async () => {
+    setVerification('Vérification en cours...')
+    try {
+      const { data: { session } } = await getSupabaseClient().auth.getSession()
+      if (!session) throw new Error('Session expirée. Reconnectez vous.')
+
+      const res = await fetch('/api/admin/verifier-liens', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      const rapport = await res.json()
+      if (!res.ok) throw new Error(rapport.error || 'La vérification a échoué.')
+
+      // Le compte des indécis est annoncé, et c'est voulu : sans lui, un site
+      // entier injoignable ressemblerait à un catalogue en bonne santé.
+      setVerification(
+        `${rapport.verifies} lien(s) vérifié(s) : ${rapport.vivants} en ligne, ` +
+          `${rapport.retires} introuvable(s), ${rapport.indecis} sans réponse claire.` +
+          (rapport.bascules?.length
+            ? ` Passé(s) en sur commande : ${rapport.bascules.join(', ')}.`
+            : '')
+      )
+      await Promise.all([fetchProducts(), chargerLiensMorts()])
+    } catch (err) {
+      setVerification(err instanceof Error ? err.message : 'La vérification a échoué.')
+    }
+  }
 
   useEffect(() => {
     setPage(1)
@@ -226,6 +280,16 @@ export default function AdminProducts() {
       render: p => (
         <div className="flex items-center gap-2">
           <span className="font-medium text-ink">{p.name}</span>
+          {/* L'annonce d'origine a disparu : il faut une autre source avant de
+              pouvoir honorer une commande sur ce produit. */}
+          {liensMorts.has(p.id) && (
+            <span
+              title="L annonce d origine est introuvable depuis trois jours. Collez une autre adresse dans la fiche."
+              className="inline-flex items-center gap-1 text-[11px] font-semibold text-danger"
+            >
+              <Unlink size={12} /> Lien mort
+            </span>
+          )}
           {p.status === 'draft' && <StatusBadge label="Brouillon" tone="neutral" />}
           {!!p.variant_options?.length && <StatusBadge label={`${p.variant_options.length} option(s)`} tone="info" />}
         </div>
@@ -277,6 +341,12 @@ export default function AdminProducts() {
           {voirRetires ? 'Produits retirés' : 'Produits'}
         </h1>
         <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={verifierMaintenant}
+            className="px-4 py-2 rounded-full text-sm font-semibold border-2 border-border-strong text-ink-dim hover:text-ink hover:border-ink transition-colors"
+          >
+            Vérifier les liens
+          </button>
           {/* Le compte figure sur le bouton : sans lui, rien n'indique qu'il y
               a quelque chose à aller voir, et le second bloc reste ignoré. */}
           {(voirRetires || retires.length > 0) && (
@@ -302,6 +372,12 @@ export default function AdminProducts() {
           )}
         </div>
       </div>
+
+      {verification && (
+        <p className="mb-4 text-sm text-ink-dim bg-bg-raised border border-border rounded-lg px-4 py-3">
+          {verification}
+        </p>
+      )}
 
       <TableShell
         columns={columns}

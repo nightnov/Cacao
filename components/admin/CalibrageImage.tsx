@@ -25,12 +25,15 @@ const APERCU = 320
 export function CalibrageImage({
   analyse,
   compteRestant,
+  remplacement = false,
   onValider,
   onAnnuler,
 }: {
   analyse: AnalyseImage
   /** Nombre de photos encore en attente, affiché pour situer l'avancement. */
   compteRestant: number
+  /** Vrai quand le calibrage remplace une photo déjà en place. */
+  remplacement?: boolean
   onValider: (reglage: Reglage) => void
   onAnnuler: () => void
 }) {
@@ -46,20 +49,33 @@ export function CalibrageImage({
     if (canevas.current) dessinerCarre(canevas.current, analyse, reglage)
   }, [analyse, reglage])
 
+  /**
+   * Déplacement borné.
+   *
+   * Sans borne, un glissement un peu vif poussait la photo entièrement hors du
+   * cadre : l'aperçu devenait vide, et plus rien ne permettait de la
+   * rattraper puisqu'il n'y avait plus rien à saisir. La borne garde toujours
+   * le centre de la photo dans le cadre, donc toujours de quoi la ramener.
+   */
+  const BORNE = 0.4
+
   const deplacer = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!glisse.current) return
     const depart = glisse.current
+    const borner = (v: number) => Math.max(-BORNE, Math.min(BORNE, v))
     setReglage(r => ({
       ...r,
-      dx: depart.dx + (e.clientX - depart.x) / APERCU,
-      dy: depart.dy + (e.clientY - depart.y) / APERCU,
+      dx: borner(depart.dx + (e.clientX - depart.x) / APERCU),
+      dy: borner(depart.dy + (e.clientY - depart.y) / APERCU),
     }))
   }, [])
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center p-4">
       <div className="bg-bg-panel border border-border rounded-xl w-full max-w-md p-5">
-        <h3 className="font-semibold text-ink">Calibrer la photo</h3>
+        <h3 className="font-semibold text-ink">
+          {remplacement ? 'Recadrer cette photo' : 'Calibrer la photo'}
+        </h3>
         <p className="text-xs text-ink-dimmer mt-1 mb-4">
           {analyse.rognee
             ? 'La marge vide a été retirée et la photo recadrée automatiquement.'
@@ -126,7 +142,9 @@ export function CalibrageImage({
           </button>
           <div className="flex gap-2">
             <Button type="button" variant="outline" onClick={onAnnuler}>
-              Ignorer cette photo
+              {/* Sur un recadrage, abandonner laisse la photo en place : le
+                  dire évite de craindre de la perdre en renonçant. */}
+              {remplacement ? 'Laisser comme avant' : 'Ignorer cette photo'}
             </Button>
             <Button type="button" variant="primary" onClick={() => onValider(reglage)}>
               {compteRestant > 1 ? 'Valider et passer à la suivante' : 'Valider'}

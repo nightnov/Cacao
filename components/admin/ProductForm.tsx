@@ -281,6 +281,13 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     }))
   }
 
+  /** Une photo en attente de calibrage, et l'adresse qu'elle remplacera. */
+  interface ACalibrer {
+    fichier: File
+    /** Adresse à remplacer, ou `null` pour une photo ajoutée à la suite. */
+    remplace: string | null
+  }
+
   const [importing, setImporting] = useState(false)
   const [importError, setImportError] = useState('')
   const [importSuccess, setImportSuccess] = useState(false)
@@ -335,7 +342,6 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         name: data.name || prev.name,
         description: data.description || prev.description,
         price_fcfa: data.price_fcfa || prev.price_fcfa,
-        image_urls: data.image_urls?.length ? data.image_urls : prev.image_urls,
         category: prev.category || rayonConnu,
         item_condition: siVide(prev.item_condition, lecture.item_condition),
         specs_cpu: siVide(prev.specs_cpu, lecture.cpu),
@@ -345,6 +351,18 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         specs_gpu: siVide(prev.specs_gpu, lecture.gpu),
         specs_os: siVide(prev.specs_os, lecture.os),
       }))
+      /**
+       * Les photos importées passent par le calibrage, comme les autres.
+       *
+       * Elles étaient auparavant rangées telles quelles : l'adresse restait
+       * chez le vendeur, donc la photo disparaissait le jour où il retirait
+       * son annonce, et rien ne permettait de la recadrer puisqu'elle n'était
+       * pas à nous. Rapatriées, elles deviennent des fichiers de la boutique.
+       */
+      if (data.image_urls?.length) {
+        await mettreEnFile(data.image_urls.slice(0, 6))
+      }
+
       setLuDansAnnonce(Object.keys(lecture).length)
       setImportSuccess(true)
       setTimeout(() => setImportSuccess(false), 8000)
@@ -362,11 +380,20 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
    * et regrouper les réglages de plusieurs images sur un seul écran obligerait
    * à retenir laquelle est laquelle.
    */
-  const [aCalibrer, setACalibrer] = useState<File[]>([])
+  const [aCalibrer, setACalibrer] = useState<ACalibrer[]>([])
   const [analyse, setAnalyse] = useState<AnalyseImage | null>(null)
+  /** Adresse remplacée par la photo en cours de calibrage, s'il y en a une. */
+  const [remplace, setRemplace] = useState<string | null>(null)
+  const [preparation, setPreparation] = useState('')
 
-  /** Envoie un fichier déjà prêt et ajoute son adresse à la fiche. */
-  const envoyerPhoto = async (fichier: File) => {
+  /**
+   * Envoie un fichier prêt.
+   *
+   * Quand il remplace une photo, la nouvelle prend exactement sa place dans la
+   * liste : recadrer la photo principale ne doit pas la reléguer en dernier et
+   * changer l'image qui représente le produit dans tout le catalogue.
+   */
+  const envoyerPhoto = async (fichier: File, remplacee?: string | null) => {
     const supabase = getSupabaseClient()
     const ext = fichier.name.split('.').pop()
     const path = `products/${crypto.randomUUID()}.${ext}`
@@ -377,7 +404,66 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     if (uploadError) throw uploadError
 
     const { data } = supabase.storage.from('product-images').getPublicUrl(path)
-    setFormData(prev => ({ ...prev, image_urls: [...prev.image_urls, data.publicUrl] }))
+
+    setFormData(prev => ({
+      ...prev,
+      image_urls: remplacee
+        ? prev.image_urls.map(u => (u === remplacee ? data.publicUrl : u))
+        : [...prev.image_urls, data.publicUrl],
+    }))
+
+    // L'ancien fichier n'est retiré qu'une fois le nouveau en place. Dans
+    // l'autre sens, un envoi qui échoue laisserait la fiche sans photo.
+    if (remplacee) {
+      const ancien = remplacee.split('/product-images/')[1]
+      if (ancien) await supabase.storage.from('product-images').remove([ancien])
+    }
+  }
+
+  /**
+   * Rapatrie une image distante en fichier local.
+   *
+   * Le navigateur ne peut pas lire les pixels d'une image servie par un autre
+   * domaine : le passage par notre serveur est ce qui rend le recadrage
+   * possible. Il rend aussi la photo nôtre, au lieu d'un lien chez le vendeur
+   * qui casserait le jour où il retire son annonce.
+   */
+  const rapatrier = async (url: string): Promise<File | null> => {
+    if (url.includes('/product-images/')) {
+      // Déjà chez nous : inutile de faire un détour par le serveur.
+      const rep = await fetch(url)
+      if (!rep.ok) return null
+      const blob = await rep.blob()
+      return new File([blob], 'photo', { type: blob.type })
+    }
+
+    const { data: { session } } = await getSupabaseClient().auth.getSession()
+    if (!session) return null
+
+    const rep = await fetch('/api/admin/telecharger-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ url }),
+    })
+    if (!rep.ok) return null
+    const blob = await rep.blob()
+    return new File([blob], 'photo', { type: blob.type })
+  }
+
+  /** Met en file d'attente des adresses d'images, pour calibrage. */
+  const mettreEnFile = async (urls: string[], enRemplacement = false) => {
+    setPreparation(urls.length > 1 ? `Préparation de ${urls.length} photos...` : 'Préparation...')
+    const lot: ACalibrer[] = []
+    for (const url of urls) {
+      const fichier = await rapatrier(url)
+      if (fichier) lot.push({ fichier, remplace: enRemplacement ? url : null })
+    }
+    setPreparation('')
+    if (lot.length === 0) {
+      setError("Ces photos n'ont pas pu être récupérées. Enregistrez les à la main.")
+      return
+    }
+    setACalibrer(f => [...f, ...lot])
   }
 
   // Prépare la photo en tête de file. Une photo que l'analyse ne sait pas lire
@@ -386,15 +472,16 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
     if (analyse || aCalibrer.length === 0) return
     let vivant = true
     ;(async () => {
-      const fichier = aCalibrer[0]
+      const { fichier, remplace: cible } = aCalibrer[0]
       const lue = await analyserImage(fichier)
       if (!vivant) return
       if (lue) {
+        setRemplace(cible)
         setAnalyse(lue)
         return
       }
       try {
-        await envoyerPhoto(fichier)
+        await envoyerPhoto(fichier, cible)
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erreur lors de l'envoi de la photo")
       }
@@ -408,7 +495,9 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
 
   const terminerCalibrage = async (reglage: Reglage | null) => {
     const courante = analyse
+    const cible = remplace
     setAnalyse(null)
+    setRemplace(null)
     setACalibrer(f => f.slice(1))
     if (!courante) return
 
@@ -416,7 +505,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
       if (reglage) {
         setUploading(true)
         const fichier = await composerCarre(courante, reglage)
-        if (fichier) await envoyerPhoto(fichier)
+        if (fichier) await envoyerPhoto(fichier, cible)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur lors de l'envoi de la photo")
@@ -444,7 +533,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
       retenus.push(file)
     }
 
-    setACalibrer(f => [...f, ...retenus])
+    setACalibrer(f => [...f, ...retenus.map(fichier => ({ fichier, remplace: null }))])
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -848,13 +937,33 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
           <div>
             <label className="block text-sm font-semibold text-ink mb-2">Photos</label>
             <div className="grid grid-cols-4 gap-3 mb-3">
-              {formData.image_urls.map(url => (
+              {formData.image_urls.map((url, i) => (
                 <div key={url} className="relative aspect-square rounded-lg overflow-hidden border border-border group">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  {/* La photo entière est le bouton de recadrage : c'est elle
+                      qu'on regarde en jugeant qu'elle est mal cadrée, cliquer
+                      dessus est le geste évident. */}
+                  <button
+                    type="button"
+                    onClick={() => mettreEnFile([url], true)}
+                    disabled={uploading || !!preparation}
+                    title="Recadrer cette photo"
+                    className="block w-full h-full disabled:opacity-50"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt="" className="w-full h-full object-cover" />
+                    <span className="absolute inset-0 bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-semibold">
+                      Recadrer
+                    </span>
+                  </button>
+                  {i === 0 && (
+                    <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-black/65 text-white text-[10px] font-semibold pointer-events-none">
+                      Principale
+                    </span>
+                  )}
                   <button
                     type="button"
                     onClick={() => handleRemoveImage(url)}
+                    title="Retirer cette photo"
                     className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black bg-opacity-60 text-white text-xs flex items-center justify-center hover:bg-opacity-80"
                   >
                     ✕
@@ -864,10 +973,12 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-                className="aspect-square rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center text-ink-dimmer hover:border-gold hover:text-gold transition-colors text-xs gap-1 disabled:opacity-50"
+                disabled={uploading || !!preparation}
+                className="aspect-square rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center text-ink-dimmer hover:border-gold hover:text-gold transition-colors text-xs gap-1 disabled:opacity-50 text-center px-1"
               >
-                {uploading ? (
+                {preparation ? (
+                  <span>{preparation}</span>
+                ) : uploading ? (
                   <span>Envoi...</span>
                 ) : (
                   <>
@@ -890,7 +1001,9 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               <strong>mise au carré</strong> puis vous est montrée telle qu&apos;elle
               apparaîtra dans le catalogue : la marge vide est retirée, et vous pouvez
               ajuster la taille et la position avant de valider. Vous pouvez donc
-              envoyer la photo telle que vous l&apos;avez trouvée. 5 Mo max par photo.
+              envoyer la photo telle que vous l&apos;avez trouvée.{' '}
+              <strong>Cliquez sur une photo déjà en place pour la recadrer.</strong> 5 Mo
+              max par photo.
             </p>
           </div>
 
@@ -1534,6 +1647,7 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
         <CalibrageImage
           analyse={analyse}
           compteRestant={aCalibrer.length}
+          remplacement={!!remplace}
           onValider={reglage => terminerCalibrage(reglage)}
           onAnnuler={() => terminerCalibrage(null)}
         />

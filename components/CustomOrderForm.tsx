@@ -24,6 +24,15 @@ interface Props {
   estimatedTotal: number
   userId?: string | null
   defaults?: { name?: string; phone?: string; city?: string; address?: string }
+  /**
+   * Vrai seulement si la fiche propose réellement des choix.
+   *
+   * Sans ce drapeau, un portable vendu tel quel affichait « Commander cette
+   * configuration » alors qu'aucune configuration n'avait été proposée. Le mot
+   * laissait chercher des choix inexistants, et faisait douter d'avoir sauté
+   * une étape avant de commander.
+   */
+  configurable?: boolean
 }
 
 export function CustomOrderForm({
@@ -32,6 +41,7 @@ export function CustomOrderForm({
   estimatedTotal,
   userId,
   defaults,
+  configurable = false,
 }: Props) {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState(defaults?.name || '')
@@ -79,8 +89,10 @@ export function CustomOrderForm({
         <p className="font-semibold text-ink">Commande enregistrée</p>
         <p className="text-ink-dim text-[13.5px] mt-1 tabular-nums">{orderNumber}</p>
         <p className="text-ink-dim text-[13.5px] mt-3 leading-relaxed">
-          Nous finalisons votre configuration et vous confirmons le montant par téléphone. Le
-          paiement se fait ensuite, depuis votre compte.
+          {configurable
+            ? 'Nous finalisons votre configuration et vous confirmons le montant par téléphone.'
+            : 'Nous préparons votre commande et vous confirmons le montant par téléphone.'}{' '}
+          Le paiement se fait ensuite, depuis votre compte.
         </p>
       </div>
     )
@@ -98,7 +110,7 @@ export function CustomOrderForm({
           </Link>
         ) : (
         <button type="button" onClick={() => setOpen(true)} className={btn('solid', 'lg', 'w-full')}>
-          Commander cette configuration
+          {configurable ? 'Commander cette configuration' : 'Commander ce produit'}
         </button>
         )}
         <p className="text-[12.5px] text-ink-faint mt-2 text-center leading-relaxed">

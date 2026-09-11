@@ -25,11 +25,20 @@ export function BaseConfig({
   specs,
   glossary,
   condition,
+  configurable = false,
 }: {
   specs: Record<string, unknown>
   glossary: GlossaryEntry[]
   /** État de l'appareil, quand il est renseigné. */
   condition?: string | null
+  /**
+   * Vrai seulement si la fiche propose des choix.
+   *
+   * « Configuration de base » sous entend qu'il existe une configuration
+   * supérieure à choisir. Sur un portable vendu tel quel il n'y en a aucune :
+   * le titre faisait alors chercher des options absentes de la page.
+   */
+  configurable?: boolean
 }) {
   const etat = conditionLabel(condition)
   const lignes = [...glossary]
@@ -44,7 +53,7 @@ export function BaseConfig({
   return (
     <section className="rounded-xl border border-border bg-bg-raised px-4 py-3.5 mt-4">
       <h2 className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint mb-3">
-        Configuration de base
+        {configurable ? 'Configuration de base' : 'Caractéristiques'}
       </h2>
       <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-2.5">
         {lignes.map(({ entry, valeur }) => {

@@ -9,6 +9,7 @@ import { useCategories } from '@/hooks/useCategories'
 import { ProductOptionsPanel } from '@/components/admin/ProductOptionsPanel'
 import { sizeFromWeight, SIZE_LABELS } from '@/lib/delivery'
 import { plateformeDe } from '@/lib/approvisionnement'
+import { mettreAuCarre } from '@/lib/imageCarre'
 import { ITEM_CONDITIONS } from '@/lib/condition'
 import {
   COMPONENT_TYPES,
@@ -370,12 +371,27 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
           throw new Error(`"${file.name}" dépasse 5 Mo`)
         }
 
-        const ext = file.name.split('.').pop()
+        /**
+         * Mise au carré avant l'envoi.
+         *
+         * Les photos viennent de vendeurs différents : l'une est détourée au
+         * ras de la machine, l'autre flotte dans une grande marge vide. Côte à
+         * côte, la première paraît énorme et la seconde minuscule, alors que
+         * les deux occupent la même case. La marge fait partie du fichier :
+         * aucune règle d'affichage ne la rattrape, il faut la retirer ici.
+         *
+         * La taille est vérifiée avant, sur le fichier que vous avez choisi :
+         * c'est ce nombre que vous voyez dans votre dossier, et le refuser sur
+         * une version transformée serait incompréhensible.
+         */
+        const aEnvoyer = await mettreAuCarre(file)
+
+        const ext = aEnvoyer.name.split('.').pop()
         const path = `products/${crypto.randomUUID()}.${ext}`
 
         const { error: uploadError } = await supabase.storage
           .from('product-images')
-          .upload(path, file)
+          .upload(path, aEnvoyer)
 
         if (uploadError) throw uploadError
 
@@ -830,7 +846,11 @@ export default function ProductForm({ product, onClose }: ProductFormProps) {
               className="hidden"
             />
             <p className="text-xs text-ink-dimmer">
-              La première photo sera l&apos;image principale. Utilisez des images <strong>carrées</strong> (ratio 1:1, ex. 800×800 px) pour un affichage uniforme dans le catalogue. 5 Mo max par photo.
+              La première photo sera l&apos;image principale. Vos photos sont{' '}
+              <strong>mises au carré automatiquement</strong> : la marge vide autour du
+              produit est retirée, puis l&apos;image est recomposée pour que toutes
+              occupent la même place dans le catalogue. Vous pouvez donc envoyer la
+              photo telle que vous l&apos;avez trouvée. 5 Mo max par photo.
             </p>
           </div>
 

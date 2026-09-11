@@ -587,6 +587,15 @@ export default function ProductDetail() {
       ? !!matchedVariant && matchedVariant.stock > 0
       : product.availability !== 'discontinued'
 
+  /**
+   * La fiche propose-t-elle réellement des choix ?
+   *
+   * Les deux modèles comptent : la configuration par option, et l'ancien
+   * modèle de combinaisons. Sans cette distinction, un produit vendu tel quel
+   * parlait de « configuration » partout alors qu'il n'en proposait aucune.
+   */
+  const estConfigurable = options.length > 0 || hasVariants
+
   const reviewCount = reviews.length
   const avgRating = reviewCount > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount : 0
   const myExistingReview = isLoggedIn && user ? reviews.find(r => r.user_id === user.id) : undefined
@@ -705,6 +714,7 @@ export default function ProductDetail() {
               specs={product.specs || {}}
               glossary={glossary}
               condition={product.item_condition}
+              configurable={estConfigurable}
             />
             <IncludedItems items={product.included_items || []} />
 
@@ -794,6 +804,7 @@ export default function ProductDetail() {
                 optionValueIds={selectedValueIds}
                 estimatedTotal={displayPrice}
                 userId={user?.id}
+                configurable={estConfigurable}
               />
             ) : (
             <div className="space-y-3">

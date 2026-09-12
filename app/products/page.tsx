@@ -31,6 +31,17 @@ interface Product {
   colors?: { value: string; image_url: string | null }[]
 }
 
+/**
+ * Nombre de produits montrés par rayon dans la suite du catalogue.
+ *
+ * Quatre était trop peu : en descendant la page des portables jusqu'au rayon
+ * Gaming, le visiteur voyait quatre machines et croyait que c'était tout le
+ * rayon. Rien à l'écran ne disait qu'il en manquait. Le nombre réel est
+ * désormais écrit sur le lien dès qu'une partie est coupée, et le lien
+ * disparaît quand le rayon tient en entier.
+ */
+const APERCU_RAYON = 9
+
 const sortOptions = [
   { value: '', label: 'Pertinence' },
   { value: 'newest', label: 'Nouveautés' },
@@ -135,10 +146,10 @@ function ProductsContent() {
   const suite = useMemo(() => {
     if (!category || !reste.length) return []
     return categories
-      .map(cat => ({
-        valeur: cat.value,
-        produits: reste.filter(p => p.category === cat.value).slice(0, 4),
-      }))
+      .map(cat => {
+        const tous = reste.filter(p => p.category === cat.value)
+        return { valeur: cat.value, produits: tous.slice(0, APERCU_RAYON), total: tous.length }
+      })
       .filter(g => g.valeur !== category && g.produits.length > 0)
   }, [category, reste, categories])
 
@@ -373,18 +384,23 @@ function ProductsContent() {
                     dise qu'on avait changé de famille : le rayon paraissait
                     mal rangé alors qu'il ne l'était pas. Un titre suffit à
                     transformer un mélange en continuation. */}
-                {suite.map(({ valeur, produits }) => (
+                {suite.map(({ valeur, produits, total }) => (
                   <div key={valeur} className="mt-16 pt-10 border-t border-border">
                     <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
                       <h2 className="font-serif font-semibold text-xl text-ink">
                         {labelFor(valeur, categories)}
+                        <span className="ml-2 text-[13px] font-sans font-normal text-ink-dimmer">
+                          {total} produit{total > 1 ? 's' : ''}
+                        </span>
                       </h2>
-                      <Link
-                        href={`/products?category=${valeur}`}
-                        className="text-[13px] font-semibold text-accent underline underline-offset-2"
-                      >
-                        Voir tout le rayon
-                      </Link>
+                      {total > produits.length && (
+                        <Link
+                          href={`/products?category=${valeur}`}
+                          className="text-[13px] font-semibold text-accent underline underline-offset-2"
+                        >
+                          Voir les {total} produits du rayon
+                        </Link>
+                      )}
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                       {produits.map(p => (

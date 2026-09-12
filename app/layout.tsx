@@ -4,6 +4,7 @@ import './globals.css'
 import { getTheme } from '@/lib/theme.server'
 import { buildThemeStyle, DEFAULT_TOKENS } from '@/lib/theme'
 import { CookieBanner } from '@/components/CookieBanner'
+import { siteUrl } from '@/lib/siteUrl'
 
 // Play : display anguleuse pour les titres et les prix.
 // Inter : texte courant. Deux graisses par famille seulement, pour limiter
@@ -22,6 +23,11 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  // Sans cette base, Next laisse les adresses d'aperçu en relatif. WhatsApp et
+  // Facebook ne savent pas les résoudre : le lien partagé s'affiche nu, sans
+  // image ni titre, ce qui est exactement l'impression d'amateurisme qu'on
+  // cherche à éviter.
+  metadataBase: new URL(siteUrl()),
   title: 'CACAO | Ordinateurs et accessoires en Côte d\'Ivoire',
   description:
     'Achetez vos PC portables, PC bureau, écrans et accessoires informatiques en Côte d\'Ivoire. Paiement Wave, Orange Money, MTN Money, Moov Money ou carte bancaire. Livraison suivie en moins de 5 jours.',

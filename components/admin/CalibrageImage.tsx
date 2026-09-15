@@ -22,6 +22,22 @@ import {
  */
 const APERCU = 320
 
+/**
+ * Bornes de l'agrandissement, en pourcentage.
+ *
+ * Le plafond était à 200 %, ce qui suffit à recadrer une photo correcte mais
+ * pas à rattraper une image de petite définition : à 200 % elle occupait
+ * encore une fraction du cadre, sans qu'aucun réglage ne permette d'aller plus
+ * loin. 600 % laisse de la marge, et le résultat reste jugé à l'œil sur
+ * l'aperçu — c'est lui qui dit quand l'image devient trop floue, pas une
+ * limite arbitraire posée d'avance.
+ */
+const ZOOM_MIN = 20
+const ZOOM_MAX = 600
+
+/** Sensibilité de la molette, en pourcentage de zoom par cran. */
+const PAS_MOLETTE = 6
+
 export function CalibrageImage({
   analyse,
   compteRestant,
@@ -84,6 +100,33 @@ export function CalibrageImage({
     [ratio]
   )
 
+  /**
+   * Agrandissement à la molette.
+   *
+   * L'écouteur est posé à la main plutôt que par `onWheel` : React attache les
+   * évènements de molette en mode passif, où `preventDefault` est sans effet.
+   * Sans lui, chaque cran ferait défiler la page derrière la fenêtre en même
+   * temps qu'il agrandit la photo.
+   */
+  useEffect(() => {
+    const cible = canevas.current
+    if (!cible) return
+
+    const molette = (e: WheelEvent) => {
+      e.preventDefault()
+      // Vers le haut agrandit. `deltaY` vaut des pixels, des lignes ou des
+      // pages selon la souris et le système : seul son signe est fiable.
+      const sens = e.deltaY < 0 ? 1 : -1
+      setReglage(r => {
+        const pourcent = r.zoom * 100 + sens * PAS_MOLETTE
+        return { ...r, zoom: Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, pourcent)) / 100 }
+      })
+    }
+
+    cible.addEventListener('wheel', molette, { passive: false })
+    return () => cible.removeEventListener('wheel', molette)
+  }, [])
+
   return (
     <div className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center p-4">
       <div className="bg-bg-panel border border-border rounded-xl w-full max-w-md p-5">
@@ -135,15 +178,15 @@ export function CalibrageImage({
           </span>
           <input
             type="range"
-            min={40}
-            max={200}
+            min={ZOOM_MIN}
+            max={ZOOM_MAX}
             value={Math.round(reglage.zoom * 100)}
             onChange={e => setReglage(r => ({ ...r, zoom: Number(e.target.value) / 100 }))}
             className="w-full mt-1.5 accent-accent"
           />
         </label>
         <p className="text-xs text-ink-dimmer mt-1">
-          Faites glisser la photo dans le cadre pour la déplacer.
+          Molette de la souris pour agrandir, glissement pour déplacer.
         </p>
 
         <div className="flex items-center justify-between gap-2 mt-5">

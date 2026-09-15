@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { ArrowDown, ArrowUp, Link2, Trash2, Upload } from 'lucide-react'
 import { Button } from '@/components/Button'
 import { getSupabaseClient } from '@/lib/supabase'
+import { useCalibrage } from '@/hooks/useCalibrage'
 import {
   DEFAULT_HERO_SETTINGS,
   HERO_SETTING_KEYS,
@@ -35,6 +36,8 @@ export function PromoBannerPanel() {
   const fileRef = useRef<HTMLInputElement>(null)
   /** Diapositive dont l'image doit être remplacée ; null = ajout. */
   const replacingId = useRef<string | null>(null)
+  /** 3 : la bannière d'accueil est en 3:1. */
+  const { calibrer, calibrerDepuisUrl, modaleCalibrage } = useCalibrage(3)
 
   const flash = (message: string) => {
     setNotice(message)
@@ -109,13 +112,22 @@ export function PromoBannerPanel() {
     if (!file.type.startsWith('image/')) return setError('Le fichier doit être une image')
     if (file.size > MAX_FILE_BYTES) return setError("L'image dépasse 5 Mo")
 
+    // La bannière s'affiche en 3:1. Le calibrage vise ce cadre, sans quoi
+    // l'affichage rognerait le haut et le bas d'une image carrée.
+    const pret = await calibrer(file, { remplacement: !!targetId })
+    if (!pret) return
+
+    await enregistrerBanniere(pret, targetId)
+  }
+
+  const enregistrerBanniere = async (fichier: File, targetId: string | null) => {
     setBusy(true)
     try {
       const supabase = getSupabaseClient()
-      const ext = file.name.split('.').pop()
+      const ext = fichier.name.split('.').pop()
       const path = `banners/${crypto.randomUUID()}.${ext}`
 
-      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file)
+      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, fichier)
       if (upErr) throw upErr
       const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
 
@@ -142,6 +154,15 @@ export function PromoBannerPanel() {
     } finally {
       setBusy(false)
     }
+  }
+
+  /** Reprend le cadrage d'une bannière déjà en ligne. */
+  const recadrerSlide = async (id: string, url: string) => {
+    setError('')
+    setBusy(true)
+    const pret = await calibrerDepuisUrl(url, BUCKET).finally(() => setBusy(false))
+    if (!pret) return
+    await enregistrerBanniere(pret, id)
   }
 
   const removeSlide = async (id: string) => {
@@ -344,12 +365,25 @@ export function PromoBannerPanel() {
           {slides.map((slide, i) => (
             <li key={slide.id} className="border border-border rounded-lg p-4">
               <div className="flex flex-col sm:flex-row gap-4">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={slide.image_url}
-                  alt={slide.alt_text || `Image ${i + 1}`}
-                  className="w-full sm:w-56 flex-shrink-0 rounded border border-border object-cover aspect-[3/1] bg-bg-sunken"
-                />
+                {/* L'image entière ouvre le recadrage : le geste attendu quand
+                    la bannière est mal centrée. */}
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => recadrerSlide(slide.id, slide.image_url)}
+                  title="Cliquez pour recadrer cette image"
+                  className="group relative w-full sm:w-56 flex-shrink-0 rounded overflow-hidden disabled:opacity-40"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={slide.image_url}
+                    alt={slide.alt_text || `Image ${i + 1}`}
+                    className="w-full rounded border border-border object-cover aspect-[3/1] bg-bg-sunken"
+                  />
+                  <span className="absolute inset-0 hidden group-hover:flex items-center justify-center bg-black/55 text-[11px] font-semibold text-white">
+                    Recadrer
+                  </span>
+                </button>
 
                 <div className="flex-1 min-w-0 space-y-3">
                   <div>
@@ -465,6 +499,7 @@ export function PromoBannerPanel() {
       </div>
 
       <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
+      {modaleCalibrage}
     </div>
   )
 }

@@ -235,23 +235,39 @@ export function dessinerCarre(
   analyse: AnalyseImage,
   reglage: Reglage
 ): void {
-  const cote = canevas.width
+  const L = canevas.width
+  const H = canevas.height
   const ctx = canevas.getContext('2d')
   if (!ctx) return
 
-  ctx.clearRect(0, 0, cote, cote)
+  ctx.clearRect(0, 0, L, H)
 
   // Le fond n'est repeint que s'il était opaque. Sur une image détourée on
   // laisse la transparence : inventer un blanc collerait un rectangle clair
   // au milieu du panneau sombre de la fiche.
   if (analyse.fond.uniforme && analyse.fond.a >= 16) {
     ctx.fillStyle = `rgb(${analyse.fond.r} ${analyse.fond.g} ${analyse.fond.b})`
-    ctx.fillRect(0, 0, cote, cote)
+    ctx.fillRect(0, 0, L, H)
   }
 
   ctx.imageSmoothingQuality = 'high'
   const { src } = analyse
-  const facteur = (cote * REMPLISSAGE * reglage.zoom) / Math.max(src.w, src.h)
+
+  /**
+   * Le sujet est inscrit dans le cadre, quel que soit le format de celui ci.
+   *
+   * Sur un cadre carré, ce `min` vaut exactement l'ancien
+   * `cote / max(largeur, hauteur)` : les photos produit sont composées au pixel
+   * près comme avant. La formule ne se généralise donc pas au prix d'une
+   * approximation, elle était déjà le cas particulier de celle ci.
+   *
+   * La distinction compte, parce que tous les cadres ne sont pas carrés : la
+   * bannière d'accueil est en 3:1 et la carte de rayon en 4:3. Y imposer un
+   * carré aurait ajouté des marges que l'affichage aurait ensuite rognées,
+   * mangeant le haut et le bas du sujet.
+   */
+  const facteur =
+    Math.min((L * REMPLISSAGE) / src.w, (H * REMPLISSAGE) / src.h) * reglage.zoom
   const w = src.w * facteur
   const h = src.h * facteur
   ctx.drawImage(
@@ -260,8 +276,8 @@ export function dessinerCarre(
     src.y,
     src.w,
     src.h,
-    (cote - w) / 2 + reglage.dx * cote,
-    (cote - h) / 2 + reglage.dy * cote,
+    (L - w) / 2 + reglage.dx * L,
+    (H - h) / 2 + reglage.dy * H,
     w,
     h
   )
@@ -270,12 +286,16 @@ export function dessinerCarre(
 /** Fabrique le fichier carré définitif à partir d'une analyse et d'un réglage. */
 export async function composerCarre(
   analyse: AnalyseImage,
-  reglage: Reglage = REGLAGE_NEUTRE
+  reglage: Reglage = REGLAGE_NEUTRE,
+  ratio = 1
 ): Promise<File | null> {
   const sortie = document.createElement('canvas')
   const cote = coteUtile(analyse.src)
+  // `ratio` est largeur / hauteur : 1 pour une photo produit, 3 pour la
+  // bannière d'accueil. La largeur reste la dimension de référence, pour que
+  // la définition du fichier ne dépende pas du format demandé.
   sortie.width = cote
-  sortie.height = cote
+  sortie.height = Math.round(cote / ratio)
   dessinerCarre(sortie, analyse, reglage)
 
   // 0,95 plutôt que 0,92 : sur une photo de matériel, les arêtes nettes et les

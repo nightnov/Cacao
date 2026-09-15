@@ -26,6 +26,7 @@ export function CalibrageImage({
   analyse,
   compteRestant,
   remplacement = false,
+  ratio = 1,
   onValider,
   onAnnuler,
 }: {
@@ -34,6 +35,13 @@ export function CalibrageImage({
   compteRestant: number
   /** Vrai quand le calibrage remplace une photo déjà en place. */
   remplacement?: boolean
+  /**
+   * Largeur divisée par hauteur du cadre visé : 1 pour une photo produit,
+   * 3 pour la bannière d'accueil, 4/3 pour une carte de rayon. L'aperçu doit
+   * avoir la forme du cadre réel, sinon il valide un cadrage qu'on ne verra
+   * jamais.
+   */
+  ratio?: number
   onValider: (reglage: Reglage) => void
   onAnnuler: () => void
 }) {
@@ -59,16 +67,22 @@ export function CalibrageImage({
    */
   const BORNE = 0.4
 
-  const deplacer = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!glisse.current) return
-    const depart = glisse.current
-    const borner = (v: number) => Math.max(-BORNE, Math.min(BORNE, v))
-    setReglage(r => ({
-      ...r,
-      dx: borner(depart.dx + (e.clientX - depart.x) / APERCU),
-      dy: borner(depart.dy + (e.clientY - depart.y) / APERCU),
-    }))
-  }, [])
+  // Les décalages sont exprimés en fraction du cadre, pas en pixels. Diviser
+  // le mouvement vertical par la largeur sur un cadre 3:1 ferait glisser la
+  // photo trois fois moins vite vers le bas que vers le côté.
+  const deplacer = useCallback(
+    (e: React.PointerEvent<HTMLCanvasElement>) => {
+      if (!glisse.current) return
+      const depart = glisse.current
+      const borner = (v: number) => Math.max(-BORNE, Math.min(BORNE, v))
+      setReglage(r => ({
+        ...r,
+        dx: borner(depart.dx + (e.clientX - depart.x) / APERCU),
+        dy: borner(depart.dy + ((e.clientY - depart.y) * ratio) / APERCU),
+      }))
+    },
+    [ratio]
+  )
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/70 flex items-center justify-center p-4">
@@ -89,7 +103,7 @@ export function CalibrageImage({
           className="mx-auto rounded-lg border border-border overflow-hidden"
           style={{
             width: APERCU,
-            height: APERCU,
+            height: Math.round(APERCU / ratio),
             backgroundImage:
               'linear-gradient(45deg,rgb(var(--c-bg-raised)) 25%,transparent 25%),linear-gradient(-45deg,rgb(var(--c-bg-raised)) 25%,transparent 25%),linear-gradient(45deg,transparent 75%,rgb(var(--c-bg-raised)) 75%),linear-gradient(-45deg,transparent 75%,rgb(var(--c-bg-raised)) 75%)',
             backgroundSize: '16px 16px',
@@ -99,7 +113,7 @@ export function CalibrageImage({
           <canvas
             ref={canevas}
             width={APERCU}
-            height={APERCU}
+            height={Math.round(APERCU / ratio)}
             className="cursor-move touch-none"
             onPointerDown={e => {
               e.currentTarget.setPointerCapture(e.pointerId)

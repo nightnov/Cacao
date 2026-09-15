@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { getSupabaseClient } from '@/lib/supabase'
 import { FALLBACK_GLOSSARY, type GlossaryEntry } from '@/lib/glossary'
+import { useCalibrage } from '@/hooks/useCalibrage'
 
 /**
  * Glossaire des composants : les explications affichées sur toutes les fiches
@@ -28,6 +29,7 @@ export function GlossaryPanel() {
   const [missingTable, setMissingTable] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
   const targetKey = useRef<string | null>(null)
+  const { calibrer, calibrerDepuisUrl, modaleCalibrage } = useCalibrage()
 
   const flash = (message: string) => {
     setNotice(message)
@@ -97,13 +99,37 @@ export function GlossaryPanel() {
     if (!file.type.startsWith('image/')) return setError('Le fichier doit être une image')
     if (file.size > MAX_FILE_BYTES) return setError("L'image dépasse 5 Mo")
 
+    // Calibrage avant envoi : une image déposée ici s'installait telle quelle,
+    // trop large ou décentrée, sans qu'aucun geste ne permette de la reprendre.
+    // Renoncer à la fenêtre laisse l'image d'avant en place.
+    const pret = await calibrer(file)
+    if (!pret) return
+    await enregistrerImage(key, pret)
+  }
+
+  /**
+   * Reprise du cadrage d'une image déjà en place.
+   *
+   * Sans cela, la seule façon de corriger un cadrage était de retrouver le
+   * fichier d'origine et de le redéposer. L'image est rapatriée, recalibrée,
+   * puis réenregistrée.
+   */
+  const recadrer = async (key: string, url: string) => {
+    setError('')
+    setBusy(true)
+    const pret = await calibrerDepuisUrl(url, BUCKET).finally(() => setBusy(false))
+    if (!pret) return
+    await enregistrerImage(key, pret)
+  }
+
+  const enregistrerImage = async (key: string, fichier: File) => {
     setBusy(true)
     try {
       const supabase = getSupabaseClient()
-      const ext = file.name.split('.').pop()
+      const ext = fichier.name.split('.').pop()
       const path = `glossaire/${key}-${crypto.randomUUID()}.${ext}`
 
-      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file)
+      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, fichier)
       if (upErr) throw upErr
       const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
 
@@ -145,6 +171,7 @@ export function GlossaryPanel() {
   return (
     <div className="space-y-4">
       <input ref={fileRef} type="file" accept="image/*" onChange={onFile} className="hidden" />
+      {modaleCalibrage}
 
       {missingTable && (
         <div className="rounded-lg border border-gold/30 bg-gold/10 p-4 text-sm text-ink-dim">
@@ -168,12 +195,25 @@ export function GlossaryPanel() {
           <div className="flex items-start gap-5">
             <div className="w-28 flex-shrink-0">
               {entry.image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={entry.image_url}
-                  alt=""
-                  className="w-28 h-28 object-contain rounded-lg border border-border bg-bg-raised p-2"
-                />
+                // L'image entière est le bouton de recadrage : c'est là qu'on
+                // clique spontanément quand le cadrage ne convient pas.
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => recadrer(entry.key, entry.image_url as string)}
+                  title="Cliquez pour recadrer cette image"
+                  className="group relative block w-28 h-28 rounded-lg overflow-hidden disabled:opacity-40"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={entry.image_url}
+                    alt=""
+                    className="w-28 h-28 object-contain rounded-lg border border-border bg-bg-raised p-2"
+                  />
+                  <span className="absolute inset-0 hidden group-hover:flex items-center justify-center bg-black/55 text-[11px] font-semibold text-white">
+                    Recadrer
+                  </span>
+                </button>
               ) : (
                 <div className="w-28 h-28 rounded-lg border border-dashed border-border-strong bg-bg-raised flex items-center justify-center text-center text-[11px] text-ink-dimmer px-2">
                   Aucune image, un pictogramme s&apos;affiche

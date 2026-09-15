@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { ArrowDown, ArrowUp, Plus, Trash2, Upload } from 'lucide-react'
 import { Button } from '@/components/Button'
 import { getSupabaseClient } from '@/lib/supabase'
+import { useCalibrage } from '@/hooks/useCalibrage'
 import {
   groupOptions,
   optionMode,
@@ -38,6 +39,7 @@ export function ProductOptionsPanel({ productId }: { productId: string }) {
   const fileRef = useRef<HTMLInputElement>(null)
   /** Cible du téléversement en cours : quelle valeur, et laquelle de ses images. */
   const uploadTarget = useRef<{ valueId: string; field: 'image_url' | 'block_image_url' } | null>(null)
+  const { calibrer, calibrerDepuisUrl, modaleCalibrage } = useCalibrage()
 
   const flash = (m: string) => {
     setNotice(m)
@@ -240,12 +242,35 @@ export function ProductOptionsPanel({ productId }: { productId: string }) {
     if (!file.type.startsWith('image/')) return setError('Le fichier doit être une image')
     if (file.size > MAX_FILE_BYTES) return setError("L'image dépasse 5 Mo")
 
+    // Pastille comme bloc s'affichent en carré, au même titre que les photos
+    // produit : le calibrage s'applique donc sans changement de format.
+    const pret = await calibrer(file)
+    if (!pret) return
+    await enregistrerImage(target, pret)
+  }
+
+  /** Reprend le cadrage d'une image déjà en place, sans la rechercher. */
+  const recadrer = async (
+    target: { valueId: string; field: 'image_url' | 'block_image_url' },
+    url: string
+  ) => {
+    setError('')
+    setBusy(true)
+    const pret = await calibrerDepuisUrl(url, BUCKET).finally(() => setBusy(false))
+    if (!pret) return
+    await enregistrerImage(target, pret)
+  }
+
+  const enregistrerImage = async (
+    target: { valueId: string; field: 'image_url' | 'block_image_url' },
+    fichier: File
+  ) => {
     setBusy(true)
     try {
       const supabase = getSupabaseClient()
-      const ext = file.name.split('.').pop()
+      const ext = fichier.name.split('.').pop()
       const path = `options/${crypto.randomUUID()}.${ext}`
-      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, file)
+      const { error: upErr } = await supabase.storage.from(BUCKET).upload(path, fichier)
       if (upErr) throw upErr
       const { data } = supabase.storage.from(BUCKET).getPublicUrl(path)
       await updateValue(target.valueId, { [target.field]: data.publicUrl } as Partial<OptionValue>)
@@ -419,6 +444,18 @@ export function ProductOptionsPanel({ productId }: { productId: string }) {
                               updateValue(value.id, { block_title: e.target.value.trim() || null })
                             }
                           />
+                          {value.block_image_url && (
+                            <Vignette
+                              url={value.block_image_url}
+                              busy={busy}
+                              onClick={() =>
+                                recadrer(
+                                  { valueId: value.id, field: 'block_image_url' },
+                                  value.block_image_url as string
+                                )
+                              }
+                            />
+                          )}
                           <Button
                             type="button"
                             variant="outline"
@@ -462,6 +499,18 @@ export function ProductOptionsPanel({ productId }: { productId: string }) {
                           Par défaut
                         </label>
 
+                        {value.image_url && (
+                          <Vignette
+                            url={value.image_url}
+                            busy={busy}
+                            onClick={() =>
+                              recadrer(
+                                { valueId: value.id, field: 'image_url' },
+                                value.image_url as string
+                              )
+                            }
+                          />
+                        )}
                         <Button
                           type="button"
                           variant="outline"
@@ -551,6 +600,31 @@ export function ProductOptionsPanel({ productId }: { productId: string }) {
       )}
 
       <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} className="hidden" />
+      {modaleCalibrage}
     </div>
+  )
+}
+
+/**
+ * Vignette cliquable d'une image d'option.
+ *
+ * Cet écran n'affichait aucune image : le bouton disait « Remplacer le
+ * visuel » sans qu'on puisse voir de quel visuel il s'agissait. La vignette
+ * répond d'abord à cette question, et sert ensuite de prise pour reprendre le
+ * cadrage.
+ */
+function Vignette({ url, busy, onClick }: { url: string; busy: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      disabled={busy}
+      onClick={onClick}
+      title="Cliquez pour recadrer cette image"
+      className="group relative w-10 h-10 rounded border border-border overflow-hidden flex-shrink-0 disabled:opacity-40"
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={url} alt="" className="w-full h-full object-contain bg-bg-raised" />
+      <span className="absolute inset-0 hidden group-hover:block bg-black/55" />
+    </button>
   )
 }

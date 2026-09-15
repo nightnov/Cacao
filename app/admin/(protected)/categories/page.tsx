@@ -8,6 +8,7 @@ import {
   FALLBACK_CATEGORIES,
 } from '@/lib/categories'
 import { invalidateCategoriesCache } from '@/hooks/useCategories'
+import { useCalibrage } from '@/hooks/useCalibrage'
 import { BasculeRangees } from '@/components/admin/BasculeRangees'
 import {
   AlertTriangle,
@@ -57,6 +58,8 @@ export default function AdminCategories() {
   const [busy, setBusy] = useState(false)
   const [uploading, setUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
+  /** 4/3 : le format exact de la carte de rayon sur l'accueil. */
+  const { calibrer, calibrerDepuisUrl, modaleCalibrage } = useCalibrage(4 / 3)
   const [missingTable, setMissingTable] = useState(false)
   const [message, setMessage] = useState<{ kind: 'ok' | 'ko'; text: string } | null>(null)
   // Un rayon masqué n'apparaît nulle part sur la boutique : le laisser dans la
@@ -218,14 +221,20 @@ export default function AdminCategories() {
       return
     }
 
+    // La carte de rayon s'affiche en 4:3 : le calibrage vise ce cadre là, pas
+    // un carré qui serait ensuite rogné du haut et du bas.
+    const pret = await calibrer(file)
+    if (fileRef.current) fileRef.current.value = ''
+    if (!pret) return
+
     setUploading(true)
     setMessage(null)
     try {
       const supabase = getSupabaseClient()
-      const ext = file.name.split('.').pop() || 'jpg'
+      const ext = pret.name.split('.').pop() || 'jpg'
       const path = `categories/${crypto.randomUUID()}.${ext}`
 
-      const { error: upErr } = await supabase.storage.from('product-images').upload(path, file)
+      const { error: upErr } = await supabase.storage.from('product-images').upload(path, pret)
       if (upErr) throw new Error(upErr.message)
 
       const { data } = supabase.storage.from('product-images').getPublicUrl(path)
@@ -236,6 +245,32 @@ export default function AdminCategories() {
       setUploading(false)
       // Sans ça, choisir deux fois le même fichier ne déclencherait rien.
       if (fileRef.current) fileRef.current.value = ''
+    }
+  }
+
+  /** Reprend le cadrage d'une image déjà choisie, sans avoir à la retrouver. */
+  const recadrerImage = async (url: string) => {
+    if (!editing) return
+    setMessage(null)
+    setUploading(true)
+    const pret = await calibrerDepuisUrl(url).finally(() => setUploading(false))
+    if (!pret) return
+
+    setUploading(true)
+    try {
+      const supabase = getSupabaseClient()
+      const ext = pret.name.split('.').pop() || 'webp'
+      const path = `categories/${crypto.randomUUID()}.${ext}`
+
+      const { error: upErr } = await supabase.storage.from('product-images').upload(path, pret)
+      if (upErr) throw new Error(upErr.message)
+
+      const { data } = supabase.storage.from('product-images').getPublicUrl(path)
+      setEditing(e => (e ? { ...e, image_url: data.publicUrl } : e))
+    } catch (err: any) {
+      setMessage({ kind: 'ko', text: err.message || 'Envoi impossible.' })
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -269,6 +304,7 @@ export default function AdminCategories() {
 
   return (
     <div className="space-y-6">
+      {modaleCalibrage}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="font-serif text-3xl text-ink">
@@ -405,12 +441,25 @@ export default function AdminCategories() {
               <div className="flex items-start gap-4">
                 <div className="w-32 aspect-[4/3] rounded-lg border border-border bg-bg-raised grid place-items-center overflow-hidden flex-shrink-0">
                   {editing.image_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={editing.image_url}
-                      alt=""
-                      className="w-full h-full object-contain p-1.5"
-                    />
+                    // L'image est cliquable pour reprendre son cadrage : c'est
+                    // le geste spontané quand le résultat ne convient pas.
+                    <button
+                      type="button"
+                      disabled={uploading}
+                      onClick={() => recadrerImage(editing.image_url as string)}
+                      title="Cliquez pour recadrer cette image"
+                      className="group relative w-full h-full disabled:opacity-40"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={editing.image_url}
+                        alt=""
+                        className="w-full h-full object-contain p-1.5"
+                      />
+                      <span className="absolute inset-0 hidden group-hover:flex items-center justify-center bg-black/55 text-[11px] font-semibold text-white">
+                        Recadrer
+                      </span>
+                    </button>
                   ) : (
                     <ImageIcon size={20} className="text-border-strong" />
                   )}

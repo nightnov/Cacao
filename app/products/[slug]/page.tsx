@@ -572,13 +572,31 @@ export default function ProductDetail() {
     displayPrice === product.price_fcfa &&
     !!product.compare_at_price_fcfa &&
     product.compare_at_price_fcfa > product.price_fcfa
-  const components = sanitizeComponents(product.components)
+  /**
+   * Composants affichés, hors rayon Accessoires.
+   *
+   * Un clavier ou une sacoche n'a pas de processeur ni de mémoire vive. La
+   * grille y affichait au mieux une ligne isolée, au pire des valeurs héritées
+   * d'une saisie faite pour une machine. Le filtre porte sur l'affichage
+   * seulement : ce qui a été saisi reste en base et en administration, et
+   * reparaîtra si le produit change de rayon.
+   */
+  const components =
+    product.category === 'accessoire' ? [] : sanitizeComponents(product.components)
 
-  // Seules les machines appellent un pack, et seulement si le catalogue a de
-  // quoi le composer : proposer « ajouter un écran » sans écran en rayon
-  // mènerait à une page vide.
+  /**
+   * Rayons où l'on propose de compléter le poste.
+   *
+   * Bureau et Accessoires seulement. Un portable et une machine de jeu se
+   * vendent tels quels : y ajouter une invitation à compléter l'équipement
+   * encombrait la fiche sans répondre à une attente. Le poste fixe, lui, se
+   * monte par pièces, et c'est depuis un accessoire qu'on en cherche d'autres.
+   *
+   * La condition sur le catalogue reste : proposer d'ajouter un écran alors
+   * qu'aucun n'est en rayon mènerait à une page vide.
+   */
   const canBuildPack =
-    ['portable', 'bureau', 'gaming'].includes(product.category) && hasCompanionProducts
+    ['bureau', 'accessoire'].includes(product.category) && hasCompanionProducts
   // Avec la configuration par option, toutes les valeurs sont sélectionnées dès
   // l'ouverture : rien ne reste à choisir pour pouvoir commander. Le blocage ne
   // concerne plus que les produits restés sur l'ancien modèle de combinaisons.

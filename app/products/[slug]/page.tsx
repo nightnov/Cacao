@@ -128,27 +128,22 @@ export default function ProductDetail() {
 
   /** Vrai s'il existe au catalogue de quoi compléter un poste de travail. */
   const [hasCompanionProducts, setHasCompanionProducts] = useState(false)
-  const [volumeThreshold, setVolumeThreshold] = useState(1_000_000)
 
   useEffect(() => {
     const load = async () => {
       try {
         const supabase = getSupabaseClient()
-        const [companionRes, settingRes] = await Promise.all([
-          supabase
-            .from('products')
-            .select('id', { count: 'exact', head: true })
-            .in('category', ['accessoire', 'ecrans'])
-            .eq('status', 'active'),
-          supabase
-            .from('site_settings')
-            .select('value')
-            .eq('key', 'volume_discount_threshold_fcfa')
-            .maybeSingle(),
-        ])
+        // Le seuil de remise était lu ici pour l'annoncer sur la fiche. La
+        // lecture disparaît avec l'annonce : la fiche n'a plus à connaître les
+        // réglages de promotion.
+        const companionRes = await supabase
+          .from('products')
+          .select('id', { count: 'exact', head: true })
+          // Le rayon « ecrans » était compté ici alors qu'il n'existe pas.
+          // Tout ce qui complète un poste est rangé dans Accessoires.
+          .eq('category', 'accessoire')
+          .eq('status', 'active')
         setHasCompanionProducts((companionRes.count || 0) > 0)
-        const t = Number(settingRes.data?.value)
-        if (Number.isFinite(t) && t > 0) setVolumeThreshold(t)
       } catch {
         // Bloc purement incitatif : en cas d'échec il ne s'affiche pas, ce qui
         // vaut mieux qu'un encart renvoyant vers un rayon vide.
@@ -1128,17 +1123,23 @@ export default function ProductDetail() {
         {canBuildPack && (
           <div className="mb-12 rounded-2xl border border-border-strong bg-bg-panel p-6 sm:p-8">
             <h2 className="font-display text-[19px] text-ink mb-2">COMPLÉTEZ VOTRE POSTE</h2>
+            {/* Aucune remise n'est annoncée ici.
+                La phrase promettait une réduction au-delà d'un montant, sans
+                jamais consulter l'interrupteur qui l'active en administration :
+                elle restait affichée alors que la remise était désactivée.
+                Plutôt que de conditionner la promesse, on la retire. Le panier
+                et le paiement annoncent la remise quand elle s'applique
+                réellement, ce qui est le seul moment où elle est vraie. */}
             <p className="text-[14px] text-ink-dim leading-[1.6] mb-5 max-w-2xl">
-              Écran, clavier, souris ou sacoche : ajoutez ce qu&apos;il vous faut autour de cette
-              machine. Au-delà de {formatAmount(volumeThreshold)} FCFA d&apos;articles, la remise
-              s&apos;applique toute seule.
+              Écran, clavier, souris ou sacoche : tout ce qu&apos;il faut autour de cette machine
+              est en rayon, et part dans la même livraison.
             </p>
+            {/* Un seul bouton. « Ajouter un écran » pointait vers un rayon
+                « ecrans » qui n'existe pas : le lien menait à une page vide.
+                Les écrans sont rangés dans Accessoires, où ce bouton mène. */}
             <div className="flex flex-wrap gap-3">
               <Link href="/products?category=accessoire">
                 <Button variant="sober">Voir les accessoires</Button>
-              </Link>
-              <Link href="/products?category=ecrans">
-                <Button variant="sober">Ajouter un écran</Button>
               </Link>
             </div>
           </div>

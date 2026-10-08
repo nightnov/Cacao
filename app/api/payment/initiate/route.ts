@@ -160,7 +160,26 @@ export async function POST(request: Request) {
       response_data: result
     }])
 
-    return Response.json({ url: result.url, token: result.token })
+    /**
+     * Le jeton ne sort pas d'ici.
+     *
+     * Il était renvoyé au navigateur avec l'adresse de paiement. Or c'est
+     * exactement ce jeton que la notification de paiement présente comme
+     * preuve d'authenticité : le webhook accepte un message « paiement
+     * abouti » dès lors que le jeton annoncé correspond à cette commande.
+     *
+     * Un client pouvait donc ouvrir le paiement de sa propre commande, lire le
+     * jeton dans la réponse, abandonner le paiement, puis envoyer lui même la
+     * notification. La commande passait en confirmée, le stock était déduit et
+     * la marchandise partait sans qu'un franc ait été versé. Aucune compétence
+     * particulière n'était requise, le jeton s'affichant dans l'onglet réseau
+     * du navigateur.
+     *
+     * Les deux appelants, le tunnel de commande et la reprise depuis le compte
+     * client, ne lisent que `url`. Le retirer ne coûte donc rien et rend au
+     * jeton sa qualité de secret partagé entre notre serveur et MoneyFusion.
+     */
+    return Response.json({ url: result.url })
   } catch (error: any) {
     console.error('Erreur initiation paiement:', error)
     return Response.json({ error: 'Erreur serveur lors de l\'initiation du paiement' }, { status: 500 })

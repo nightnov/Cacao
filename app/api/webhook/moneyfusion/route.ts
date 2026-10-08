@@ -57,10 +57,35 @@ export async function POST(request: Request) {
     if (payload.event === 'payin.session.completed') {
       const { data: connu } = await supabaseAdmin
         .from('payment_logs')
-        .select('id')
+        .select('id, amount_fcfa')
         .eq('order_id', orderId)
         .eq('moneyfusion_transaction_id', payload.tokenPay)
         .limit(1)
+
+      /**
+       * Comparaison du montant annoncé à celui que nous avions demandé.
+       *
+       * Deuxième barrière, derrière le jeton. Si celui ci venait à fuiter par
+       * un chemin qu'on n'a pas prévu, un paiement annoncé pour un montant
+       * dérisoire resterait repérable.
+       *
+       * L'écart est journalisé mais ne bloque pas. La raison est assumée :
+       * nous ignorons si MoneyFusion annonce le montant brut ou net de ses
+       * frais, et le payload porte les deux. Refuser sur une égalité stricte
+       * rejetterait des paiements réels si la convention est le net, ce qui
+       * ferait bien plus de dégâts que le risque couvert. Le jour où leur
+       * support répondra sur ce point, ce journal deviendra un refus.
+       */
+      const attendu = connu?.[0]?.amount_fcfa
+      if (typeof attendu === 'number' && Number(payload.Montant) < attendu) {
+        console.error(
+          'ALERTE paiement : montant annonce inferieur au montant demande.',
+          'commande', orderId,
+          'demande', attendu,
+          'annonce', payload.Montant,
+          'frais', payload.frais
+        )
+      }
 
       if (!connu?.length) {
         console.error(

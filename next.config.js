@@ -37,8 +37,25 @@ const nextConfig = {
   reactStrictMode: true,
   // La version du serveur renseigne un attaquant sur les failles connues.
   poweredByHeader: false,
+  /**
+   * Optimiseur d'images désactivé.
+   *
+   * Le composant `next/image` n'est utilisé nulle part : toutes les photos
+   * passent par des balises `img` ordinaires. L'optimiseur restait pourtant
+   * actif, et son adresse `/_next/image` allait chercher puis décodait des
+   * images distantes — vérifié avant la bascule, elle renvoyait bien une
+   * image traitée.
+   *
+   * Ce décodage est le chemin de deux failles critiques annoncées sur notre
+   * version de Next, dont une exécution de code à distance par fichier AVIF
+   * piégé. L'exploiter demande de déposer un tel fichier dans un domaine
+   * autorisé, donc un accès administrateur au seau d'images — mais il n'y a
+   * aucune raison de laisser ouverte une porte dont personne ne se sert.
+   *
+   * Aucun effet visible attendu : rien dans le site ne passait par là.
+   */
   images: {
-    domains: ['qzwiypdanasiwqihajpv.supabase.co'],
+    unoptimized: true,
   },
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]

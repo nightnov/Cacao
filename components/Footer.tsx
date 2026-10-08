@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Facebook, Instagram, Youtube, Star, MapPin } from 'lucide-react'
+import { Star, MapPin } from 'lucide-react'
 import { getSupabaseClient } from '@/lib/supabase'
 import { useCategories } from '@/hooks/useCategories'
 
@@ -12,6 +12,45 @@ interface SocialLinks {
   tiktok?: string
   youtube?: string
 }
+
+/**
+ * Logos des réseaux, dessinés ici.
+ *
+ * Ils venaient de lucide-react, qui les a retirés à sa version 1 : une
+ * bibliothèque d'icônes génériques n'a pas vocation à distribuer des marques
+ * déposées. TikTok était déjà dessiné sur place pour la même raison, les trois
+ * autres le rejoignent plutôt que d'ajouter une dépendance entière pour trois
+ * images.
+ */
+const LogoFacebook = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M14 8.5V6.8c0-.8.2-1.3 1.4-1.3H17V2.6c-.3 0-1.2-.1-2.2-.1-2.2 0-3.8 1.4-3.8 3.9v2.1H8.6v3h2.4v7.9h3V11.5h2.4l.4-3H14z" />
+  </svg>
+)
+
+const LogoInstagram = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    <rect x="3" y="3" width="18" height="18" rx="5" />
+    <circle cx="12" cy="12" r="4" />
+    <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none" />
+  </svg>
+)
+
+const LogoYoutube = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M21.6 7.2c-.2-.9-.9-1.6-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4c-.9.2-1.6.9-1.8 1.8C2 8.8 2 12 2 12s0 3.2.4 4.8c.2.9.9 1.6 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4c.9-.2 1.6-.9 1.8-1.8.4-1.6.4-4.8.4-4.8s0-3.2-.4-4.8zM10 15V9l5.2 3L10 15z" />
+  </svg>
+)
 
 /**
  * Nombre de rayons mis en avant dans le pied de page. Ce sont les premiers de
@@ -98,12 +137,12 @@ export function Footer() {
             <div className="flex items-center gap-2.5 mt-5">
               {social.facebook && (
                 <a href={social.facebook} target="_blank" rel="noopener noreferrer" className={socialLink} aria-label="Facebook">
-                  <Facebook size={16} />
+                  <LogoFacebook />
                 </a>
               )}
               {social.instagram && (
                 <a href={social.instagram} target="_blank" rel="noopener noreferrer" className={socialLink} aria-label="Instagram">
-                  <Instagram size={16} />
+                  <LogoInstagram />
                 </a>
               )}
               {social.tiktok && (
@@ -115,7 +154,7 @@ export function Footer() {
               )}
               {social.youtube && (
                 <a href={social.youtube} target="_blank" rel="noopener noreferrer" className={socialLink} aria-label="YouTube">
-                  <Youtube size={16} />
+                  <LogoYoutube />
                 </a>
               )}
             </div>
